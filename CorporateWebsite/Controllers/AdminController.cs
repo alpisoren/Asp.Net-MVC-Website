@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CorporateWebsite.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -9,9 +10,11 @@ namespace CorporateWebsite.Controllers
     public class AdminController : Controller
     {
         // GET: Admin
+        CorporateDBEntities db = new CorporateDBEntities();
         public ActionResult Index()
         {
-            return View();
+            var query = db.Tbl_Category.ToList();
+            return View(query);
         }
     }
 }
