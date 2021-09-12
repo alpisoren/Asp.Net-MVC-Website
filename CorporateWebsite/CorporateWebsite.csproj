@@ -585,16 +585,6 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Global.asax" />
-    <Content Include="Models\CorporateDB.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>CorporateDB.Context.cs</LastGenOutput>
-      <DependentUpon>CorporateDB.edmx</DependentUpon>
-    </Content>
-    <Content Include="Models\CorporateDB.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>CorporateDB.edmx</DependentUpon>
-      <LastGenOutput>CorporateDB.cs</LastGenOutput>
-    </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -675,13 +665,6 @@
     <Content Include="Content\AdminLayout\fonts\glyphicons-halflings-regular.eot" />
     <Content Include="Content\AdminLayout\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Content\AdminLayout\fonts\glyphicons-halflings-regular.woff" />
-    <EntityDeploy Include="Models\CorporateDB.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>CorporateDB.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <Content Include="Models\CorporateDB.edmx.diagram">
-      <DependentUpon>CorporateDB.edmx</DependentUpon>
-    </Content>
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -779,45 +762,15 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\CorporateDB.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CorporateDB.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\CorporateDB.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\CorporateDB.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CorporateDB.edmx</DependentUpon>
-    </Compile>
-    <Compile Include="Models\sysdiagram.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_AboutUs.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Admin.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Blog.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Category.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Communication.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Identity.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Models\Tbl_Service.cs">
-      <DependentUpon>CorporateDB.tt</DependentUpon>
-    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\DataContext\KurumsalDBContext.cs" />
+    <Compile Include="Models\Model\Admin.cs" />
+    <Compile Include="Models\Model\Blog.cs" />
+    <Compile Include="Models\Model\Hakkimizda.cs" />
+    <Compile Include="Models\Model\Hizmet.cs" />
+    <Compile Include="Models\Model\Iletisim.cs" />
+    <Compile Include="Models\Model\Kategori.cs" />
+    <Compile Include="Models\Model\Kimlik.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

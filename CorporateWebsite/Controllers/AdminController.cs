@@ -1,4 +1,5 @@
 ﻿using CorporateWebsite.Models;
+using CorporateWebsite.Models.DataContext;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ namespace CorporateWebsite.Controllers
 {
     public class AdminController : Controller
     {
+        KurumsalDBContext db = new KurumsalDBContext();
         // GET: Admin
-        CorporateDBEntities db = new CorporateDBEntities();
         public ActionResult Index()
         {
-            var query = db.Tbl_Category.ToList();
-            return View(query);
+            var sorgu = db.Kategori.ToList();
+            return View(sorgu);
         }
     }
 }
