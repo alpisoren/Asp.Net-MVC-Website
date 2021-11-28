@@ -1,0 +1,42 @@
+﻿@model IEnumerable<CorporateWebsite.Models.Model.Blog>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<h2>Blog Kayıtları</h2>
+
+<a class="btn btn-default" href="/Blog/Create">Yeni ekle </a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kategori</th>
+            <th>Başlık</th>
+            @*<th>İçerik</th>*@
+            <th>Resim Url</th>
+            <td>İşlemler</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td>@item.BlogId</td>
+
+            <td>@item.Kategori.KategoriAd</td>
+            <td>@item.Baslik</td>
+            @*<td>@Html.Raw(@item.Icerik)</td>*@
+            <td><img width="100" height="100" src="@item.ResimURL" /></td>
+            <td>
+                <a href="/Blog/Edit/@item.BlogId">Düzenle</a>
+                <a href="/Blog/Delete/@item.BlogId">Sil</a>
+            </td>
+        </tr>
+        }
+
+
+    </tbody>
+</table>
