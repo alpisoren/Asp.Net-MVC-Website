@@ -123,14 +123,34 @@ namespace CorporateWebsite.Controllers
                 return HttpNotFound();
             }
 
-            if (System.IO.File.Exists(Server.MapPath(b.ResimURL)))
+            //if (System.IO.File.Exists(Server.MapPath(b.ResimURL)))
+            //{
+            //    System.IO.File.Delete(Server.MapPath(b.ResimURL));
+            //}
+
+            //db.Blog.Remove(b);
+            //db.SaveChanges();
+
+            return View(b);
+        }
+
+        // POST: Kategori/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteConfirmed(int? id)
+        {
+            Blog blog = db.Blog.Find(id);
+            if (blog == null)
             {
-                System.IO.File.Delete(Server.MapPath(b.ResimURL));
+                return HttpNotFound();
+            }
+            if (System.IO.File.Exists(Server.MapPath(blog.ResimURL)))
+            {
+                System.IO.File.Delete(Server.MapPath(blog.ResimURL));
             }
 
-            db.Blog.Remove(b);
+            db.Blog.Remove(blog);
             db.SaveChanges();
-
             return RedirectToAction("Index");
         }
     }
