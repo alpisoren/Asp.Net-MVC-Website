@@ -1,10 +1,19 @@
-﻿<!DOCTYPE html>
+﻿@{ 
+    if (Session["adminid"]==null)
+    {
+        Response.Redirect("/Admin/Login");
+    }
+
+}
+
+
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - Kurumsal Web Admin</title>
-   
+
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,6 +54,17 @@
     ======================================================= -->
     <script src="~/Content/ckeditor/ckeditor.js"></script>
     <link href="~/Content/ckeditor/contents.css" rel="stylesheet" />
+
+
+    <script src="~/Content/AdminLayout/js/jquery.js"></script>
+    <script src="~/Content/AdminLayout/js/jquery-1.8.3.min.js"></script>
+    @*<script src="~/Scripts/jquery-3.3.1.js"></script>*@
+    <script src="~/Scripts/DataTables/jquery.dataTables.js"></script>
+    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
+
+
+
+
 </head>
 
 <body>
@@ -59,8 +79,8 @@
 
             <!--logo start-->
             <!--TODO:KurumsaWeb Değiştirmek için-->
-    <a href="/Admin/Index/" class="logo">KurumsalWeb <span class="lite">Admin</span></a>
-    <!--logo end-->
+            <a href="/Admin/Index/" class="logo">KurumsalWeb <span class="lite">Admin</span></a>
+            <!--logo end-->
 
             <div class="nav search-row" id="top_menu">
                 <!--  search form start -->
@@ -280,7 +300,7 @@
                             <span class="profile-ava">
                                 <img alt="" src="/Content/AdminLayout/avatar1_small.jpg">
                             </span>
-                            <span class="username">Jenifer Smith</span>
+                            <span class="username">@Session["eposta"]</span>
                             <b class="caret"></b>
                         </a>
                         <ul class="dropdown-menu extended logout">
@@ -298,7 +318,7 @@
                                 <a href="#"><i class="icon_chat_alt"></i> Chats</a>
                             </li>
                             <li>
-                                <a href="login.html"><i class="icon_key_alt"></i> Log Out</a>
+                                <a href="/Admin/Logout/"><i class="icon_key_alt"></i> Log Out</a>
                             </li>
                             <li>
                                 <a href="documentation.html"><i class="icon_key_alt"></i> Documentation</a>
@@ -439,9 +459,9 @@
     </section>
     <!-- container section start -->
     <!-- javascripts -->
-    <script src="~/Content/AdminLayout/js/jquery.js"></script>
+    @*<script src="~/Content/AdminLayout/js/jquery.js"></script>*@
+    @*<script src="~/Content/AdminLayout/js/jquery-1.8.3.min.js"></script>*@
     <script src="~/Content/AdminLayout/js/jquery-ui-1.10.4.min.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery-1.8.3.min.js"></script>
     <script type="text/javascript" src="~/Content/AdminLayout/js/jquery-ui-1.9.2.custom.min.js"></script>
     <!-- bootstrap -->
     <script src="~/Content/AdminLayout/js/bootstrap.min.js"></script>
