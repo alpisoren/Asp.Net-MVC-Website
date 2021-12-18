@@ -22,6 +22,8 @@ namespace CorporateWebsite.Models.DataContext
 
         public DbSet<Kategori> Kategori { get; set; }
         public DbSet<Kimlik> Kimlik { get; set; }
-      
+
+        public DbSet<Slider> Slider { get; set; }
+
     }
 }
