@@ -1,0 +1,33 @@
+﻿
+@model IEnumerable<CorporateWebsite.Models.Model.Slider> 
+    @*@{Layout = null; }*@
+
+
+<div id="heroCarousel" class="container carousel carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+
+    <!-- Slide 1 -->
+    @foreach (var item in Model)
+    {
+
+    <li>
+        <div class="carousel-item ">
+            <div class="carousel-container">
+
+                <img src="@item.ResimURL" alt="@item.Baslik" />
+                <h2 class="animate__animated animate__fadeInDown"><span>@item.Baslik</span></h2>
+                <p class="animate__animated animate__fadeInUp"> @item.Aciklama</p>
+                <a href="" class="btn-get-started animate__animated animate__fadeInUp">Daha Fazlası için..</a>
+            </div>
+        </div>
+    </li>
+    }
+
+    <a class="carousel-control-prev" href="#heroCarousel" role="button" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon bx bx-chevron-left" aria-hidden="true"></span>
+    </a>
+
+    <a class="carousel-control-next" href="#heroCarousel" role="button" data-bs-slide="next">
+        <span class="carousel-control-next-icon bx bx-chevron-right" aria-hidden="true"></span>
+    </a>
+
+</div>
