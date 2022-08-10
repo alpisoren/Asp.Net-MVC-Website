@@ -1,11 +1,11 @@
 ﻿
 @model IEnumerable<CorporateWebsite.Models.Model.Hizmet>
+@{Layout = null; }
 
-
-<section class="services" >
+<div class="services">
     <div class="container">
         <div class="row">
- <h2 >Hizmetlerimiz</h2>
+            <h2>Hizmetlerimiz</h2>
             @foreach (var item in Model)
             {
 
@@ -24,4 +24,5 @@
             }
         </div>
     </div>
-</section>
+
+</div>

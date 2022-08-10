@@ -15,7 +15,12 @@ namespace CorporateWebsite.Controllers
         // GET: Home
         public ActionResult Index()
         {
-            return View(db.Slider.ToList().OrderByDescending(x => x.SliderId));
+            ViewBag.Hizmetler = db.Hizmet.ToList().OrderByDescending(x => x.HizmetId);
+            ViewBag.Iletisim = db.Iletisim.ToList().SingleOrDefault();
+            ViewBag.Blog = db.Blog.ToList().OrderByDescending(x => x.BlogId);
+
+
+            return View(db.Slider.ToList());
         }
 
 
