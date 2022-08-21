@@ -78,7 +78,7 @@
                                 <li><a href="#">Drop Down 4</a></li>
                             </ul>
                         </li>
-                        <li><a href="/Home/iletisim/">İletişim</a></li>
+                        <li><a href="/Home/Iletisim/">İletişim</a></li>
                     </ul>
                     <i class="bi bi-list mobile-nav-toggle"></i>
                 </nav><!-- .navbar -->
@@ -112,9 +112,10 @@
                     <div class="row">
 
                         <div class="col-lg-3 col-md-6 footer-contact">
+                            
                             <h4>İletişim Bilgileri</h4>
                             <p>
-                                <strong>@ViewBag.Iletisim.Adres </strong>
+                                <strong>@ViewBag.Iletisim.Adres </strong><br>
 
                                 <strong>Phone:</strong> @ViewBag.Iletisim.Telefon<br>
                                 <strong>Email:</strong> @ViewBag.Iletisim.Fax<br>
@@ -124,11 +125,11 @@
                         <div class="col-lg-3 col-md-6 footer-links">
                             <h4>Menü</h4>
                             <ul>
-                                <li><i class="bx bx-chevron-right"></i> <a href="/Home/Index/">Anasayfa</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="/Home/Hakkimizda/">Hakkımızda</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="/Home/Blog/">Blog</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="/Home/Hizmetler/">Hizmetler</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="/Home/İletisim/">İletişim</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Index/">Anasayfa</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Hakkimizda/">Hakkımızda</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Blog/">Blog</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Hizmetler/">Hizmetler</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Iletisim/">İletişim</a></li>
                             </ul>
                         </div>
 
@@ -149,10 +150,10 @@
                         <div class="col-lg-3 col-md-6 footer-info">
                             <h3>Sosyal Medya</h3>
                             <div class="social-links mt-3">
-                                <a href="#" class="twitter"><i class="bx bxl-twitter"></i></a>
-                                <a href="#" class="facebook"><i class="bx bxl-facebook"></i></a>
-                                <a href="#" class="instagram"><i class="bx bxl-instagram"></i></a>
-                                <a href="#" class="linkedin"><i class="bx bxl-linkedin"></i></a>
+                                <a href="www.twitter.com/@ViewBag.Iletisim.Twitter"  class="twitter"><i class="bx bxl-twitter"></i></a>
+                                <a href="www.facebook.com/@ViewBag.Iletisim.Facebook" class="facebook"><i class="bx bxl-facebook"></i></a>
+                                <a href="www.instagram.com/@ViewBag.Iletisim.Instagram" class="instagram"><i class="bx bxl-instagram"></i></a>
+                                @*<a href="www.linkedin.com./@ViewBag.Iletisim.Linkedin" class="linkedin"><i class="bx bxl-linkedin"></i></a>*@
                             </div>
                         </div>
 
@@ -162,7 +163,9 @@
 
             <div class="container">
                 <div class="copyright">
-                    &copy; Copyright <strong><span>Moderna</span></strong>. All Rights Reserved 2022
+                    <p>  @DateTime.Now.Year &copy; Tüm Hakları Gizlidir.</p>
+                    <p> Designed by Alp İşören</p>
+
                 </div>
                 
             </div>

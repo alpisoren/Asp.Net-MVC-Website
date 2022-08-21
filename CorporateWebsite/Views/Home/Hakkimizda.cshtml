@@ -1,0 +1,33 @@
+﻿@model CorporateWebsite.Models.Model.Hakkimizda
+@{
+    ViewBag.Title = "Hakkimizda";
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
+}
+
+
+
+<div class="col-md-12">
+    <section class="breadcrumbs">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Hakkımızda</h2>
+            </div>
+
+        </div>
+        </section>
+        <div class="row">
+            <div class="col-md-6">
+
+
+                <img src="~/Content/SiteLayout/assets/img/why-us.jpg" alt="Alternate Text" class="align-left" />
+            </div>
+            <div class="col-md-6">
+                <p class="align-right">
+
+
+                    @Model.Aciklama
+                </p>
+            </div>
+        </div>
+</div>

@@ -1,0 +1,38 @@
+﻿
+@model IEnumerable<CorporateWebsite.Models.Model.Hizmet>
+@{
+    ViewBag.Title = "Hizmetlerimiz";
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
+}
+<div class="services">
+    <div class="container">
+        <div class="row">
+            <section class="breadcrumbs">
+                <div class="container">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2>Hizmetlerimiz</h2>
+                    </div>
+
+                </div>
+                </section>
+                @foreach (var item in Model)
+                {
+
+                    <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up">
+                        <div class="icon-box icon-box-blue">
+
+                            <img class="icon-img" src="@item.ResimUrl" />
+                            <h4 class="title"><a href="">@item.Baslik</a></h4>
+                            @Html.Raw(item.Aciklama)
+
+
+                        </div>
+                    </div>
+
+
+                }
+        </div>
+    </div>
+
+</div>

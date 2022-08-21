@@ -1,11 +1,19 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Slider>
- 
+
 
 @{
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
     ViewBag.Title = "Index";
 }
+<section class="breadcrumbs">
+    <div class="container">
 
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Anasayfa</h2>
+        </div>
+
+    </div>
+</section>
 
 <!-- ======= Hero Section ======= -->
 <section id="hero" class="d-flex justify-cntent-center align-items-center">
@@ -88,7 +96,7 @@
     @{
         Html.RenderAction("HizmetPartipal", "Home");
     }
-    
+
     <!-- End Services Section -->
 
 
