@@ -1,0 +1,12 @@
+﻿
+@model IEnumerable<CorporateWebsite.Models.Model.Kategori>
+
+<h3 class="sidebar-title">Kategoriler</h3>
+<div class="sidebar-item categories">
+    <ul>
+        @foreach (var item in Model)
+        {
+            <li><a href="/Home/BlogDetay/@item.KategoriId"> @item.KategoriAd <span>@item.Blogs.Count()</span></a></li>
+        }
+    </ul>
+</div><!-- End sidebar categories-->

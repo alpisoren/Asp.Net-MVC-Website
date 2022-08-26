@@ -1,0 +1,16 @@
+﻿
+@model IEnumerable<CorporateWebsite.Models.Model.Blog>
+<h3 class="sidebar-title">Son Gönderiler</h3>
+<div class="sidebar-item recent-posts">
+
+    @foreach (var item in Model)
+    {
+        <div class="post-item clearfix">
+            <img src="@item.ResimURL" alt="">
+            <h4><a href="/Home/BlogDetay/@item.BlogId">@item.Baslik</a></h4>
+
+        </div>
+    }
+
+
+</div>

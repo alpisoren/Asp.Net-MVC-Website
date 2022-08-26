@@ -128,6 +128,37 @@ namespace CorporateWebsite.Controllers
         }
 
 
+        public ActionResult Blog()
+        {
+
+            FooterLoader();
+            return View(db.Blog.Include("Kategori").ToList().OrderByDescending(x => x.BlogId));
+
+        }
+        public ActionResult BlogKategoriPartial()
+        {
+
+            FooterLoader();
+            return PartialView(db.Kategori.Include("Blogs").ToList().OrderByDescending(x => x.KategoriId));
+
+        }
+        public ActionResult BlogSonKayitPartial()
+        {
+
+            FooterLoader();
+            return PartialView(db.Blog.ToList().OrderByDescending(x => x.BlogId));
+
+        }
+
+        public ActionResult BlogDetay(int id)
+        {
+            FooterLoader();
+            return View(db.Blog.Include("Kategori").Where(x => x.BlogId==id).FirstOrDefault());
+
+
+        }
+
+
 
     }
 }
