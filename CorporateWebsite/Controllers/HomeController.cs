@@ -7,6 +7,8 @@ using System.Net.Mail;
 using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
+using PagedList;
+using PagedList.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -26,7 +28,7 @@ namespace CorporateWebsite.Controllers
 
         public void FooterLoader(){
             ViewBag.Hizmetler = db.Hizmet.ToList().OrderByDescending(x => x.HizmetId);
-            ViewBag.Iletisim = db.Iletisim.ToList().SingleOrDefault();
+            ViewBag.Iletisim = db.Iletisim.ToList().FirstOrDefault();
             ViewBag.Blog = db.Blog.ToList().OrderByDescending(x => x.BlogId);
           
         }
@@ -128,11 +130,11 @@ namespace CorporateWebsite.Controllers
         }
 
 
-        public ActionResult Blog()
+        public ActionResult Blog(int Page = 1)
         {
 
             FooterLoader();
-            return View(db.Blog.Include("Kategori").ToList().OrderByDescending(x => x.BlogId));
+            return View(db.Blog.Include("Kategori").OrderByDescending(x => x.BlogId).ToPagedList(Page, 5));
 
         }
         public ActionResult BlogKategoriPartial()

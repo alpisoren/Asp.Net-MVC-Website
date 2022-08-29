@@ -1,4 +1,8 @@
-﻿@model IEnumerable<CorporateWebsite.Models.Model.Blog>
+﻿
+@using PagedList;
+@using PagedList.Mvc;
+
+@model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
     ViewBag.Title = "Blog";
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
@@ -35,7 +39,7 @@
 
                     <div class="entry-meta">
                         <ul>
-                            <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">@item.Kategori.KategoriId</a></li>
+                            <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">@item.Kategori.KategoriAd</a></li>
                             @*<li class="d-flex align-items-center"><i class="bi bi-chat-dots"></i> <a href="blog-single.html">12 Comments</a></li>*@
                         </ul>
                     </div>
@@ -54,11 +58,8 @@
             }
 
                 <div class="blog-pagination">
-                    <ul class="justify-content-center">
-                        <li><a href="#">1</a></li>
-                        <li class="active"><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                    </ul>
+
+                   @Html.PagedListPager(Model,Page=>Url.Action("Blog",new {Page}),PagedListRenderOptions.Classic)
                 </div>
 
             </div><!-- End blog entries list -->
