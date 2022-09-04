@@ -48,6 +48,24 @@
 
                     </article><!-- End blog entry -->
 
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3>Yorum Yap</h3>
+                            <form action="/Home/BlogDetay/@Model.BlogId">
+                                <div>
+                                    <input type="text" name="adsoyad" id="adsoyad" placeholder="Adınız Soyadınız" class="form-control" required />
+                                    <br />
+                                    <input type="email" name="eposta" id="eposta" placeholder="Mail Adresiniz" class="form-control" required />
+                                    <br />
+                                    <textarea typeof="text" name="icerik" id="icerik" class="form-control">    </textarea>
+                                    <br />
+                                    <button type="submit" class="btn btn-success" id="gonder" value="Yorum Yap">Yorum Yap</button>
+
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
 
             
 
@@ -99,6 +117,32 @@
 
     </div>
 </section>
+<script src="~/Content/SiteLayout/js/jquery.js"></script>
+<script type="text/javascript">
 
+
+    $(document).ready(function () {
+        $("#gonder").click(function () {
+            var adisoyadi = $("#adsoyad").val();
+            var epostasi = $("#eposta").val();
+            var yorum = $("#icerik").val();
+            $.ajax({
+                url: '/Home/YorumYap/',
+                data: {
+                    adsoyad: adisoyadi,
+                    eposta: epostasi,
+                    icerik: yorum,
+                    blogId: @Model.BlogId
+                },
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    alert(adisoyadi + " Yorumunuz kontrol edildikten sonra yayınlanacaktır.");
+                }
+            });
+
+        });
+    });
+</script>
 
 

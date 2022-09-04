@@ -24,6 +24,8 @@ namespace CorporateWebsite.Models.DataContext
         public DbSet<Kimlik> Kimlik { get; set; }
 
         public DbSet<Slider> Slider { get; set; }
+        public DbSet<Yorum> Yorum { get; set; }
+
 
     }
 }
