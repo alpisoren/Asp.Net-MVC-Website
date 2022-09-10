@@ -115,10 +115,10 @@
                             
                             <h4>İletişim Bilgileri</h4>
                             <p>
-                                <strong>@ViewBag.Iletisim.Adres </strong><br>
+                                <strong>@ViewBag.Iletisim?.Adres </strong><br>
 
-                                <strong>Phone:</strong> @ViewBag.Iletisim.Telefon<br>
-                                <strong>Email:</strong> @ViewBag.Iletisim.Fax<br>
+                                <strong>Phone:</strong> @ViewBag.Iletisim?.Telefon<br>
+                                <strong>Email:</strong> @ViewBag.Iletisim?.Fax<br>
                             </p>
 
                         </div>
@@ -136,6 +136,7 @@
                         <div class="col-lg-3 col-md-6 footer-links">
                             <h4>Son Yazılar</h4>
                             <ul>
+                                
                                 @foreach (var item in @ViewBag.Blog)
                                 {
                                     <li><i class="bx bx-chevron-right"></i> <a href="/Home/BlogDetay/@item.BlogId">@item.Baslik</a></li>

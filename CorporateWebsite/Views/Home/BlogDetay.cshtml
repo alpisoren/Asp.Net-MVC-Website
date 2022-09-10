@@ -67,6 +67,20 @@
 
                     </div>
 
+                    <div class="row">
+                        <div>
+                            <h3>Yorumlar</h3>
+                            <hr />
+                            @foreach (var item in Model.Yorums.OrderByDescending(x => x.YorumId).Where(y => y.Onayli == true))
+                            {
+                                <p>@item.AdSoyad - @item.Eposta</p>
+                                <p>@item.Icerik</p>
+                                <hr />
+                            }
+
+                        </div>
+
+                    </div>
             
 
             </div><!-- End blog entries list -->

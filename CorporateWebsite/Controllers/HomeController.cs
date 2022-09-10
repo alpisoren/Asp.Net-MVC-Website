@@ -152,10 +152,17 @@ namespace CorporateWebsite.Controllers
 
         }
 
+
+        public ActionResult KategoriBlog(int id,int Page = 1)
+        {
+            FooterLoader();
+            var b = db.Blog.Include("Kategori").Where(x => x.Kategori.KategoriId == id).OrderByDescending(x => x.Kategori.KategoriId).ToPagedList(Page, 5);
+            return View(b);
+        }
         public ActionResult BlogDetay(int id)
         {
             FooterLoader();
-            return View(db.Blog.Include("Kategori").Where(x => x.BlogId==id).FirstOrDefault());
+            return View(db.Blog.Include("Kategori").Include("Yorums").Where(x => x.BlogId==id).FirstOrDefault());
 
 
         }
