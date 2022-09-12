@@ -3,8 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Hiroşhi</title>
-    <meta content="" name="description">
+    <title>@ViewBag.Title - @ViewBag.Kimlik.Title</title>
+    <meta content="@Html.Raw( @ViewBag.Kimlik.Description)" name="description">
+    <meta content="@Html.Raw( @ViewBag.Kimlik.Keywords)" name="keywords">
+
     <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
     @*<script src="~/Scripts/modernizr-2.8.3.js"></script>*@
 
@@ -47,17 +49,22 @@
             <div class="container d-flex justify-content-between align-items-center">
 
                 <div class="logo">
-                    <h1 class="text-light"><a href="/Home/Index/"><span>Kurumsal Web</span></a></h1>
+                    <h1 class="text-light">
+                    <a href="/Home/Index/">
+                        <span>@ViewBag.Kimlik.Unvan</span>
+                        <img src="@ViewBag.Kimlik.LogoUrl" height="30" width="75" />
+                         </a>
+                    </h1>
                     <!-- Uncomment below if you prefer to use an image logo -->
                     <!-- <a href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
                 </div>
 
                 <nav id="navbar" class="navbar">
                     <ul>
-                        <li><a class="active" href="/Home/Index/">Ana Sayfa</a></li>
-                        <li><a href="/Home/Hakkimizda/">Hakkımızda</a></li>
-                        <li><a href="/Home/Hizmetlerimiz/">Hizmetlerimiz</a></li>
-                        <li><a href="/Home/Blog/">Blog</a></li>
+                        <li><a class="active" href="/Anasayfa/">Ana Sayfa</a></li>
+                        <li><a href="/Hakkimizda/">Hakkımızda</a></li>
+                        <li><a href="/Hizmetlerimiz/">Hizmetlerimiz</a></li>
+                        <li><a href="/Blog/">Blog</a></li>
 
                         @*<li class="dropdown">
                             <a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
@@ -78,7 +85,7 @@
                                 <li><a href="#">Drop Down 4</a></li>
                             </ul>
                         </li>*@
-                        <li><a href="/Home/Iletisim/">İletişim</a></li>
+                        <li><a href="/Iletisim/">İletişim</a></li>
                     </ul>
                     <i class="bi bi-list mobile-nav-toggle"></i>
                 </nav><!-- .navbar -->
@@ -125,11 +132,11 @@
                         <div class="col-lg-3 col-md-6 footer-links">
                             <h4>Menü</h4>
                             <ul>
-                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Index/">Anasayfa</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Hakkimizda/">Hakkımızda</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Blog/">Blog</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Hizmetler/">Hizmetler</a></li>
-                                <li><i class="bx bx-chevron-right"></i> <a href="~/Home/Iletisim/">İletişim</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Anasayfa/">Anasayfa</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Hakkimizda/">Hakkımızda</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Blog/">Blog</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Hizmetler/">Hizmetler</a></li>
+                                <li><i class="bx bx-chevron-right"></i> <a href="~/Iletisim/">İletişim</a></li>
                             </ul>
                         </div>
 

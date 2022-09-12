@@ -13,12 +13,13 @@ namespace CorporateWebsite.Controllers
     {
         KurumsalDBContext db = new KurumsalDBContext();
         // GET: Admin
+       
         public ActionResult Index()
         {
             var sorgu = db.Kategori.ToList();
             return View(sorgu);
         }
-
+        
         public ActionResult Login()
         {
 

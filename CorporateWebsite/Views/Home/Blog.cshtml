@@ -1,6 +1,7 @@
 ﻿
 @using PagedList;
 @using PagedList.Mvc;
+@using CorporateWebsite.Helper;
 
 @model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
@@ -34,7 +35,7 @@
                     </div>
 
                     <h2 class="entry-title">
-                        <a href="/Home/BlogDetay/@item.BlogId">@item.Baslik</a>
+                        <a href="/Blog/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">@item.Baslik</a>
                     </h2>
 
                     <div class="entry-meta">

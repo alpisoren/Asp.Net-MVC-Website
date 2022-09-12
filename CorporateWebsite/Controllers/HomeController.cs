@@ -18,6 +18,8 @@ namespace CorporateWebsite.Controllers
 
         private KurumsalDBContext db = new KurumsalDBContext();
         // GET: Home
+        [Route()]
+        [Route("Anasayfa")]
         public ActionResult Index()
         {
 
@@ -27,6 +29,7 @@ namespace CorporateWebsite.Controllers
         }
 
         public void FooterLoader(){
+            ViewBag.Kimlik = db.Kimlik.SingleOrDefault();
             ViewBag.Hizmetler = db.Hizmet.ToList().OrderByDescending(x => x.HizmetId);
             ViewBag.Iletisim = db.Iletisim.ToList().FirstOrDefault();
             ViewBag.Blog = db.Blog.ToList().OrderByDescending(x => x.BlogId);
@@ -39,11 +42,16 @@ namespace CorporateWebsite.Controllers
             return View(db.Slider.ToList().OrderByDescending(x=>x.SliderId));
         }
 
+
+        [Route("Hizmet")]
         public ActionResult HizmetPartipal()
         {
             return View(db.Hizmet.ToList().OrderByDescending(x=>x.HizmetId));
 
         }
+
+
+        [Route("Hakkimizda")]
         public ActionResult Hakkimizda()
         {
             FooterLoader();
@@ -51,6 +59,8 @@ namespace CorporateWebsite.Controllers
 
         }
 
+
+        [Route("Hizmetlerimiz")]
         public ActionResult Hizmetlerimiz()
         {
             FooterLoader();
@@ -59,12 +69,14 @@ namespace CorporateWebsite.Controllers
 
         }
 
+        [Route("Iletisim")]
         public ActionResult Iletisim()
         {
             FooterLoader();
             return View(db.Iletisim.ToList().FirstOrDefault());
 
         }
+
         [HttpPost]
         public ActionResult Iletisim(string name=null,string email=null,string subject=null,string message=null)
         {
@@ -129,7 +141,7 @@ namespace CorporateWebsite.Controllers
 
         }
 
-
+        [Route("Blog")]
         public ActionResult Blog(int Page = 1)
         {
 
@@ -137,6 +149,7 @@ namespace CorporateWebsite.Controllers
             return View(db.Blog.Include("Kategori").OrderByDescending(x => x.BlogId).ToPagedList(Page, 5));
 
         }
+        [Route("BlogKategori")]
         public ActionResult BlogKategoriPartial()
         {
 
@@ -144,6 +157,7 @@ namespace CorporateWebsite.Controllers
             return PartialView(db.Kategori.Include("Blogs").ToList().OrderByDescending(x => x.KategoriId));
 
         }
+        [Route("BlogSonKayit")]
         public ActionResult BlogSonKayitPartial()
         {
 
@@ -152,13 +166,16 @@ namespace CorporateWebsite.Controllers
 
         }
 
-
+        [Route("KategoriBlog")]
         public ActionResult KategoriBlog(int id,int Page = 1)
         {
             FooterLoader();
             var b = db.Blog.Include("Kategori").Where(x => x.Kategori.KategoriId == id).OrderByDescending(x => x.Kategori.KategoriId).ToPagedList(Page, 5);
             return View(b);
         }
+
+
+        [Route("Blog/{baslik}-{id:int}")]
         public ActionResult BlogDetay(int id)
         {
             FooterLoader();
