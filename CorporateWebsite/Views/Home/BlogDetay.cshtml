@@ -4,6 +4,8 @@
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
 }
 
+@using CorporateWebsite.Helper;
+
 <section class="breadcrumbs">
     <div class="container">
 
@@ -19,69 +21,69 @@
         <div class="row">
 
             <div class="col-lg-8 entries">
-                
 
 
-                    <article class="entry">
 
-                        <div class="entry-img">
-                            <img src="@Model.ResimURL" alt="@Model.Baslik" class="img-fluid">
-                        </div>
+                <article class="entry">
 
-                        <h2 class="entry-title">
-                            <a href="/Home/BlogDetay/@Model.Baslik">@Model.Baslik</a>
-                        </h2>
+                    <div class="entry-img">
+                        <img src="@Model.ResimURL" alt="@Model.Baslik" class="img-fluid">
+                    </div>
 
-                        <div class="entry-meta">
-                            <ul>
-                                <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">@Model.Kategori.KategoriAd</a></li>
-                              
-                            </ul>
-                        </div>
+                    <h2 class="entry-title">
+                        <a href="/BlogPost/@SeoHelper.ToSeoUrl(Model.Baslik).ToLower()-@Model.BlogId">@Model.Baslik</a>
+                    </h2>
 
-                        <div class="entry-content">
-                            <p>
-                                @Html.Raw(Model.Icerik);
-                            </p>
-                            
-                        </div>
+                    <div class="entry-meta">
+                        <ul>
+                            <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">@Model.Kategori.KategoriAd</a></li>
 
-                    </article><!-- End blog entry -->
+                        </ul>
+                    </div>
 
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h3>Yorum Yap</h3>
-                            <form action="/Home/BlogDetay/@Model.BlogId">
-                                <div>
-                                    <input type="text" name="adsoyad" id="adsoyad" placeholder="Adınız Soyadınız" class="form-control" required />
-                                    <br />
-                                    <input type="email" name="eposta" id="eposta" placeholder="Mail Adresiniz" class="form-control" required />
-                                    <br />
-                                    <textarea typeof="text" name="icerik" id="icerik" class="form-control">    </textarea>
-                                    <br />
-                                    <button type="submit" class="btn btn-success" id="gonder" value="Yorum Yap">Yorum Yap</button>
-
-                                </div>
-                            </form>
-                        </div>
+                    <div class="entry-content">
+                        <p>
+                            @Html.Raw(Model.Icerik);
+                        </p>
 
                     </div>
 
-                    <div class="row">
-                        <div>
-                            <h3>Yorumlar</h3>
+                </article><!-- End blog entry -->
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3>Yorum Yap</h3>
+                        <form action="/Home/BlogDetay/@Model.BlogId">
+                            <div>
+                                <input type="text" name="adsoyad" id="adsoyad" placeholder="Adınız Soyadınız" class="form-control" required />
+                                <br />
+                                <input type="email" name="eposta" id="eposta" placeholder="Mail Adresiniz" class="form-control" required />
+                                <br />
+                                <textarea typeof="text" name="icerik" id="icerik" class="form-control">    </textarea>
+                                <br />
+                                <button type="submit" class="btn btn-success" id="gonder" value="Yorum Yap">Yorum Yap</button>
+
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div>
+                        <h3>Yorumlar</h3>
+                        <hr />
+                        @foreach (var item in Model.Yorums.OrderByDescending(x => x.YorumId).Where(y => y.Onayli == true))
+                        {
+                            <p>@item.AdSoyad - @item.Eposta</p>
+                            <p>@item.Icerik</p>
                             <hr />
-                            @foreach (var item in Model.Yorums.OrderByDescending(x => x.YorumId).Where(y => y.Onayli == true))
-                            {
-                                <p>@item.AdSoyad - @item.Eposta</p>
-                                <p>@item.Icerik</p>
-                                <hr />
-                            }
-
-                        </div>
+                        }
 
                     </div>
-            
+
+                </div>
+
 
             </div><!-- End blog entries list -->
 

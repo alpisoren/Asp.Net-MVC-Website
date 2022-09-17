@@ -141,7 +141,7 @@ namespace CorporateWebsite.Controllers
 
         }
 
-        [Route("Blog")]
+        [Route("BlogPost")]
         public ActionResult Blog(int Page = 1)
         {
 
@@ -157,6 +157,8 @@ namespace CorporateWebsite.Controllers
             return PartialView(db.Kategori.Include("Blogs").ToList().OrderByDescending(x => x.KategoriId));
 
         }
+
+
         [Route("BlogSonKayit")]
         public ActionResult BlogSonKayitPartial()
         {
@@ -166,7 +168,7 @@ namespace CorporateWebsite.Controllers
 
         }
 
-        [Route("KategoriBlog")]
+        [Route("BlogPost/{kategoriad}/{id:int}")]
         public ActionResult KategoriBlog(int id,int Page = 1)
         {
             FooterLoader();
@@ -175,7 +177,7 @@ namespace CorporateWebsite.Controllers
         }
 
 
-        [Route("Blog/{baslik}-{id:int}")]
+        [Route("BlogPost/{baslik}-{id:int}")]
         public ActionResult BlogDetay(int id)
         {
             FooterLoader();

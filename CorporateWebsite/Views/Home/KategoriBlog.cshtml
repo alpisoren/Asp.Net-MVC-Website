@@ -33,7 +33,7 @@
                         </div>
 
                         <h2 class="entry-title">
-                            <a href="/Blog/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">@item.Baslik</a>
+                            <a href="/BlogPost/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">@item.Baslik</a>
                         </h2>
 
                         <div class="entry-meta">
@@ -48,7 +48,7 @@
                                 @Html.Raw(item.Icerik?.Substring(0, item.Icerik.Length / 5));
                             </p>
                             <div class="read-more">
-                                <a href="/Blog/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">Devamı..</a>
+                                <a href="/BlogPost/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">Devamı..</a>
 
                             </div>
                         </div>
