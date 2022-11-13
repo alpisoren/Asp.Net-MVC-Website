@@ -14,12 +14,19 @@ namespace CorporateWebsite.Controllers
         KurumsalDBContext db = new KurumsalDBContext();
         // GET: Admin
        
+        [Route("yonetimpaneli")]
         public ActionResult Index()
         {
+            ViewBag.BlogSay = db.Blog.Count();
+            ViewBag.KategoriSay = db.Kategori.Count();
+            ViewBag.HizmetSay = db.Hizmet.Count();
+            ViewBag.YorumSay = db.Yorum.Count();
+
+            ViewBag.YorumOnay = db.Yorum.Where(x => x.Onayli == false).Count();
             var sorgu = db.Kategori.ToList();
             return View(sorgu);
         }
-        
+        [Route("yonetimpaneli/giris")]
         public ActionResult Login()
         {
 
