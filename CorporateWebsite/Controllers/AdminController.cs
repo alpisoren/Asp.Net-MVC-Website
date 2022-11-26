@@ -43,6 +43,8 @@ namespace CorporateWebsite.Controllers
             {
                 Session["adminid"] = login.AdminId;
                 Session["eposta"] = login.Eposta;
+                Session["yetki"] = login.Yetki;
+
                 return RedirectToAction("Index", "Admin");
             }
             ViewBag.Uyari = "Kullanıcı adı ya da şifre yanlış";
