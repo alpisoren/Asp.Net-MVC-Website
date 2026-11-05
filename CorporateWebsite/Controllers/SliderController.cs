@@ -60,7 +60,7 @@ namespace CorporateWebsite.Controllers
                 if (ResimURL != null)
                 {
                     string hata;
-                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1024, 360, out hata);
+                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1920, 700, out hata);
                     if (url == null)
                     {
                         ModelState.AddModelError("", hata);
@@ -110,7 +110,7 @@ namespace CorporateWebsite.Controllers
                 if (ResimURL != null)
                 {
                     string hata;
-                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1024, 360, out hata);
+                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1920, 700, out hata);
                     if (url == null)
                     {
                         ModelState.AddModelError("", hata);
