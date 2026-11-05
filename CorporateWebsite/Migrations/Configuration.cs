@@ -1,4 +1,4 @@
-namespace CorporateWebsite.Migrations
+﻿namespace CorporateWebsite.Migrations
 {
     using System;
     using System.Data.Entity;
@@ -9,23 +9,14 @@ namespace CorporateWebsite.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = true;
+            // Şema değişiklikleri yalnızca kod tabanlı migration ile yapılır (Add-Migration <Ad>).
+            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationDataLossAllowed = false;
         }
 
         protected override void Seed(CorporateWebsite.Models.DataContext.KurumsalDBContext context)
         {
-            //  This method will be called after migrating to the latest version.
-
-            //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
-            //  to avoid creating duplicate seed data. E.g.
-            //
-            //    context.People.AddOrUpdate(
-            //      p => p.FullName,
-            //      new Person { FullName = "Andrew Peters" },
-            //      new Person { FullName = "Brice Lambson" },
-            //      new Person { FullName = "Rowan Miller" }
-            //    );
-            //
+            // Başlangıç verisi yok; ilk yönetici README'deki SQL ile eklenir.
         }
     }
 }

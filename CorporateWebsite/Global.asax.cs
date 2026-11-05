@@ -18,8 +18,9 @@ namespace CorporateWebsite
         {
             HataGunluguBaslat();
 
-            // Admin tablosuna eklenen alanlar (şifre sıfırlama, uzun şifre hash'i) için
-            // veritabanını açılışta otomatik olarak son migration'a getir.
+            // Veritabanını açılışta Migrations/ altındaki son kod tabanlı migration'a getir.
+            // Otomatik migration döneminden kalan veritabanları önce Baslangic migration'ına bağlanır.
+            Migrations.MevcutVeritabaniUyumu.Hazirla();
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<KurumsalDBContext, Migrations.Configuration>());
 
             // Yakalanmayan hatalarda Views/Shared/Error.cshtml gösterilir (customErrors açıkken).
