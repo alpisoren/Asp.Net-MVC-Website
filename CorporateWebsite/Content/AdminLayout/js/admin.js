@@ -27,6 +27,8 @@
 
         // Zengin metin editörü (Jodit, MIT lisanslı). Kaydedilen HTML sunucuda HtmlTemizleyici'den geçer.
         if (window.Jodit) {
+            // Resimler /Medya/Yukle'ye gönderilir (CSRF belirteci sayfadaki herhangi bir formdan alınır).
+            var csrf = $("input[name=__RequestVerificationToken]").first().val();
             $("textarea.kp-zengin-editor").each(function () {
                 window.Jodit.make(this, {
                     language: "tr",
@@ -40,6 +42,18 @@
                     askBeforePasteHTML: false,
                     askBeforePasteFromWord: false,
                     defaultActionOnPaste: "insert_clear_html",
+                    uploader: {
+                        url: "/Medya/Yukle",
+                        insertImageAsBase64URI: false,
+                        imagesExtensions: ["jpg", "jpeg", "png"],
+                        filesVariableName: function (i) { return "dosya" + i; },
+                        prepareData: function (formData) {
+                            if (csrf) {
+                                formData.append("__RequestVerificationToken", csrf);
+                            }
+                            return formData;
+                        }
+                    },
                     buttons: [
                         "paragraph", "|",
                         "bold", "italic", "underline", "strikethrough", "|",

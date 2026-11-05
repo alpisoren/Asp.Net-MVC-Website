@@ -190,6 +190,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\MedyaController.cs" />
     <Compile Include="Services\AyarServisi.cs" />
     <Compile Include="Services\YorumServisi.cs" />
     <Compile Include="Services\KategoriServisi.cs" />

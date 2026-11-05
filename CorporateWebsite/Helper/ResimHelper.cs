@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Web;
@@ -53,7 +53,13 @@ namespace CorporateWebsite.Helper
             var dosyaAdi = Guid.NewGuid().ToString("N") + uzanti;
             var url = YuklemeKoku + klasor + "/" + dosyaAdi;
 
-            img.Resize(genislik, yukseklik);
+            // En-boy oranı korunur ve resim kutuya sığdırılır; küçük resimler büyütülmez (bulanıklaşmasın).
+            img.Resize(genislik, yukseklik, preserveAspectRatio: true, preventEnlarge: true);
+            var klasorYolu = System.Web.Hosting.HostingEnvironment.MapPath("~" + YuklemeKoku + klasor);
+            if (klasorYolu != null)
+            {
+                Directory.CreateDirectory(klasorYolu); // ilk yüklemede klasör yoksa oluştur
+            }
             img.Save("~" + url);
 
             return url;
