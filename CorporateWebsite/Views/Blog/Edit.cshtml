@@ -38,7 +38,7 @@
     <div class="form-group">
         @Html.LabelFor(model => model.Icerik, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            <textarea name="Icerik" class="ckeditor">@Model.Icerik</textarea>
+            <textarea name="Icerik" id="Icerik" class="form-control kp-zengin-editor">@Model.Icerik</textarea>
             @Html.ValidationMessageFor(model => model.Icerik, "", new { @class = "text-danger" })
         </div>
     </div>

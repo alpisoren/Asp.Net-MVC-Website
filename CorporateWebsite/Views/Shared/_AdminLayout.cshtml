@@ -1,14 +1,16 @@
 ﻿@{
-    // Yetki kontrolü AdminAuthorize filtresinde yapılır; bu yalnızca ek güvenlik ağı.
-    if (Session["adminid"] == null)
+    // Yetki kontrolü AdminAuthorize filtresinde yapılır ve doğrulanan yönetici isteğe eklenir.
+    var yonetici = CorporateWebsite.Helper.YoneticiOturumu.Aktif(Context);
+    if (yonetici == null)
     {
         Response.Redirect("/yonetimpaneli/giris/");
+        return;
     }
 
     string controller = ViewContext.RouteData.GetRequiredString("controller");
     string action = ViewContext.RouteData.GetRequiredString("action");
-    bool adminMi = (Session["yetki"] as string) == "Admin";
-    string eposta = Session["eposta"] as string ?? "";
+    bool adminMi = yonetici.AdminMi;
+    string eposta = yonetici.Eposta ?? "";
     string basHarf = eposta.Length > 0 ? eposta.Substring(0, 1).ToUpperInvariant() : "?";
 
     // Menüde aktif öğe
@@ -50,9 +52,9 @@
     <link href="~/Content/AdminLayout/vendor/bootstrap-3.4.1/bootstrap.min.css" rel="stylesheet">
     <link href="~/Content/AdminLayout/css/font-awesome.min.css" rel="stylesheet" />
     <link href="~/Content/AdminLayout/vendor/datatables-1.13.11/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/Content/AdminLayout/vendor/jodit-4.18.6/jodit.min.css" rel="stylesheet" />
     <link href="~/Content/AdminLayout/css/panel.css" rel="stylesheet" />
 
-    <script src="~/Content/ckeditor/ckeditor.js"></script>
 </head>
 <body class="kp-body">
     <a class="kp-skip-link" href="#main">İçeriğe geç</a>
@@ -171,6 +173,7 @@
     <script src="~/Scripts/jquery-3.7.1.min.js"></script>
     <script src="~/Content/AdminLayout/vendor/bootstrap-3.4.1/bootstrap.min.js"></script>
     <script src="~/Content/AdminLayout/vendor/datatables-1.13.11/jquery.dataTables.min.js"></script>
+    <script src="~/Content/AdminLayout/vendor/jodit-4.18.6/jodit.min.js"></script>
     <script src="~/Content/AdminLayout/js/admin.js"></script>
 </body>
 </html>

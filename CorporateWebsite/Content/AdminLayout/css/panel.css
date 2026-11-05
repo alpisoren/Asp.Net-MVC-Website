@@ -311,6 +311,9 @@ input[type=file].form-control { padding: 7px 12px; }
 .kp-auth-card .form-group { margin-bottom: 16px; }
 .kp-auth-card .btn-block { min-height: 46px; font-size: 15px; }
 .kp-auth-links { margin-top: 16px; text-align: center; font-size: 14px; }
+.kp-remember { margin: 4px 0 16px; }
+.kp-remember label { font-weight: 400; color: var(--color-text); }
+.kp-remember input[type=checkbox] { margin-right: 6px; }
 
 /* ---------------------------------------------------------------- Mobil */
 @media (max-width: 991px) {

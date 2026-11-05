@@ -4,7 +4,7 @@
     ViewBag.KartsizIcerik = true;
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var bekleyenler = (IList<CorporateWebsite.Models.Model.Yorum>)ViewBag.BekleyenYorumlar;
-    bool adminMi = (Session["yetki"] as string) == "Admin";
+    bool adminMi = CorporateWebsite.Helper.YoneticiOturumu.Aktif(Context)?.AdminMi == true;
 }
 
 <div class="kp-stats">

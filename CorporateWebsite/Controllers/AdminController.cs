@@ -1,4 +1,5 @@
 ﻿using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Models.ViewModel;
@@ -25,7 +26,7 @@ namespace CorporateWebsite.Controllers
 
         private int AktifAdminId
         {
-            get { return Session["adminid"] is int id ? id : 0; }
+            get { return YoneticiOturumu.Aktif(HttpContext)?.Id ?? 0; }
         }
 
         [Route("yonetimpaneli")]
@@ -51,25 +52,34 @@ namespace CorporateWebsite.Controllers
 
         [AllowAnonymous]
         [Route("yonetimpaneli/giris")]
-        public ActionResult Login()
+        public ActionResult Login(string returnUrl = null)
         {
+            // Zaten giriş yapılmışsa panele geç
+            if (YoneticiOturumu.KimlikId(User) != null)
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(string eposta, string sifre)
+        public ActionResult Login(string eposta, string sifre, bool beniHatirla = false, string returnUrl = null)
         {
+            ViewBag.ReturnUrl = returnUrl;
             Admin admin;
             switch (servis.GirisYap(eposta, sifre, Request.UserHostAddress, out admin))
             {
                 case GirisDurumu.Basarili:
-                    // Oturum sabitleme (session fixation) riskine karşı eski oturum verilerini temizle.
+                    // Şifreli, HttpOnly oturum cookie'si; uygulama yeniden başlasa da geçerli kalır.
                     Session.Clear();
-                    Session["adminid"] = admin.AdminId;
-                    Session["eposta"] = admin.Eposta;
-                    Session["yetki"] = admin.Yetki;
+                    YoneticiOturumu.GirisYap(Response, admin.AdminId, admin.Eposta, beniHatirla);
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
+                    {
+                        return Redirect(returnUrl);
+                    }
                     return RedirectToAction("Index", "Admin");
 
                 case GirisDurumu.GeciciOlarakEngellendi:
@@ -87,6 +97,7 @@ namespace CorporateWebsite.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Logout()
         {
+            YoneticiOturumu.CikisYap();
             Session.Clear();
             Session.Abandon();
             return RedirectToAction("Login", "Admin");
@@ -210,11 +221,6 @@ namespace CorporateWebsite.Controllers
                 }
                 if (sonuc.Basarili)
                 {
-                    if (id == AktifAdminId)
-                    {
-                        Session["eposta"] = model.Eposta;
-                        Session["yetki"] = model.Yetki;
-                    }
                     return RedirectToAction("Adminler");
                 }
                 sonuc.ModelStateAktar(ModelState);

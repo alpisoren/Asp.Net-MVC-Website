@@ -6,8 +6,8 @@ namespace CorporateWebsite.Filters
     /// <summary>
     /// Content-Security-Policy başlığını ekler.
     ///  - Ziyaretçi sitesi (HomeController): inline script'e izin verilmez; XSS'e karşı asıl koruma budur.
-    ///  - Yönetim paneli: CKEditor 4 araç çubuğu inline olay öznitelikleri (onclick) kullandığı için
-    ///    'unsafe-inline' script gerekir. Panel zaten oturum gerektirir ve içerik HtmlTemizleyici'den geçer.
+    ///  - Yönetim paneli: aynı şekilde inline script yasak (Jodit editörü inline olay özniteliği kullanmaz).
+    ///    Editör ve tablolar satır içi stil kullandığı için yalnızca style-src'de 'unsafe-inline' var.
     /// Diğer güvenlik başlıkları (X-Frame-Options vb.) Web.config'de tanımlıdır.
     /// </summary>
     public class GuvenlikBasliklariAttribute : ActionFilterAttribute
@@ -24,7 +24,7 @@ namespace CorporateWebsite.Filters
 
         public const string PanelPolitikasi =
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline'; " +
+            "script-src 'self'; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
             "font-src 'self' data: https://fonts.gstatic.com; " +
             "img-src 'self' data: blob: https:; " +

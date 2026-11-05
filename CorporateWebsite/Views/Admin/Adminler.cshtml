@@ -4,7 +4,7 @@
     ViewBag.YeniEkleUrl = "/Admin/Create";
     ViewBag.YeniEkleMetni = "Yeni Yönetici";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    var aktifId = Session["adminid"] is int i ? i : 0;
+    var aktifId = CorporateWebsite.Helper.YoneticiOturumu.Aktif(Context)?.Id ?? 0;
 }
 
 @if (TempData["Uyari"] != null)

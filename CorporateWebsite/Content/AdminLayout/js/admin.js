@@ -25,6 +25,38 @@
             $("table[data-tablo]").DataTable({ language: turkce, order: [] });
         }
 
+        // Zengin metin editörü (Jodit, MIT lisanslı). Kaydedilen HTML sunucuda HtmlTemizleyici'den geçer.
+        if (window.Jodit) {
+            $("textarea.kp-zengin-editor").each(function () {
+                window.Jodit.make(this, {
+                    language: "tr",
+                    height: 420,
+                    minHeight: 260,
+                    toolbarAdaptive: false,
+                    showCharsCounter: false,
+                    showWordsCounter: false,
+                    showXPathInStatusbar: false,
+                    askBeforePasteHTML: false,
+                    askBeforePasteFromWord: false,
+                    defaultActionOnPaste: "insert_clear_html",
+                    buttons: [
+                        "paragraph", "|",
+                        "bold", "italic", "underline", "strikethrough", "|",
+                        "ul", "ol", "|",
+                        "link", "image", "table", "hr", "|",
+                        "align", "|",
+                        "undo", "redo", "|",
+                        "source", "fullsize"
+                    ],
+                    controls: {
+                        paragraph: {
+                            list: { p: "Paragraf", h2: "Başlık 2", h3: "Başlık 3", h4: "Başlık 4", blockquote: "Alıntı" }
+                        }
+                    }
+                });
+            });
+        }
+
         // data-onay="Mesaj" olan formlar gönderilmeden önce onay ister (silme işlemleri).
         $(document).on("submit", "form[data-onay]", function (e) {
             if (!window.confirm($(this).data("onay"))) {

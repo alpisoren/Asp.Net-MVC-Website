@@ -13,6 +13,7 @@
 
 <form method="post" action="/Admin/Login">
     @Html.AntiForgeryToken()
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
     <div class="form-group">
         <label for="Eposta">E-posta</label>
         <input type="email" class="form-control" id="Eposta" name="Eposta" autocomplete="username" required autofocus>
@@ -20,6 +21,9 @@
     <div class="form-group">
         <label for="Sifre">Şifre</label>
         <input type="password" class="form-control" id="Sifre" name="Sifre" autocomplete="current-password" required>
+    </div>
+    <div class="checkbox kp-remember">
+        <label><input type="checkbox" name="beniHatirla" value="true"> Beni hatırla (14 gün)</label>
     </div>
     <button class="btn btn-primary btn-block" type="submit">Giriş Yap</button>
 </form>

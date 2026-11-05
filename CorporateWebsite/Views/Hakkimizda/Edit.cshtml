@@ -16,7 +16,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.Aciklama, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                <textarea name="Aciklama" class="ckeditor">@Model.Aciklama</textarea>
+                <textarea name="Aciklama" id="Aciklama" class="form-control kp-zengin-editor">@Model.Aciklama</textarea>
                 @Html.ValidationMessageFor(model => model.Aciklama, "", new { @class = "text-danger" })
             </div>
         </div>

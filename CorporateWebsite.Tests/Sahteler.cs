@@ -20,6 +20,7 @@ namespace CorporateWebsite.Tests
     internal class SahteHttpContext : HttpContextBase
     {
         private readonly HttpSessionStateBase session;
+        private readonly System.Collections.IDictionary items = new System.Collections.Hashtable();
 
         public SahteHttpContext(HttpSessionStateBase session)
         {
@@ -29,6 +30,13 @@ namespace CorporateWebsite.Tests
         public override HttpSessionStateBase Session
         {
             get { return session; }
+        }
+
+        public override System.Security.Principal.IPrincipal User { get; set; }
+
+        public override System.Collections.IDictionary Items
+        {
+            get { return items; }
         }
     }
 
