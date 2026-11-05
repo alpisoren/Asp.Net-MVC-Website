@@ -1,55 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-
-using CorporateWebsite.Filters;
-using CorporateWebsite.Helper;
+using CorporateWebsite.Services;
+using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
     [AdminAuthorize(SadeceAdmin = true)]
     public class HakkimizdaController : Controller
     {
-        KurumsalDBContext db = new KurumsalDBContext();
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private AyarServisi servis;
 
-        // GET: Hakkimizda
+        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            servis = new AyarServisi(db, Server);
+        }
+
+        // "/Hakkimizda" sitenin ziyaretçi sayfasıdır (HomeController); panel listesi bu yüzden açık adla yönlendirilir.
+        [Route("Hakkimizda/Index")]
         public ActionResult Index()
         {
-            var h = db.Hakkimizda.ToList();
-            return View(h);
-
+            return View(servis.HakkimizdaListele());
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int? id)
         {
-            var h = db.Hakkimizda.Where(x => x.HakkimizdaId == id).FirstOrDefault();
-            return View(h);
+            var h = id.HasValue ? servis.HakkimizdaBul(id.Value) : null;
+            return h == null ? (ActionResult)HttpNotFound() : View(h);
         }
 
-
+        /// <summary>Zengin metin (HTML) gönderilir; sunucuda HtmlTemizleyici'den geçirilerek kaydedilir.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateInput(false)]
-       public ActionResult Edit(int id, Hakkimizda hakkimizda)
+        public ActionResult Edit(int id, [Bind(Include = "Aciklama")] Hakkimizda hakkimizda)
         {
             if (ModelState.IsValid)
             {
-                var h = db.Hakkimizda.Where(x => x.HakkimizdaId == id).SingleOrDefault();
-                if (h == null)
+                if (!servis.HakkimizdaGuncelle(id, hakkimizda.Aciklama))
                 {
                     return HttpNotFound();
                 }
-                h.Aciklama = HtmlTemizleyici.Temizle(hakkimizda.Aciklama);
-                db.SaveChanges();
                 return RedirectToAction("Index");
             }
+            hakkimizda.HakkimizdaId = id;
             return View(hakkimizda);
-
-
         }
 
         protected override void Dispose(bool disposing)

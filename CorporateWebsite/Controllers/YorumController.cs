@@ -1,45 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
+﻿using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-
-using CorporateWebsite.Filters;
-using CorporateWebsite.Helper;
+using CorporateWebsite.Services;
+using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
     [AdminAuthorize]
     public class YorumController : Controller
     {
-        private KurumsalDBContext db = new KurumsalDBContext();
+        private const string Alanlar = "AdSoyad,Icerik,Eposta,Onayli,BlogId";
 
-        // GET: Yorum
-        public ActionResult Index()
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private readonly YorumServisi servis;
+
+        public YorumController()
         {
-            // Önce onay bekleyenler, sonra en yeniler
-            var yorum = db.Yorum.Include(y => y.Blog).OrderBy(y => y.Onayli).ThenByDescending(y => y.YorumId);
-            return View(yorum.ToList());
+            servis = new YorumServisi(db);
         }
 
-        /// <summary>Listeden tek tıkla onaylama / onayı kaldırma.</summary>
+        /// <summary>Onay bekleyenler önce, sonra en yeniler.</summary>
+        public ActionResult Index()
+        {
+            return View(servis.Listele());
+        }
+
+        /// <summary>Onayı tek tıkla aç/kapat. "donus" yerel bir adresse oraya geri döner (ör. panel ana sayfası).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult OnayDegistir(int id, string donus = null)
         {
-            var yorum = db.Yorum.Find(id);
-            if (yorum == null)
+            var onayli = servis.OnayDegistir(id);
+            if (onayli == null)
             {
                 return HttpNotFound();
             }
-            yorum.Onayli = !yorum.Onayli;
-            db.SaveChanges();
-            TempData["Basari"] = yorum.Onayli ? "Yorum onaylandı ve sitede yayında." : "Yorumun onayı kaldırıldı.";
+            TempData["Basari"] = onayli.Value ? "Yorum onaylandı ve sitede yayında." : "Yorumun onayı kaldırıldı.";
 
             if (!string.IsNullOrEmpty(donus) && Url.IsLocalUrl(donus))
             {
@@ -48,102 +44,75 @@ namespace CorporateWebsite.Controllers
             return RedirectToAction("Index");
         }
 
-        // GET: Yorum/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Yorum yorum = db.Yorum.Find(id);
-            if (yorum == null)
-            {
-                return HttpNotFound();
-            }
-            return View(yorum);
+            var yorum = id.HasValue ? servis.Bul(id.Value) : null;
+            return yorum == null ? (ActionResult)HttpNotFound() : View(yorum);
         }
 
-        // GET: Yorum/Create
         public ActionResult Create()
         {
-            ViewBag.BlogId = new SelectList(db.Blog, "BlogId", "Baslik");
+            ViewBag.BlogId = servis.BlogSecimListesi(null);
             return View();
         }
 
-        // POST: Yorum/Create
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "YorumId,AdSoyad,Icerik,Eposta,Onayli,BlogId")] Yorum yorum)
+        [ValidateInput(false)] // Yorum metni her yerde kodlanarak (encode) basılır; "<" içeren yorumlar düzenlenebilsin
+        public ActionResult Create([Bind(Include = Alanlar)] Yorum yorum)
         {
             if (ModelState.IsValid)
             {
-                db.Yorum.Add(yorum);
-                db.SaveChanges();
+                servis.Olustur(yorum);
                 return RedirectToAction("Index");
             }
-
-            ViewBag.BlogId = new SelectList(db.Blog, "BlogId", "Baslik", yorum.BlogId);
+            ViewBag.BlogId = servis.BlogSecimListesi(yorum.BlogId);
             return View(yorum);
         }
 
-        // GET: Yorum/Edit/5
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Yorum yorum = db.Yorum.Find(id);
+            var yorum = id.HasValue ? servis.Bul(id.Value) : null;
             if (yorum == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.BlogId = new SelectList(db.Blog, "BlogId", "Baslik", yorum.BlogId);
+            ViewBag.BlogId = servis.BlogSecimListesi(yorum.BlogId);
             return View(yorum);
         }
 
-        // POST: Yorum/Edit/5
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "YorumId,AdSoyad,Icerik,Eposta,Onayli,BlogId")] Yorum yorum)
+        [ValidateInput(false)] // Yorum metni her yerde kodlanarak (encode) basılır; "<" içeren yorumlar düzenlenebilsin
+        public ActionResult Edit(int id, [Bind(Include = Alanlar)] Yorum yorum)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(yorum).State = EntityState.Modified;
-                db.SaveChanges();
+                if (!servis.Guncelle(id, yorum))
+                {
+                    return HttpNotFound();
+                }
                 return RedirectToAction("Index");
             }
-            ViewBag.BlogId = new SelectList(db.Blog, "BlogId", "Baslik", yorum.BlogId);
+            yorum.YorumId = id;
+            ViewBag.BlogId = servis.BlogSecimListesi(yorum.BlogId);
             return View(yorum);
         }
 
-        // GET: Yorum/Delete/5
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Yorum yorum = db.Yorum.Find(id);
-            if (yorum == null)
-            {
-                return HttpNotFound();
-            }
-            return View(yorum);
+            var yorum = id.HasValue ? servis.Bul(id.Value) : null;
+            return yorum == null ? (ActionResult)HttpNotFound() : View(yorum);
         }
 
-        // POST: Yorum/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Yorum yorum = db.Yorum.Find(id);
-            db.Yorum.Remove(yorum);
-            db.SaveChanges();
+            if (!servis.Sil(id))
+            {
+                return HttpNotFound();
+            }
             return RedirectToAction("Index");
         }
 

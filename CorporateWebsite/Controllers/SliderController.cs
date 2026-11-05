@@ -1,162 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Helpers;
-using System.Web.Mvc;
+﻿﻿using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-
-using CorporateWebsite.Filters;
-using CorporateWebsite.Helper;
+using CorporateWebsite.Services;
+using System.Web;
+using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
     [AdminAuthorize(SadeceAdmin = true)]
     public class SliderController : Controller
     {
-        private KurumsalDBContext db = new KurumsalDBContext();
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private SliderServisi servis;
 
-        // GET: Sliders
+        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            servis = new SliderServisi(db, Server);
+        }
+
         public ActionResult Index()
         {
-            return View(db.Slider.ToList());
+            return View(servis.Listele());
         }
 
-        // GET: Sliders/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Slider slider = db.Slider.Find(id);
-            if (slider == null)
-            {
-                return HttpNotFound();
-            }
-            return View(slider);
+            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
-        // GET: Sliders/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Sliders/Create
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "SliderId,Baslik,Aciklama,ResimURL")] Slider slider,HttpPostedFileBase ResimURL)
+        public ActionResult Create([Bind(Include = "Baslik,Aciklama")] Slider slider, HttpPostedFileBase ResimURL)
         {
             if (ModelState.IsValid)
             {
-                if (ResimURL != null)
+                var sonuc = servis.Olustur(slider, ResimURL);
+                if (sonuc.Basarili)
                 {
-                    string hata;
-                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1920, 700, out hata);
-                    if (url == null)
-                    {
-                        ModelState.AddModelError("", hata);
-                        return View(slider);
-                    }
-                    slider.ResimURL = url;
+                    return RedirectToAction("Index");
                 }
-          
-                db.Slider.Add(slider);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                sonuc.ModelStateAktar(ModelState);
             }
-
             return View(slider);
         }
 
-        // GET: Sliders/Edit/5
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Slider slider = db.Slider.Find(id);
-            if (slider == null)
-            {
-                return HttpNotFound();
-            }
-            return View(slider);
+            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
-        // POST: Sliders/Edit/5
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "SliderId,Baslik,Aciklama,ResimURL")] Slider slider, HttpPostedFileBase ResimURL,int id)
+        public ActionResult Edit(int id, [Bind(Include = "Baslik,Aciklama")] Slider slider, HttpPostedFileBase ResimURL)
         {
             if (ModelState.IsValid)
             {
-                var s = db.Slider.Where(x => x.SliderId == id).SingleOrDefault();
-                if (s == null)
+                var sonuc = servis.Guncelle(id, slider, ResimURL);
+                if (sonuc == null)
                 {
                     return HttpNotFound();
                 }
-
-                if (ResimURL != null)
+                if (sonuc.Basarili)
                 {
-                    string hata;
-                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1920, 700, out hata);
-                    if (url == null)
-                    {
-                        ModelState.AddModelError("", hata);
-                        slider.ResimURL = s.ResimURL;
-                        return View(slider);
-                    }
-                    ResimHelper.Sil(Server, s.ResimURL);
-                    s.ResimURL = url;
+                    return RedirectToAction("Index");
                 }
-
-                s.Baslik = slider.Baslik;
-                s.Aciklama = slider.Aciklama;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                sonuc.ModelStateAktar(ModelState);
             }
+            // Form yeniden gösterilirken mevcut resim önizlemesi kaybolmasın
+            slider.SliderId = id;
+            slider.ResimURL = servis.Bul(id)?.ResimURL;
             return View(slider);
         }
 
-        // GET: Sliders/Delete/5
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Slider slider = db.Slider.Find(id);
-            if (slider == null)
-            {
-                return HttpNotFound();
-            }
-            return View(slider);
+            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
-        // POST: Sliders/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Slider slider = db.Slider.Find(id);
-            if (slider == null)
+            if (!servis.Sil(id))
             {
                 return HttpNotFound();
             }
-            ResimHelper.Sil(Server, slider.ResimURL);
-            db.Slider.Remove(slider);
-            db.SaveChanges();
             return RedirectToAction("Index");
         }
 

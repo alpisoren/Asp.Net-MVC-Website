@@ -190,6 +190,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\AyarServisi.cs" />
+    <Compile Include="Services\YorumServisi.cs" />
+    <Compile Include="Services\KategoriServisi.cs" />
+    <Compile Include="Services\SliderServisi.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\BlogController.cs" />

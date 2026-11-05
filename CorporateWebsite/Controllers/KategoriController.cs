@@ -1,133 +1,97 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
+﻿using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-
-using CorporateWebsite.Filters;
-using CorporateWebsite.Helper;
+using CorporateWebsite.Services;
+using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
     [AdminAuthorize]
     public class KategoriController : Controller
     {
-        private KurumsalDBContext db = new KurumsalDBContext();
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private readonly KategoriServisi servis;
 
-        // GET: Kategori
+        public KategoriController()
+        {
+            servis = new KategoriServisi(db);
+        }
+
         public ActionResult Index()
         {
-            return View(db.Kategori.ToList());
+            return View(servis.Listele());
         }
 
-        // GET: Kategori/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Kategori kategori = db.Kategori.Find(id);
-            if (kategori == null)
-            {
-                return HttpNotFound();
-            }
-            return View(kategori);
+            var kategori = id.HasValue ? servis.Bul(id.Value) : null;
+            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
         }
 
-        // GET: Kategori/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Kategori/Create
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "KategoriId,KategoriAd,Aciklama")] Kategori kategori)
+        public ActionResult Create([Bind(Include = "KategoriAd,Aciklama")] Kategori kategori)
         {
             if (ModelState.IsValid)
             {
-                db.Kategori.Add(kategori);
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                var sonuc = servis.Olustur(kategori);
+                if (sonuc.Basarili)
+                {
+                    return RedirectToAction("Index");
+                }
+                sonuc.ModelStateAktar(ModelState);
             }
-
             return View(kategori);
         }
 
-        // GET: Kategori/Edit/5
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Kategori kategori = db.Kategori.Find(id);
-            if (kategori == null)
-            {
-                return HttpNotFound();
-            }
-            return View(kategori);
+            var kategori = id.HasValue ? servis.Bul(id.Value) : null;
+            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
         }
 
-        // POST: Kategori/Edit/5
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "KategoriId,KategoriAd,Aciklama")] Kategori kategori)
+        public ActionResult Edit(int id, [Bind(Include = "KategoriAd,Aciklama")] Kategori kategori)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(kategori).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                var sonuc = servis.Guncelle(id, kategori);
+                if (sonuc == null)
+                {
+                    return HttpNotFound();
+                }
+                if (sonuc.Basarili)
+                {
+                    return RedirectToAction("Index");
+                }
+                sonuc.ModelStateAktar(ModelState);
             }
+            kategori.KategoriId = id;
             return View(kategori);
         }
 
-        // GET: Kategori/Delete/5
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Kategori kategori = db.Kategori.Find(id);
-            if (kategori == null)
-            {
-                return HttpNotFound();
-            }
-            return View(kategori);
+            var kategori = id.HasValue ? servis.Bul(id.Value) : null;
+            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
         }
 
-        // POST: Kategori/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Kategori kategori = db.Kategori.Find(id);
-            if (kategori == null)
+            var ad = servis.Sil(id);
+            if (ad == null)
             {
                 return HttpNotFound();
             }
-
-            // Kategoriye bağlı yazılar silinmez, kategorisiz kalır (aksi halde yabancı anahtar hatası oluşur).
-            foreach (var blog in db.Blog.Where(b => b.KategoriId == id).ToList())
-            {
-                blog.KategoriId = null;
-            }
-            db.Kategori.Remove(kategori);
-            db.SaveChanges();
-            TempData["Basari"] = "\"" + kategori.KategoriAd + "\" kategorisi silindi.";
+            TempData["Basari"] = "\"" + ad + "\" kategorisi silindi.";
             return RedirectToAction("Index");
         }
 

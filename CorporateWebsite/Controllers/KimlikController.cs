@@ -1,81 +1,55 @@
-﻿using CorporateWebsite.Models.DataContext;
+﻿using CorporateWebsite.Filters;
+using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using CorporateWebsite.Services;
 using System.Web;
-using System.Web.Helpers;
 using System.Web.Mvc;
-
-using CorporateWebsite.Filters;
-using CorporateWebsite.Helper;
 
 namespace CorporateWebsite.Controllers
 {
     [AdminAuthorize(SadeceAdmin = true)]
     public class KimlikController : Controller
     {
-        KurumsalDBContext db = new KurumsalDBContext();
-        // GET: Kimlik
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private AyarServisi servis;
+
+        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            servis = new AyarServisi(db, Server);
+        }
+
         public ActionResult Index()
         {
-            return View(db.Kimlik.ToList());
+            return View(servis.KimlikListele());
         }
 
-        // GET: Kimlik/Details/5
-       
-        // GET: Kimlik/Edit/5
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int? id)
         {
-
-            var kimlik = db.Kimlik.Where(x => x.KimlikId == id).SingleOrDefault();
-            if (kimlik == null)
-            {
-                return HttpNotFound();
-            }
-            return View(kimlik);
+            var kimlik = id.HasValue ? servis.KimlikBul(id.Value) : null;
+            return kimlik == null ? (ActionResult)HttpNotFound() : View(kimlik);
         }
 
-        // POST: Kimlik/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ValidateInput(false)]
-        public ActionResult Edit(int id, [Bind(Exclude = "LogoUrl")] Kimlik kimlik, HttpPostedFileBase LogoURL)
+        public ActionResult Edit(int id, [Bind(Include = "Title,Keywords,Description,Unvan")] Kimlik kimlik, HttpPostedFileBase LogoURL)
         {
             if (ModelState.IsValid)
             {
-                var kimlikinfo = db.Kimlik.Where(x => x.KimlikId == id).SingleOrDefault();
-                if (kimlikinfo == null)
+                var sonuc = servis.KimlikGuncelle(id, kimlik, LogoURL);
+                if (sonuc == null)
                 {
                     return HttpNotFound();
                 }
-                if (LogoURL != null)
+                if (sonuc.Basarili)
                 {
-                    string hata;
-                    var url = ResimHelper.Kaydet(LogoURL, "Kimlik", 300, 300, out hata);
-                    if (url == null)
-                    {
-                        ModelState.AddModelError("", hata);
-                        kimlik.KimlikId = id;
-                        kimlik.LogoUrl = kimlikinfo.LogoUrl;
-                        return View(kimlik);
-                    }
-                    ResimHelper.Sil(Server, kimlikinfo.LogoUrl);
-                    kimlikinfo.LogoUrl = url;
+                    return RedirectToAction("Index");
                 }
-                kimlikinfo.Title = kimlik.Title;
-                kimlikinfo.Keywords = kimlik.Keywords;
-                kimlikinfo.Description = kimlik.Description;
-                kimlikinfo.Unvan = kimlik.Unvan;
-
-                db.SaveChanges();
-                return RedirectToAction("Index");
-
+                sonuc.ModelStateAktar(ModelState);
             }
+            kimlik.KimlikId = id;
+            kimlik.LogoUrl = servis.KimlikBul(id)?.LogoUrl;
             return View(kimlik);
-
-
         }
 
         protected override void Dispose(bool disposing)

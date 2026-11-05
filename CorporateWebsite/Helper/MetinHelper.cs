@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Web;
 
 namespace CorporateWebsite.Helper
@@ -26,6 +26,17 @@ namespace CorporateWebsite.Helper
             }
             var kesim = metin.LastIndexOf(' ', uzunluk);
             return metin.Substring(0, kesim > uzunluk / 2 ? kesim : uzunluk) + "…";
+        }
+
+        /// <summary>Baştaki/sondaki boşlukları atar; boş ya da yalnızca boşluksa null döner.</summary>
+        public static string Kirp(string metin)
+        {
+            if (metin == null)
+            {
+                return null;
+            }
+            metin = metin.Trim();
+            return metin.Length == 0 ? null : metin;
         }
     }
 }
