@@ -780,6 +780,7 @@
     <Content Include="Views\Shared\_AuthLayout.cshtml" />
     <Content Include="Content\AdminLayout\css\panel.css" />
     <Content Include="Content\SiteLayout\js\yorum.js" />
+    <Content Include="Content\tema-gecis.js" />
     <Content Include="Content\SiteLayout\css\tema.css" />
     <Content Include="Content\SiteLayout\js\site.js" />
     <Content Include="Content\SiteLayout\js\iletisim.js" />

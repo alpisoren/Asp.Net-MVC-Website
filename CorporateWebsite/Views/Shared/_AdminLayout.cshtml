@@ -44,6 +44,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#F6F8FB">
+    <meta name="color-scheme" content="light dark">
     <title>@baslik - Yönetim Paneli</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -54,6 +56,8 @@
     <link href="~/Content/AdminLayout/vendor/datatables-1.13.11/jquery.dataTables.min.css" rel="stylesheet" />
     <link href="~/Content/AdminLayout/vendor/jodit-4.18.6/jodit.min.css" rel="stylesheet" />
     <link href="~/Content/AdminLayout/css/panel.css" rel="stylesheet" />
+    <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
+    <script src="~/Content/tema-gecis.js"></script>
 
 </head>
 <body class="kp-body">
@@ -103,6 +107,11 @@
                 <i class="fa fa-bars" aria-hidden="true"></i>
             </button>
             <div class="kp-topbar-spacer"></div>
+
+            <button type="button" class="kp-icon-btn kp-theme-toggle" data-tema-degistir aria-pressed="false" aria-label="Koyu temaya geç" title="Koyu temaya geç">
+                <i class="fa fa-moon-o kp-icon-light" aria-hidden="true"></i>
+                <i class="fa fa-sun-o kp-icon-dark" aria-hidden="true"></i>
+            </button>
 
             <a class="kp-icon-btn" href="/Yorum/Index" aria-label="Onay bekleyen yorumlar" title="Onay bekleyen yorumlar">
                 <i class="fa fa-bell-o" aria-hidden="true"></i>

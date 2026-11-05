@@ -30,6 +30,7 @@
             $("textarea.kp-zengin-editor").each(function () {
                 window.Jodit.make(this, {
                     language: "tr",
+                    theme: document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "default",
                     height: 420,
                     minHeight: 260,
                     toolbarAdaptive: false,

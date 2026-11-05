@@ -232,3 +232,28 @@ Before delivering any UI code, verify:
 - [ ] Responsive: 375px, 768px, 1024px, 1440px
 - [ ] No content hidden behind fixed navbars
 - [ ] No horizontal scroll on mobile
+
+---
+
+## Tema: Soft UI + koyu mod (2026-11-05 güncellemesi)
+
+Yukarıdaki lacivert ağırlıklı palet yerine **açık, yumuşak (Soft UI Evolution)** bir varsayılan tema ve isteğe bağlı **koyu mod** kullanılır. Uygulama: `Content/SiteLayout/css/tema.css` (site), `Content/AdminLayout/css/panel.css` (panel), geçiş: `Content/tema-gecis.js`.
+
+- Tema `<html data-theme="light|dark">` ile seçilir; varsayılan **açık**. Kullanıcının seçimi `localStorage` (`kw-tema`) ile saklanır, betik `<head>` içinde CSS'ten sonra **defer olmadan** yüklenir (yanıp sönme olmaz, inline script yok → CSP uyumlu).
+- Bileşenler yalnızca anlamsal token kullanır; koyu mod sadece token değerlerini değiştirir.
+
+| Token | Açık | Koyu |
+|---|---|---|
+| `--bg` | `#F6F8FB` | `#0B1220` |
+| `--surface` | `#FFFFFF` | `#131D2E` |
+| `--text` | `#1E293B` | `#DCE4EE` |
+| `--heading` | `#0F172A` | `#F4F7FB` |
+| `--muted` | `#526077` | `#9AA9BD` |
+| `--border` | `#E3E8EF` | `#24324A` |
+| `--accent` | `#0369A1` | `#5BC0F2` |
+| `--on-accent` | `#FFFFFF` | `#06243A` |
+| `--accent-soft` | `#E6F2FB` | `rgba(91,192,242,.12)` |
+
+- Köşeler: 8 / 12 / 16–18 px, düğmeler hap (pill) biçiminde. Gölgeler iki katmanlı ve hafif.
+- Ölçülen kontrastlar (metin/zemin): tüm çiftler ≥ 4.5:1 (en düşük: açık temada panel grup başlığı 5.5:1).
+- Koyu modda harita iframe'i CSS filtresiyle koyulaştırılır; Jodit editörü `jodit_theme_dark` + panel token'larıyla eşlenir.

@@ -44,7 +44,8 @@
     {
         <link rel="canonical" href="@ViewBag.Canonical" />
     }
-    <meta name="theme-color" content="#0F172A">
+    <meta name="theme-color" content="#F6F8FB">
+    <meta name="color-scheme" content="light dark">
 
     <link href="/Content/SiteLayout/assets/img/favicon.png" rel="icon">
     <link href="/Content/SiteLayout/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
@@ -63,6 +64,8 @@
     <!-- Şablon + kurumsal tema (tema.css şablonun üzerine yazar) -->
     <link href="/Content/SiteLayout/assets/css/style.css" rel="stylesheet">
     <link href="~/Content/SiteLayout/css/tema.css" rel="stylesheet">
+    <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
+    <script src="~/Content/tema-gecis.js"></script>
 </head>
 <body>
     <a class="kw-skip-link" href="#main">İçeriğe geç</a>
@@ -82,6 +85,7 @@
                 </h1>
             </div>
 
+            <div class="kw-header-actions">
             <nav id="navbar" class="navbar" aria-label="Ana menü">
                 <ul>
                     <li><a class="@aktifSinif("anasayfa")" aria-current="@aktifAria("anasayfa")" href="/">Ana Sayfa</a></li>
@@ -92,6 +96,11 @@
                 </ul>
                 <button type="button" class="bi bi-list mobile-nav-toggle" aria-label="Menüyü aç/kapat" aria-controls="navbar"></button>
             </nav>
+            <button type="button" class="kw-theme-toggle" data-tema-degistir aria-pressed="false" aria-label="Koyu temaya geç" title="Koyu temaya geç">
+                <i class="bi bi-moon-stars kw-icon-light" aria-hidden="true"></i>
+                <i class="bi bi-sun kw-icon-dark" aria-hidden="true"></i>
+            </button>
+            </div>
 
         </div>
     </header>
