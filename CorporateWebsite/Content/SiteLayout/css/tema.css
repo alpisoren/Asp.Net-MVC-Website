@@ -84,7 +84,7 @@
     --radius-lg: 18px;
     --radius-pill: 999px;
 
-    --header-height: 72px;
+    --header-height: 80px;
     --transition: 200ms ease;
 }
 
@@ -135,20 +135,24 @@ img { max-width: 100%; height: auto; }
 }
 #header.header-scrolled { box-shadow: var(--shadow-sm); }
 
-#header .logo h1 { font-size: 1.2rem; letter-spacing: .3px; font-family: var(--font-heading); font-weight: 600; }
+#header .logo h1 { font-size: 1.4rem; letter-spacing: .3px; font-family: var(--font-heading); font-weight: 600; margin: 0; line-height: 1; }
 #header .logo a { display: inline-flex; align-items: center; gap: var(--space-sm); color: var(--heading); }
 #header .logo img { max-height: 40px; width: auto; }
 
+.kw-header-actions .navbar { padding: 0; margin: 0; }
+.kw-header-actions .navbar ul { gap: 6px; }
 .navbar a, .navbar a:focus {
+    display: inline-flex; align-items: center;
+    min-height: 44px;                 /* dokunma hedefi */
     color: var(--muted);
-    font-size: .95rem; font-weight: 500;
-    padding: 8px 14px; margin-left: 4px;
+    font-size: 1.05rem; font-weight: 500; line-height: 1;
+    padding: 0 20px; margin: 0;
     border-radius: var(--radius-pill);
 }
 .navbar a:hover, .navbar li:hover > a { color: var(--heading); background: var(--accent-soft); }
 .navbar .active, .navbar .active:focus { color: var(--accent-soft-text); background: var(--accent-soft); }
 
-.kw-header-actions { display: flex; align-items: center; gap: var(--space-sm); }
+.kw-header-actions { display: flex; align-items: center; gap: var(--space-md); }
 
 .mobile-nav-toggle {
     color: var(--heading); font-size: 28px;
