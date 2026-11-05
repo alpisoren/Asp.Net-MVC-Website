@@ -14,13 +14,19 @@ namespace CorporateWebsite.Models.Model
         public int AdminId { get; set; }
 
         [Required, StringLength(50, ErrorMessage = "50 Karakter olmalıdır")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz")]
         public string Eposta { get; set; }
 
-        [Required, StringLength(50, ErrorMessage = "50 Karakter olmalıdır")]
+        // PBKDF2 hash'i 68 karakterdir; eski 50 sınırı yetmez.
+        [Required, StringLength(100)]
         public string Sifre { get; set; }
-        public string  Yetki { get; set; }
 
+        public string Yetki { get; set; }
 
+        // Şifre sıfırlama: token'ın kendisi değil SHA-256 özeti saklanır.
+        [StringLength(64)]
+        public string SifreSifirlamaToken { get; set; }
 
+        public DateTime? SifreSifirlamaSonTarih { get; set; }
     }
 }

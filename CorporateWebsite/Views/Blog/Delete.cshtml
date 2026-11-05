@@ -1,17 +1,14 @@
 ﻿@model CorporateWebsite.Models.Model.Blog
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Yazıyı Sil";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Blog Kaydı Sil</h2>
 
 
-<h3> @Model.BlogId numaralı kaydı silmek istedğinizden emin misiniz?</h3>
+<div class="alert alert-warning" role="alert"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> "@Model.Baslik" yazısı ve ona ait yorumlar kalıcı olarak silinecek. Emin misiniz?</div>
 <div>
-    <h4>Blog</h4>
-    <hr />
     <dl class="dl-horizontal">
         <dt>
             @Html.DisplayNameFor(model => model.BlogId)
@@ -34,7 +31,7 @@
         </dt>
 
         <dd>
-            @Html.Raw(Model.Icerik)
+            @Html.Raw(HtmlTemizleyici.Temizle(Model.Icerik))
         </dd>
 
     </dl>
@@ -43,9 +40,9 @@
     {
         @Html.AntiForgeryToken()
 
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" name="@Model.BlogId" id="@Model.BlogId" class="btn btn-default" /> |
-            @Html.ActionLink("Geri Dön", "Index")
+        <div class="kp-form-actions">
+            <button type="submit" class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i>Evet, Sil</button>
+            @Html.ActionLink("Vazgeç", "Index", null, new { @class = "btn btn-default" })
         </div>
     }
 </div>

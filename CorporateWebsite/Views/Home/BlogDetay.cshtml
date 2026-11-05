@@ -1,164 +1,93 @@
 ﻿@model CorporateWebsite.Models.Model.Blog
+@using CorporateWebsite.Helper;
 @{
-    ViewBag.Title = "BlogDetay";
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    ViewBag.Title = Model.Baslik;
+    ViewBag.SayfaBasligi = Model.Baslik;
+    ViewBag.KonumAd = "Yazı";
+    ViewBag.UstSayfaAd = "Blog";
+    ViewBag.UstSayfaUrl = "/BlogPost";
+    var yorumlar = Model.Yorumlar.Where(y => y.Onayli).OrderByDescending(x => x.YorumId).ToList();
 }
 
-@using CorporateWebsite.Helper;
-
-<section class="breadcrumbs">
+<section class="kw-section">
     <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-8">
+                <article>
+                    @if (Model.Kategori != null)
+                    {
+                        <div class="kw-article-meta">
+                            <a class="kw-badge" href="@SeoHelper.KategoriUrl(Model.Kategori.KategoriAd, Model.Kategori.KategoriId)"><i class="bi bi-folder2" aria-hidden="true"></i> @Model.Kategori.KategoriAd</a>
+                        </div>
+                    }
 
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Blog</h2>
-        </div>
+                    @if (!string.IsNullOrEmpty(Model.ResimURL))
+                    {
+                        <figure class="kw-article-cover">
+                            <img src="@Model.ResimURL" alt="" width="1200" height="675">
+                        </figure>
+                    }
 
-    </div>
-</section><!-- End Contact Section -->
-<section id="blog" class="blog">
-    <div class="container" data-aos="fade-up">
-
-        <div class="row">
-
-            <div class="col-lg-8 entries">
-
-
-
-                <article class="entry">
-
-                    <div class="entry-img">
-                        <img src="@Model.ResimURL" alt="@Model.Baslik" class="img-fluid">
+                    <div class="kw-prose">
+                        @Html.Raw(HtmlTemizleyici.Temizle(Model.Icerik))
                     </div>
+                </article>
 
-                    <h2 class="entry-title">
-                        <a href="/BlogPost/@SeoHelper.ToSeoUrl(Model.Baslik).ToLower()-@Model.BlogId">@Model.Baslik</a>
-                    </h2>
+                <section class="kw-comments" aria-labelledby="yorumlar-baslik">
+                    <h2 id="yorumlar-baslik">Yorumlar (@yorumlar.Count)</h2>
 
-                    <div class="entry-meta">
-                        <ul>
-                            <li class="d-flex align-items-center"><i class="bi bi-person"></i> <a href="#">@Model.Kategori.KategoriAd</a></li>
+                    @if (yorumlar.Count == 0)
+                    {
+                        <p class="kw-form-note">Henüz yorum yok. İlk yorumu siz yazın.</p>
+                    }
+                    else
+                    {
+                        foreach (var y in yorumlar)
+                        {
+                            <div class="kw-comment">
+                                <span class="kw-avatar" aria-hidden="true">@(string.IsNullOrEmpty(y.AdSoyad) ? "?" : y.AdSoyad.Substring(0, 1).ToUpper())</span>
+                                <div>
+                                    <p class="kw-comment-name">@y.AdSoyad</p>
+                                    <p class="kw-comment-text">@y.Icerik</p>
+                                </div>
+                            </div>
+                        }
+                    }
 
-                        </ul>
-                    </div>
-
-                    <div class="entry-content">
-                        <p>
-                            @Html.Raw(Model.Icerik);
-                        </p>
-
-                    </div>
-
-                </article><!-- End blog entry -->
-
-                <div class="row">
-                    <div class="col-md-8">
-                        <h3>Yorum Yap</h3>
-                        <form action="/Home/BlogDetay/@Model.BlogId">
-                            <div>
-                                <input type="text" name="adsoyad" id="adsoyad" placeholder="Adınız Soyadınız" class="form-control" required />
-                                <br />
-                                <input type="email" name="eposta" id="eposta" placeholder="Mail Adresiniz" class="form-control" required />
-                                <br />
-                                <textarea typeof="text" name="icerik" id="icerik" class="form-control">    </textarea>
-                                <br />
-                                <button type="submit" class="btn btn-success" id="gonder" value="Yorum Yap">Yorum Yap</button>
-
+                    <div class="kw-sidebar-box mt-4">
+                        <h2 class="h5" id="yorum-yap-baslik">Yorum yazın</h2>
+                        <p class="kw-form-note">E-posta adresiniz yayınlanmaz. Yorumlar onaylandıktan sonra görünür.</p>
+                        <form id="yorumFormu" class="kw-form" action="/Home/YorumYap" method="post" aria-labelledby="yorum-yap-baslik">
+                            <input type="hidden" name="blogId" value="@Model.BlogId" />
+                            @Html.AntiForgeryToken()
+                            <div class="visually-hidden" aria-hidden="true"><label for="website">Bu alanı boş bırakın</label><input type="text" name="website" id="website" tabindex="-1" autocomplete="off" /></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="adsoyad">Adınız Soyadınız <span class="kw-required" aria-hidden="true">*</span></label>
+                                    <input type="text" name="adsoyad" id="adsoyad" class="form-control" required maxlength="50" autocomplete="name" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="eposta">E-posta <span class="kw-required" aria-hidden="true">*</span></label>
+                                    <input type="email" name="eposta" id="eposta" class="form-control" required maxlength="100" autocomplete="email" />
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="icerik">Yorumunuz <span class="kw-required" aria-hidden="true">*</span></label>
+                                    <textarea name="icerik" id="icerik" class="form-control" required maxlength="2000" rows="5"></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <div id="yorumDurum" class="kw-alert mb-3" role="status" aria-live="polite"></div>
+                                    <button type="submit" class="kw-btn kw-btn-primary">Yorumu Gönder</button>
+                                </div>
                             </div>
                         </form>
                     </div>
-
-                </div>
-
-                <div class="row">
-                    <div>
-                        <h3>Yorumlar</h3>
-                        <hr />
-                        @foreach (var item in Model.Yorums.OrderByDescending(x => x.YorumId).Where(y => y.Onayli == true))
-                        {
-                            <p>@item.AdSoyad - @item.Eposta</p>
-                            <p>@item.Icerik</p>
-                            <hr />
-                        }
-
-                    </div>
-
-                </div>
-
-
-            </div><!-- End blog entries list -->
+                </section>
+            </div>
 
             <div class="col-lg-4">
-
-                <div class="sidebar">
-                    <div class="widget">
-
-                        @{
-                            Html.RenderAction("BlogKategoriPartial", "Home");
-                        }
-                    </div>
-
-                    <div class="widget">
-
-                        @{
-                            Html.RenderAction("BlogSonKayitPartial", "Home");
-                        }
-                    </div>
-
-
-
-
-
-                    <h3 class="sidebar-title">Tags</h3>
-                    <div class="sidebar-item tags">
-                        <ul>
-                            <li><a href="#">App</a></li>
-                            <li><a href="#">IT</a></li>
-                            <li><a href="#">Business</a></li>
-                            <li><a href="#">Mac</a></li>
-                            <li><a href="#">Design</a></li>
-                            <li><a href="#">Office</a></li>
-                            <li><a href="#">Creative</a></li>
-                            <li><a href="#">Studio</a></li>
-                            <li><a href="#">Smart</a></li>
-                            <li><a href="#">Tips</a></li>
-                            <li><a href="#">Marketing</a></li>
-                        </ul>
-                    </div><!-- End sidebar tags-->
-
-                </div><!-- End sidebar -->
-
-            </div><!-- End blog sidebar -->
-
+                @Html.Partial("_BlogKenarCubugu")
+            </div>
         </div>
-
     </div>
 </section>
-<script src="~/Content/SiteLayout/js/jquery.js"></script>
-<script type="text/javascript">
-
-
-    $(document).ready(function () {
-        $("#gonder").click(function () {
-            var adisoyadi = $("#adsoyad").val();
-            var epostasi = $("#eposta").val();
-            var yorum = $("#icerik").val();
-            $.ajax({
-                url: '/Home/YorumYap/',
-                data: {
-                    adsoyad: adisoyadi,
-                    eposta: epostasi,
-                    icerik: yorum,
-                    blogId: @Model.BlogId
-                },
-                type: 'POST',
-                dataType: 'json',
-                success: function (data) {
-                    alert(adisoyadi + " Yorumunuz kontrol edildikten sonra yayınlanacaktır.");
-                }
-            });
-
-        });
-    });
-</script>
-
-

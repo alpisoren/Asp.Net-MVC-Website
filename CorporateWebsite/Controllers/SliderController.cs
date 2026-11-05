@@ -11,8 +11,12 @@ using System.Web.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize(SadeceAdmin = true)]
     public class SliderController : Controller
     {
         private KurumsalDBContext db = new KurumsalDBContext();
@@ -55,14 +59,14 @@ namespace CorporateWebsite.Controllers
             {
                 if (ResimURL != null)
                 {
-
-                    WebImage img = new WebImage(ResimURL.InputStream);
-                    FileInfo imginfo = new FileInfo(ResimURL.FileName);
-
-                    string sliderName = Guid.NewGuid().ToString() + imginfo.Extension;
-                    img.Resize(1024, 360);
-                    img.Save("~/Uploads/Slider/" + sliderName);
-                    slider.ResimURL = "/Uploads/Slider/" + sliderName;
+                    string hata;
+                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1024, 360, out hata);
+                    if (url == null)
+                    {
+                        ModelState.AddModelError("", hata);
+                        return View(slider);
+                    }
+                    slider.ResimURL = url;
                 }
           
                 db.Slider.Add(slider);
@@ -98,25 +102,25 @@ namespace CorporateWebsite.Controllers
             if (ModelState.IsValid)
             {
                 var s = db.Slider.Where(x => x.SliderId == id).SingleOrDefault();
+                if (s == null)
+                {
+                    return HttpNotFound();
+                }
 
                 if (ResimURL != null)
                 {
-
-                    if (System.IO.File.Exists(Server.MapPath(s.ResimURL)))
+                    string hata;
+                    var url = ResimHelper.Kaydet(ResimURL, "Slider", 1024, 360, out hata);
+                    if (url == null)
                     {
-                        System.IO.File.Delete(Server.MapPath(s.ResimURL));
+                        ModelState.AddModelError("", hata);
+                        slider.ResimURL = s.ResimURL;
+                        return View(slider);
                     }
-                    WebImage img = new WebImage(ResimURL.InputStream);
-                    FileInfo imginfo = new FileInfo(ResimURL.FileName);
-
-                    string sliderName = Guid.NewGuid().ToString() + imginfo.Extension;
-                    img.Resize(1024, 360);
-                    img.Save("~/Uploads/Slider/" + sliderName);
-                    s.ResimURL = "/Uploads/Slider/" + sliderName;
-
+                    ResimHelper.Sil(Server, s.ResimURL);
+                    s.ResimURL = url;
                 }
 
-                // db.Entry(slider).State = EntityState.Modified;
                 s.Baslik = slider.Baslik;
                 s.Aciklama = slider.Aciklama;
                 db.SaveChanges();
@@ -146,10 +150,11 @@ namespace CorporateWebsite.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             Slider slider = db.Slider.Find(id);
-            if (System.IO.File.Exists(Server.MapPath(slider.ResimURL)))
+            if (slider == null)
             {
-                System.IO.File.Delete(Server.MapPath(slider.ResimURL));
+                return HttpNotFound();
             }
+            ResimHelper.Sil(Server, slider.ResimURL);
             db.Slider.Remove(slider);
             db.SaveChanges();
             return RedirectToAction("Index");

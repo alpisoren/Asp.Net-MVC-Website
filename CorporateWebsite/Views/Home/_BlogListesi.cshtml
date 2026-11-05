@@ -1,0 +1,50 @@
+﻿@using PagedList;
+@using PagedList.Mvc;
+@model IPagedList<CorporateWebsite.Models.Model.Blog>
+@{
+    // Sayfa adresi üreticisi view'dan gelir (blog ana listesi ya da kategori listesi)
+    var sayfaUrl = (Func<int, string>)ViewData["SayfaUrl"];
+    var secenekler = new PagedListRenderOptions
+    {
+        Display = PagedListDisplayMode.IfNeeded,
+        DisplayLinkToFirstPage = PagedListDisplayMode.Never,
+        DisplayLinkToLastPage = PagedListDisplayMode.Never,
+        DisplayLinkToPreviousPage = PagedListDisplayMode.IfNeeded,
+        DisplayLinkToNextPage = PagedListDisplayMode.IfNeeded,
+        LinkToPreviousPageFormat = "‹ Önceki",
+        LinkToNextPageFormat = "Sonraki ›",
+        MaximumPageNumbersToDisplay = 5
+    };
+}
+<section class="kw-section">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-8">
+                @if (Model.Count == 0)
+                {
+                    <div class="kw-empty">
+                        <i class="bi bi-journal-text" aria-hidden="true"></i>
+                        Bu bölümde henüz yazı yok.
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        @foreach (var item in Model)
+                        {
+                            <div class="col-md-6">
+                                @Html.Partial("_BlogKarti", item)
+                            </div>
+                        }
+                    </div>
+                    <nav class="kw-pagination" aria-label="Sayfalar">
+                        @Html.PagedListPager(Model, p => sayfaUrl(p), secenekler)
+                    </nav>
+                }
+            </div>
+            <div class="col-lg-4">
+                @Html.Partial("_BlogKenarCubugu")
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,128 +1,106 @@
-﻿using CorporateWebsite.Models.DataContext;
-using CorporateWebsite.Models.Model;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.IO;
-using System.Linq;
+﻿using CorporateWebsite.Filters;
+using CorporateWebsite.Models.DataContext;
+using CorporateWebsite.Models.ViewModel;
+using CorporateWebsite.Services;
 using System.Web;
-using System.Web.Helpers;
 using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize]
     public class HizmetController : Controller
     {
-        // GET: Hizmet
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private HizmetServisi servis;
 
-        private KurumsalDBContext db = new KurumsalDBContext();
+        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            servis = new HizmetServisi(db, Server);
+        }
+
         public ActionResult Index()
         {
-            return View(db.Hizmet.ToList());
+            return View(servis.Listele());
         }
 
         public ActionResult Create()
         {
-
-            return View();
+            return View(new HizmetFormModeli());
         }
 
         [HttpPost]
-        [ValidateInput(false)]
-        public ActionResult Create(Hizmet hizmet,HttpPostedFileBase ResimUrl)
+        [ValidateAntiForgeryToken]
+        public ActionResult Create(HizmetFormModeli model, HttpPostedFileBase ResimUrl)
         {
             if (ModelState.IsValid)
             {
-
-                if (ResimUrl != null)
+                var sonuc = servis.Olustur(model, ResimUrl);
+                if (sonuc.Basarili)
                 {
-                   
-                    WebImage img = new WebImage(ResimUrl.InputStream);
-                    FileInfo imginfo = new FileInfo(ResimUrl.FileName);
-
-                    string logoname = Guid.NewGuid().ToString() + imginfo.Extension;
-                    img.Resize(500, 500);
-                    img.Save("~/Uploads/Hizmet/" + logoname);
-                    hizmet.ResimUrl = "/Uploads/Hizmet/" + logoname;
+                    return RedirectToAction("Index");
                 }
-                db.Hizmet.Add(hizmet);
-                db.SaveChanges();
-                return RedirectToAction("Index");
-
+                sonuc.ModelStateAktar(ModelState);
             }
-
-            return View(hizmet);
+            return View(model);
         }
-
 
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                ViewBag.Uyari = "Güncellenecek Veri bulunamadı.";
-            }
-            var hizmet = db.Hizmet.Find(id);
-            if (hizmet == null)
+            var model = id.HasValue ? servis.FormModeliGetir(id.Value) : null;
+            if (model == null)
             {
                 return HttpNotFound();
             }
-            return View(hizmet);
+            return View(model);
         }
-        [HttpPost]
-        [ValidateInput(false)]
-        public ActionResult Edit(int? id,Hizmet hizmet,HttpPostedFileBase ResimUrl)
-        {
 
-          
-            //var h = db.Hizmet.Find(id);
-            
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, HizmetFormModeli model, HttpPostedFileBase ResimUrl)
+        {
             if (ModelState.IsValid)
             {
-                var h = db.Hizmet.Where(x=>x.HizmetId==id).SingleOrDefault();
-
-                if (ResimUrl != null)
+                var sonuc = servis.Guncelle(id, model, ResimUrl);
+                if (sonuc == null)
                 {
-                    
-                        if (System.IO.File.Exists(Server.MapPath(h.ResimUrl)))
-                        {
-                            System.IO.File.Delete(Server.MapPath(h.ResimUrl));
-                        }
-                        WebImage img = new WebImage(ResimUrl.InputStream);
-                        FileInfo imginfo = new FileInfo(ResimUrl.FileName);
-
-                        string hizmetName = Guid.NewGuid().ToString() + imginfo.Extension;
-                        img.Resize(300, 300);
-                        img.Save("~/Uploads/Hizmet/" + hizmetName);
-                        h.ResimUrl = "/Uploads/Hizmet/" + hizmetName;
-                    
+                    return HttpNotFound();
                 }
-                h.Baslik = hizmet.Baslik;
-                h.Aciklama = hizmet.Aciklama;
-               // db.Entry(hizmet).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                if (sonuc.Basarili)
+                {
+                    return RedirectToAction("Index");
+                }
+                sonuc.ModelStateAktar(ModelState);
             }
 
-            return null;
-            
+            var mevcut = servis.FormModeliGetir(id);
+            if (mevcut == null)
+            {
+                return HttpNotFound();
+            }
+            model.HizmetId = id;
+            model.ResimUrl = mevcut.ResimUrl;
+            return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-
-            if (id==null)
+            if (!servis.Sil(id))
             {
                 return HttpNotFound();
             }
-            var h = db.Hizmet.Find(id);
-            if (h==null)
-            {
-                return HttpNotFound();
-            }
-            db.Hizmet.Remove(h);
-            db.SaveChanges();
-
             return RedirectToAction("Index");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

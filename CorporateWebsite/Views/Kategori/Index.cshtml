@@ -1,40 +1,39 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Kategori>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Kategoriler";
+    ViewBag.YeniEkleUrl = "/Kategori/Create";
+    ViewBag.YeniEkleMetni = "Yeni Kategori";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Kategoriler</h2>
-
-<p>
-    @Html.ActionLink("Yeni Oluştur", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.KategoriAd)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Aciklama)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.KategoriAd)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Aciklama)
-        </td>
-        <td>
-            @Html.ActionLink("Düzenle", "Edit", new { id=item.KategoriId }) |
-            @Html.ActionLink("Detaylar", "Details", new { id=item.KategoriId }) |
-            @Html.ActionLink("Sil", "Delete", new { id=item.KategoriId })
-        </td>
-    </tr>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-folder-o" aria-hidden="true"></i><p>Henüz kategori yok.</p><a class="btn btn-primary" href="/Kategori/Create">İlk kategoriyi ekleyin</a></div>
 }
-
-</table>
+else
+{
+    <div class="table-responsive">
+        <table class="table kp-table">
+            <thead>
+                <tr>
+                    <th scope="col">Kategori</th>
+                    <th scope="col">Açıklama</th>
+                    <th scope="col"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><strong>@item.KategoriAd</strong></td>
+                        <td><span class="kp-clamp">@(string.IsNullOrEmpty(item.Aciklama) ? "—" : item.Aciklama)</span></td>
+                        <td>
+                            <a class="kp-row-action" href="/Kategori/Edit/@item.KategoriId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
+                            <a class="kp-row-action kp-row-action-danger" href="/Kategori/Delete/@item.KategoriId"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

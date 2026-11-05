@@ -1,405 +1,176 @@
-﻿@{ 
+﻿@{
+    // Yetki kontrolü AdminAuthorize filtresinde yapılır; bu yalnızca ek güvenlik ağı.
     if (Session["adminid"] == null)
     {
         Response.Redirect("/yonetimpaneli/giris/");
     }
-    string ControllerAdi = ViewContext.RouteData.GetRequiredString("controller");
 
+    string controller = ViewContext.RouteData.GetRequiredString("controller");
+    string action = ViewContext.RouteData.GetRequiredString("action");
+    bool adminMi = (Session["yetki"] as string) == "Admin";
+    string eposta = Session["eposta"] as string ?? "";
+    string basHarf = eposta.Length > 0 ? eposta.Substring(0, 1).ToUpperInvariant() : "?";
+
+    // Menüde aktif öğe
+    string aktif;
+    if (controller == "Admin") { aktif = action == "Index" ? "ozet" : "adminler"; }
+    else { aktif = controller.ToLowerInvariant(); }
+    Func<string, string> aktifSinif = k => k == aktif ? "active" : null;
+    Func<string, string> aktifAria = k => k == aktif ? "page" : null;
+
+    // Konum yolu için bölüm adları
+    var bolumler = new Dictionary<string, string[]>
+    {
+        { "blog", new[] { "Blog Yazıları", "/Blog/Index" } },
+        { "kategori", new[] { "Kategoriler", "/Kategori/Index" } },
+        { "yorum", new[] { "Yorumlar", "/Yorum/Index" } },
+        { "hizmet", new[] { "Hizmetler", "/Hizmet/Index" } },
+        { "slider", new[] { "Slider", "/Slider/Index" } },
+        { "kimlik", new[] { "Site Kimliği", "/Kimlik/Index" } },
+        { "hakkimizda", new[] { "Hakkımızda", "/Hakkimizda/Index" } },
+        { "iletisim", new[] { "İletişim Bilgileri", "/Iletisim/Index" } },
+        { "adminler", new[] { "Yöneticiler", "/Admin/Adminler" } }
+    };
+    string[] bolum = bolumler.ContainsKey(aktif) ? bolumler[aktif] : null;
+    bool listeSayfasi = action == "Index" || action == "Adminler";
+    string baslik = ViewBag.Title as string ?? "Yönetim Paneli";
+    bool kartsiz = ViewBag.KartsizIcerik == true;
 }
-
-
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - Kurumsal Web Admin</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>@baslik - Yönetim Paneli</title>
 
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Creative - Bootstrap 3 Responsive Admin Template">
-    <meta name="author" content="GeeksLabs">
-    <meta name="keyword" content="Creative, Dashboard, Admin, Template, Theme, Bootstrap, Responsive, Retina, Minimal">
-    <link rel="shortcut icon" href="img/favicon.png">
-
-
-    <!-- Bootstrap CSS -->
-    <link href="~/Content/AdminLayout/css/bootstrap.min.css" rel="stylesheet">
-    <!-- bootstrap theme -->
-    <link href="~/Content/AdminLayout/css/bootstrap-theme.css" rel="stylesheet">
-    <!--external css-->
-    <!-- font icon -->
-    <link href="~/Content/AdminLayout/css/elegant-icons-style.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="~/Content/AdminLayout/vendor/bootstrap-3.4.1/bootstrap.min.css" rel="stylesheet">
     <link href="~/Content/AdminLayout/css/font-awesome.min.css" rel="stylesheet" />
-    <!-- full calendar css-->
-    <link href="~/Content/AdminLayout/assets/fullcalendar/fullcalendar/bootstrap-fullcalendar.css" rel="stylesheet" />
-    <link href="~/Content/AdminLayout/assets/fullcalendar/fullcalendar/fullcalendar.css" rel="stylesheet" />
-    <!-- easy pie chart-->
-    <link href="~/Content/AdminLayout/assets/jquery-easy-pie-chart/jquery.easy-pie-chart.css" rel="stylesheet" type="text/css" media="screen" />
-    <!-- owl carousel -->
-    <link rel="stylesheet" href="~/Content/AdminLayout/css/owl.carousel.css" type="text/css">
-    <link href="~/Content/AdminLayout/css/jquery-jvectormap-1.2.2.css" rel="stylesheet">
-    <!-- Custom styles -->
-    <link rel="stylesheet" href="~/Content/AdminLayout/css/fullcalendar.css">
-    <link href="~/Content/AdminLayout/css/widgets.css" rel="stylesheet">
-    <link href="~/Content/AdminLayout/css/style.css" rel="stylesheet">
-    <link href="~/Content/AdminLayout/css/style-responsive.css" rel="stylesheet" />
-    <link href="~/Content/AdminLayout/css/xcharts.min.css" rel=" stylesheet">
-    <link href="~/Content/AdminLayout/css/jquery-ui-1.10.4.min.css" rel="stylesheet">
-    <!
-                                     -- =======================================================
-      Theme Name: NiceAdmin
-      Theme URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
-      Author: BootstrapMade
-      Author URL: https://bootstrapmade.com
-    ======================================================= -->
+    <link href="~/Content/AdminLayout/vendor/datatables-1.13.11/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/Content/AdminLayout/css/panel.css" rel="stylesheet" />
+
     <script src="~/Content/ckeditor/ckeditor.js"></script>
-    <link href="~/Content/ckeditor/contents.css" rel="stylesheet" />
-
-
-    <script src="~/Content/AdminLayout/js/jquery.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery-1.8.3.min.js"></script>
-    @*<script src="~/Scripts/jquery-3.3.1.js"></script>*@
-    <script src="~/Scripts/DataTables/jquery.dataTables.js"></script>
-    <link href="~/Content/DataTables/css/jquery.dataTables.css" rel="stylesheet" />
-
-
-
-
 </head>
+<body class="kp-body">
+    <a class="kp-skip-link" href="#main">İçeriğe geç</a>
 
-<body>
-    <!-- container section start -->
-    <section id="container" class="">
+    <aside class="kp-sidebar" id="kpSidebar" aria-label="Yönetim menüsü">
+        <a class="kp-brand" href="/yonetimpaneli">
+            <span class="kp-brand-mark" aria-hidden="true"><i class="fa fa-building"></i></span>
+            Kurumsal Panel
+        </a>
 
+        <ul class="kp-nav">
+            <li><a class="@aktifSinif("ozet")" aria-current="@aktifAria("ozet")" href="/yonetimpaneli"><i class="fa fa-th-large" aria-hidden="true"></i> Özet</a></li>
 
-        <header class="header dark-bg">
-            <div class="toggle-nav">
-                <div class="icon-reorder tooltips" data-original-title="Toggle Navigation" data-placement="bottom"><i class="icon_menu"></i></div>
-            </div>
+            <li class="kp-nav-group" role="presentation">İçerik</li>
+            <li><a class="@aktifSinif("hizmet")" aria-current="@aktifAria("hizmet")" href="/Hizmet/Index"><i class="fa fa-briefcase" aria-hidden="true"></i> Hizmetler</a></li>
+            <li><a class="@aktifSinif("blog")" aria-current="@aktifAria("blog")" href="/Blog/Index"><i class="fa fa-file-text-o" aria-hidden="true"></i> Blog Yazıları</a></li>
+            <li><a class="@aktifSinif("kategori")" aria-current="@aktifAria("kategori")" href="/Kategori/Index"><i class="fa fa-folder-o" aria-hidden="true"></i> Kategoriler</a></li>
+            <li>
+                <a class="@aktifSinif("yorum")" aria-current="@aktifAria("yorum")" href="/Yorum/Index">
+                    <i class="fa fa-comments-o" aria-hidden="true"></i> Yorumlar
+                    <span class="kp-badge" title="Onay bekleyen yorumlar">@Html.Action("BekleyenYorumSayisi", "Admin")</span>
+                </a>
+            </li>
 
-            <!--logo start-->
-            <!--TODO:KurumsaWeb Değiştirmek için-->
-            <a href="/Admin/Index/" class="logo">KurumsalWeb <span class="lite">Admin</span></a>
-            <!--logo end-->
+            @if (adminMi)
+            {
+                <li class="kp-nav-group" role="presentation">Site Ayarları</li>
+                <li><a class="@aktifSinif("kimlik")" aria-current="@aktifAria("kimlik")" href="/Kimlik/Index"><i class="fa fa-id-card-o" aria-hidden="true"></i> Site Kimliği</a></li>
+                <li><a class="@aktifSinif("hakkimizda")" aria-current="@aktifAria("hakkimizda")" href="/Hakkimizda/Index"><i class="fa fa-info-circle" aria-hidden="true"></i> Hakkımızda</a></li>
+                <li><a class="@aktifSinif("slider")" aria-current="@aktifAria("slider")" href="/Slider/Index"><i class="fa fa-picture-o" aria-hidden="true"></i> Slider</a></li>
+                <li><a class="@aktifSinif("iletisim")" aria-current="@aktifAria("iletisim")" href="/Iletisim/Index"><i class="fa fa-address-book-o" aria-hidden="true"></i> İletişim Bilgileri</a></li>
+                <li><a class="@aktifSinif("adminler")" aria-current="@aktifAria("adminler")" href="/Admin/Adminler"><i class="fa fa-users" aria-hidden="true"></i> Yöneticiler</a></li>
+            }
+        </ul>
 
-            <div class="nav search-row" id="top_menu">
-                <!--  search form start -->
-                <ul class="nav top-menu">
+        <div class="kp-sidebar-footer">
+            <ul class="kp-nav" style="padding:0">
+                <li><a href="/" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i> Siteyi Görüntüle</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <div class="kp-main">
+        <header class="kp-topbar">
+            <button type="button" class="kp-icon-btn kp-menu-toggle" id="kpMenuToggle" aria-controls="kpSidebar" aria-expanded="false" aria-label="Menüyü aç">
+                <i class="fa fa-bars" aria-hidden="true"></i>
+            </button>
+            <div class="kp-topbar-spacer"></div>
+
+            <a class="kp-icon-btn" href="/Yorum/Index" aria-label="Onay bekleyen yorumlar" title="Onay bekleyen yorumlar">
+                <i class="fa fa-bell-o" aria-hidden="true"></i>
+                <span class="kp-badge">@Html.Action("BekleyenYorumSayisi", "Admin")</span>
+            </a>
+
+            <div class="dropdown">
+                <button type="button" class="kp-user dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="kp-avatar" aria-hidden="true">@basHarf</span>
+                    <span class="kp-user-meta">
+                        <span>@eposta</span>
+                        <small>@(adminMi ? "Admin" : "Editör")</small>
+                    </span>
+                    <i class="fa fa-angle-down" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    @if (adminMi)
+                    {
+                        <li><a href="/Admin/Adminler"><i class="fa fa-users" aria-hidden="true"></i> Yöneticiler</a></li>
+                    }
                     <li>
-                        <form class="navbar-form">
-                            <input class="form-control" placeholder="Search" type="text">
-                        </form>
+                        @using (Html.BeginForm("Logout", "Admin", FormMethod.Post, new { @class = "cikis-formu" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="kp-dropdown-btn"><i class="fa fa-sign-out" aria-hidden="true"></i> Çıkış Yap</button>
+                        }
                     </li>
                 </ul>
-                <!--  search form end -->
-            </div>
-
-            <div class="top-nav notification-row">
-                <!-- notificatoin dropdown start-->
-                <ul class="nav pull-right top-menu">
-
-                 
-                    <!-- alert notification start-->
-                    <li id="alert_notificatoin_bar" class="dropdown">
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-
-                            <i class="icon-bell-l"></i>
-                            <span class="badge bg-important">@ViewBag.YorumOnay </span>
-                        </a>
-                        <ul class="dropdown-menu extended notification">
-                            <div class="notify-arrow notify-arrow-blue"></div>
-                            <li>
-                                <p class="blue">Bekleyen @ViewBag.YorumOnay adet yorum bulunmaktadır.</p>
-                            </li>
-                            @*<li>
-                                <a href="#">
-                                    <span class="label label-primary"><i class="icon_profile"></i></span>
-                                    Yorumları Onayla
-                                    <span class="small italic pull-right">Yorum Onay</span>
-                                </a>
-                            </li>*@
-                        
-                            <li>
-                                <a href="/Yorum/Index/">Yorumları Onayla</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <!-- alert notification end-->
-                    <!-- user login dropdown start-->
-                    <li class="dropdown">
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                            <span class="profile-ava">
-                                <img alt="" src="/Content/AdminLayout/avatar1_small.jpg">
-                            </span>
-                            <span class="username">@Session["eposta"]</span>
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu extended logout">
-                            <div class="log-arrow-up"></div>
-                            @{
-                                if (Session["yetki"].ToString()=="Admin")
-                                {
-                                    /*  */
-                                    <li>
-                                        <a href="/Admin/Adminler/"><i class="icon_key_alt"></i>Adminler</a>
-                                    </li>
-                                }
-
-                            }
-
-                            <li>
-                                <a href="/Admin/Logout/"><i class="icon_key_alt"></i>Çıkış Yap</a>
-                            </li>
-
-                        </ul>
-                    </li>
-                    <!-- user login dropdown end -->
-                </ul>
-                <!-- notificatoin dropdown end-->
             </div>
         </header>
-        <!--header end-->
-        <!--sidebar start-->
-        <aside>
-            <div id="sidebar" class="nav-collapse ">
-                <!-- sidebar menu start-->
-                <ul class="sidebar-menu">
-                    <li class="active">
-                        <a class="" href="/yonetimpaneli">
-                            <i class="icon_house_alt"></i>
-                            <span>Admin Özet</span>
-                        </a>
-                    </li>
-                    @{
-                        if (Session["yetki"].ToString() == "Admin")
+
+        <main class="kp-content" id="main" tabindex="-1">
+            <div class="kp-page-head">
+                <div>
+                    <ol class="kp-crumbs" aria-label="Konum">
+                        <li><a href="/yonetimpaneli">Panel</a></li>
+                        @if (bolum != null && !listeSayfasi)
                         {
-                            /*  */
-                            <li>
-                                <a class="" href="/Kimlik/Index">
-                                    <i class="icon_genius"></i>
-                                    <span>Site Kimlik</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="" href="/Hakkimizda/Index">
-                                    <i class="icon_genius"></i>
-                                    <span>Hakkımızda</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="" href="/Slider/Index">
-                                    <i class="icon_genius"></i>
-                                    <span>Slider</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="" href="/Iletisim/Index">
-                                    <i class="icon_genius"></i>
-                                    <span>İletişim</span>
-                                </a>
-                            </li>
-
+                            <li><a href="@bolum[1]">@bolum[0]</a></li>
                         }
-
-                    }
-
-
-                    <li>
-                        <a class="" href="/Hizmet/Index">
-                            <i class="icon_genius"></i>
-                            <span>Hizmetler</span>
-                        </a>
-                    </li>
-                    <li class="sub-menu">
-                        <a href="javascript:;" class="">
-                            <i class="icon_document_alt"></i>
-                            <span>Blog</span>
-                            <span class="menu-arrow arrow_carrot-right"></span>
-                        </a>
-                        <ul class="sub">
-                            <li><a class="" href="/Kategori/Index">Kategoriler</a></li>
-                            <li><a class="" href="/Blog/Index">Blog Kayıtları</a></li>
-                            <li><a class="" href="/Blog/Index">Blog Yorumları</a></li>
-
-                        </ul>
-                    </li>
-                    @*<li class="sub-menu">
-            <a href="javascript:;" class="">
-                <i class="icon_document_alt"></i>
-                <span>Forms</span>
-                <span class="menu-arrow arrow_carrot-right"></span>
-            </a>
-            <ul class="sub">
-                <li><a class="" href="form_component.html">Form Elements</a></li>
-                <li><a class="" href="form_validation.html">Form Validation</a></li>
-            </ul>
-        </li>
-        <li class="sub-menu">
-            <a href="javascript:;" class="">
-                <i class="icon_desktop"></i>
-                <span>UI Fitures</span>
-                <span class="menu-arrow arrow_carrot-right"></span>
-            </a>
-            <ul class="sub">
-                <li><a class="" href="general.html">Elements</a></li>
-                <li><a class="" href="buttons.html">Buttons</a></li>
-                <li><a class="" href="grids.html">Grids</a></li>
-            </ul>
-        </li>
-        <li>
-            <a class="" href="widgets.html">
-                <i class="icon_genius"></i>
-                <span>Widgets</span>
-            </a>
-        </li>
-        <li>
-            <a class="" href="chart-chartjs.html">
-                <i class="icon_piechart"></i>
-                <span>Charts</span>
-
-            </a>
-
-        </li>
-
-        <li class="sub-menu">
-            <a href="javascript:;" class="">
-                <i class="icon_table"></i>
-                <span>Tables</span>
-                <span class="menu-arrow arrow_carrot-right"></span>
-            </a>
-            <ul class="sub">
-                <li><a class="" href="basic_table.html">Basic Table</a></li>
-            </ul>
-        </li>
-
-        <li class="sub-menu">
-            <a href="javascript:;" class="">
-                <i class="icon_documents_alt"></i>
-                <span>Pages</span>
-                <span class="menu-arrow arrow_carrot-right"></span>
-            </a>
-            <ul class="sub">
-                <li><a class="" href="profile.html">Profile</a></li>
-                <li><a class="" href="login.html"><span>Login Page</span></a></li>
-                <li><a class="" href="contact.html"><span>Contact Page</span></a></li>
-                <li><a class="" href="blank.html">Blank Page</a></li>
-                <li><a class="" href="404.html">404 Error</a></li>
-            </ul>
-        </li>*@
-
-                </ul>
-                <!-- sidebar menu end-->
-            </div>
-        </aside>
-        <!--sidebar end-->
-        <!--main content start-->
-        <section id="main-content">
-            <section class="wrapper">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h3 class="page-header"><i class="fa fa-laptop"></i> Admin Paneli</h3>
-                        <ol class="breadcrumb">
-                            <li><i class="fa fa-home"></i><a href="#">@ControllerAdi</a></li>
-                            @*<li><i class="fa fa-laptop"></i>Dashboard</li>*@
-                        </ol>
-                    </div>
+                    </ol>
+                    <h1>@baslik</h1>
                 </div>
+                @if (ViewBag.YeniEkleUrl != null)
+                {
+                    <a class="btn btn-primary" href="@ViewBag.YeniEkleUrl"><i class="fa fa-plus" aria-hidden="true"></i>@(ViewBag.YeniEkleMetni ?? "Yeni Ekle")</a>
+                }
+            </div>
 
+            @if (TempData["Basari"] != null)
+            {
+                <div class="alert alert-success" role="status">@TempData["Basari"]</div>
+            }
+
+            @if (kartsiz)
+            {
                 @RenderBody()
-            </section>
-        </section>
-        <!--main content end-->
-    </section>
-    <!-- container section start -->
-    <!-- javascripts -->
-    @*<script src="~/Content/AdminLayout/js/jquery.js"></script>*@
-    @*<script src="~/Content/AdminLayout/js/jquery-1.8.3.min.js"></script>*@
-    <script src="~/Content/AdminLayout/js/jquery-ui-1.10.4.min.js"></script>
-    <script type="text/javascript" src="~/Content/AdminLayout/js/jquery-ui-1.9.2.custom.min.js"></script>
-    <!-- bootstrap -->
-    <script src="~/Content/AdminLayout/js/bootstrap.min.js"></script>
-    <!-- nice scroll -->
-    <script src="~/Content/AdminLayout/js/jquery.scrollTo.min.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.nicescroll.js" type="text/javascript"></script>
-    <!-- charts scripts -->
-    <script src="~/Content/AdminLayout/assets/jquery-knob/js/jquery.knob.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.sparkline.js" type="text/javascript"></script>
-    <script src="~/Content/AdminLayout/assets/jquery-easy-pie-chart/jquery.easy-pie-chart.js"></script>
-    <script src="~/Content/AdminLayout/js/owl.carousel.js"></script>
-    <!-- jQuery full calendar -->
-    <
-    <script src="~/Content/AdminLayout/js/fullcalendar.min.js"></script>
-    <!-- Full Google Calendar - Calendar -->
-    <script src="~/Content/AdminLayout/assets/fullcalendar/fullcalendar/fullcalendar.js"></script>
-    <!--script for this page only-->
-    <script src="~/Content/AdminLayout/js/calendar-custom.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.rateit.min.js"></script>
-    <!-- custom select -->
-    <script src="~/Content/AdminLayout/js/jquery.customSelect.min.js"></script>
-    <script src="~/Content/AdminLayout/assets/chart-master/Chart.js"></script>
+            }
+            else
+            {
+                <div class="kp-card">
+                    @RenderBody()
+                </div>
+            }
+        </main>
+    </div>
 
-    <!--custome script for all page-->
-    <script src="~/Content/AdminLayout/js/scripts.js"></script>
-    <!-- custom script for this page-->
-    <script src="~/Content/AdminLayout/js/sparkline-chart.js"></script>
-    <script src="~/Content/AdminLayout/js/easy-pie-chart.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery-jvectormap-1.2.2.min.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery-jvectormap-world-mill-en.js"></script>
-    <script src="~/Content/AdminLayout/js/xcharts.min.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.autosize.min.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.placeholder.min.js"></script>
-    <script src="~/Content/AdminLayout/js/gdp-data.js"></script>
-    <script src="~/Content/AdminLayout/js/morris.min.js"></script>
-    <script src="~/Content/AdminLayout/js/sparklines.js"></script>
-    <script src="~/Content/AdminLayout/js/charts.js"></script>
-    <script src="~/Content/AdminLayout/js/jquery.slimscroll.min.js"></script>
-    <script>
-        //knob
-        $(function () {
-            $(".knob").knob({
-                'draw': function () {
-                    $(this.i).val(this.cv + '%')
-                }
-            })
-        });
-
-        //carousel
-        $(document).ready(function () {
-            $("#owl-slider").owlCarousel({
-                navigation: true,
-                slideSpeed: 300,
-                paginationSpeed: 400,
-                singleItem: true
-
-            });
-        });
-
-        //custom select box
-
-        $(function () {
-            $('select.styled').customSelect();
-        });
-
-        /* ---------- Map ---------- */
-        $(function () {
-            $('#map').vectorMap({
-                map: 'world_mill_en',
-                series: {
-                    regions: [{
-                        values: gdpData,
-                        scale: ['#000', '#000'],
-                        normalizeFunction: 'polynomial'
-                    }]
-                },
-                backgroundColor: '#eef3f7',
-                onLabelShow: function (e, el, code) {
-                    el.html(el.html() + ' (GDP - ' + gdpData[code] + ')');
-                }
-            });
-        });
-    </script>
-
-</body>    
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <script src="~/Content/AdminLayout/vendor/bootstrap-3.4.1/bootstrap.min.js"></script>
+    <script src="~/Content/AdminLayout/vendor/datatables-1.13.11/jquery.dataTables.min.js"></script>
+    <script src="~/Content/AdminLayout/js/admin.js"></script>
+</body>
 </html>

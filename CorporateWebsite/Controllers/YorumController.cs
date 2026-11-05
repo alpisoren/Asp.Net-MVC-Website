@@ -9,8 +9,12 @@ using System.Web.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize]
     public class YorumController : Controller
     {
         private KurumsalDBContext db = new KurumsalDBContext();
@@ -18,8 +22,30 @@ namespace CorporateWebsite.Controllers
         // GET: Yorum
         public ActionResult Index()
         {
-            var yorum = db.Yorum.Include(y => y.Blog).OrderByDescending(z=>z.BlogId);
+            // Önce onay bekleyenler, sonra en yeniler
+            var yorum = db.Yorum.Include(y => y.Blog).OrderBy(y => y.Onayli).ThenByDescending(y => y.YorumId);
             return View(yorum.ToList());
+        }
+
+        /// <summary>Listeden tek tıkla onaylama / onayı kaldırma.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult OnayDegistir(int id, string donus = null)
+        {
+            var yorum = db.Yorum.Find(id);
+            if (yorum == null)
+            {
+                return HttpNotFound();
+            }
+            yorum.Onayli = !yorum.Onayli;
+            db.SaveChanges();
+            TempData["Basari"] = yorum.Onayli ? "Yorum onaylandı ve sitede yayında." : "Yorumun onayı kaldırıldı.";
+
+            if (!string.IsNullOrEmpty(donus) && Url.IsLocalUrl(donus))
+            {
+                return Redirect(donus);
+            }
+            return RedirectToAction("Index");
         }
 
         // GET: Yorum/Details/5

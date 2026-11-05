@@ -9,8 +9,12 @@ using System.Web.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize]
     public class KategoriController : Controller
     {
         private KurumsalDBContext db = new KurumsalDBContext();
@@ -111,8 +115,19 @@ namespace CorporateWebsite.Controllers
         public ActionResult DeleteConfirmed(int id)
         {
             Kategori kategori = db.Kategori.Find(id);
+            if (kategori == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Kategoriye bağlı yazılar silinmez, kategorisiz kalır (aksi halde yabancı anahtar hatası oluşur).
+            foreach (var blog in db.Blog.Where(b => b.KategoriId == id).ToList())
+            {
+                blog.KategoriId = null;
+            }
             db.Kategori.Remove(kategori);
             db.SaveChanges();
+            TempData["Basari"] = "\"" + kategori.KategoriAd + "\" kategorisi silindi.";
             return RedirectToAction("Index");
         }
 

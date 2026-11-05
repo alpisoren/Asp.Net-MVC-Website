@@ -1,0 +1,5 @@
+﻿@* Blog sayfalarının ortak kenar çubuğu: kategoriler ve son gönderiler *@
+<aside class="kw-sidebar" aria-label="Blog kenar çubuğu">
+    @{ Html.RenderAction("BlogKategoriPartial", "Home"); }
+    @{ Html.RenderAction("BlogSonKayitPartial", "Home"); }
+</aside>

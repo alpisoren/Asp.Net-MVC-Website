@@ -8,8 +8,12 @@ using System.Web;
 using System.Web.Helpers;
 using System.Web.Mvc;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize(SadeceAdmin = true)]
     public class KimlikController : Controller
     {
         KurumsalDBContext db = new KurumsalDBContext();
@@ -25,7 +29,11 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int id)
         {
 
-            var kimlik = db.Kimlik.Where(x => x.Kimlikd == id).SingleOrDefault();
+            var kimlik = db.Kimlik.Where(x => x.KimlikId == id).SingleOrDefault();
+            if (kimlik == null)
+            {
+                return HttpNotFound();
+            }
             return View(kimlik);
         }
 
@@ -33,24 +41,28 @@ namespace CorporateWebsite.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateInput(false)]
-        public ActionResult Edit(int id, Kimlik kimlik,HttpPostedFileBase LogoURL)
+        public ActionResult Edit(int id, [Bind(Exclude = "LogoUrl")] Kimlik kimlik, HttpPostedFileBase LogoURL)
         {
             if (ModelState.IsValid)
             {
-                var kimlikinfo = db.Kimlik.Where(x => x.Kimlikd == id).SingleOrDefault();
-                if (LogoURL!=null)
+                var kimlikinfo = db.Kimlik.Where(x => x.KimlikId == id).SingleOrDefault();
+                if (kimlikinfo == null)
                 {
-                    if (System.IO.File.Exists(Server.MapPath(kimlikinfo.LogoUrl)))
+                    return HttpNotFound();
+                }
+                if (LogoURL != null)
+                {
+                    string hata;
+                    var url = ResimHelper.Kaydet(LogoURL, "Kimlik", 300, 300, out hata);
+                    if (url == null)
                     {
-                        System.IO.File.Delete(Server.MapPath(kimlikinfo.LogoUrl));
+                        ModelState.AddModelError("", hata);
+                        kimlik.KimlikId = id;
+                        kimlik.LogoUrl = kimlikinfo.LogoUrl;
+                        return View(kimlik);
                     }
-                    WebImage img = new WebImage(LogoURL.InputStream);
-                    FileInfo imginfo = new FileInfo(LogoURL.FileName);
-
-                    string logoname = LogoURL.FileName+imginfo.Extension;
-                    img.Resize(300, 300);
-                    img.Save("~/Uploads/Kimlik/" + logoname);
-                    kimlikinfo.LogoUrl = "/Uploads/Kimlik/" + logoname;
+                    ResimHelper.Sil(Server, kimlikinfo.LogoUrl);
+                    kimlikinfo.LogoUrl = url;
                 }
                 kimlikinfo.Title = kimlik.Title;
                 kimlikinfo.Keywords = kimlik.Keywords;
@@ -66,6 +78,13 @@ namespace CorporateWebsite.Controllers
 
         }
 
-       
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }

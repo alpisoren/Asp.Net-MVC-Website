@@ -1,103 +1,174 @@
-﻿@model IEnumerable<CorporateWebsite.Models.Model.Slider>
-
-
+﻿@model IList<CorporateWebsite.Models.Model.Slider>
+@using CorporateWebsite.Helper;
 @{
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
-    ViewBag.Title = "Anasayfa";
+    ViewBag.Title = null; // ana sayfada sekme başlığı yalnızca site başlığı
+    var kimlik = ViewBag.Kimlik;
+    var hizmetler = (IList<CorporateWebsite.Models.Model.Hizmet>)ViewBag.Hizmetler;
+    var yazilar = ((IEnumerable<CorporateWebsite.Models.Model.Blog>)ViewBag.Blog).Take(3).ToList();
+    string hakkimizdaOzet = ViewBag.HakkimizdaOzet;
+    string unvan = kimlik?.Unvan ?? kimlik?.Title ?? "Kurumsal";
 }
-<section class="breadcrumbs">
-    <div class="container">
 
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Anasayfa</h2>
+@* ======= Hero ======= *@
+@if (Model.Count == 0)
+{
+    <section class="kw-hero kw-hero-plain" aria-labelledby="hero-baslik">
+        <div class="container">
+            <div class="kw-hero-content">
+                <h1 id="hero-baslik">@unvan</h1>
+                @if (!string.IsNullOrEmpty((string)kimlik?.Description))
+                {
+                    <p>@kimlik.Description</p>
+                }
+                <div class="kw-hero-actions">
+                    <a class="kw-btn kw-btn-primary" href="/Hizmetlerimiz">Hizmetlerimizi İnceleyin <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    <a class="kw-btn kw-btn-ghost-light" href="/Iletisim">İletişime Geçin</a>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    <h1 class="visually-hidden">@unvan</h1>
+    <div id="heroCarousel" class="carousel slide carousel-fade kw-hero-carousel" data-bs-ride="carousel" data-bs-interval="7000" aria-roledescription="carousel" aria-label="Öne çıkanlar">
+        @if (Model.Count > 1)
+        {
+            <div class="carousel-indicators">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : null)" aria-current="@(i == 0 ? "true" : null)" aria-label="@(i + 1). slayt"></button>
+                }
+            </div>
+        }
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                var s = Model[i];
+                <div class="carousel-item @(i == 0 ? "active" : null)" aria-roledescription="slide" aria-label="@(i + 1) / @Model.Count">
+                    <section class="kw-hero" style="@(string.IsNullOrEmpty(s.ResimURL) ? null : "background-image:url('" + s.ResimURL + "')")">
+                        <div class="container">
+                            <div class="kw-hero-content">
+                                <h2>@s.Baslik</h2>
+                                @if (!string.IsNullOrEmpty(s.Aciklama))
+                                {
+                                    <p>@s.Aciklama</p>
+                                }
+                                <div class="kw-hero-actions">
+                                    <a class="kw-btn kw-btn-primary" href="/Hizmetlerimiz">Hizmetlerimizi İnceleyin <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                                    <a class="kw-btn kw-btn-ghost-light" href="/Iletisim">İletişime Geçin</a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            }
+        </div>
+        @if (Model.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="kw-carousel-icon" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+                <span class="visually-hidden">Önceki</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="kw-carousel-icon" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+                <span class="visually-hidden">Sonraki</span>
+            </button>
+        }
+    </div>
+}
+
+@* ======= Hizmetler ======= *@
+<section class="kw-section" aria-labelledby="hizmetler-baslik">
+    <div class="container">
+        <div class="kw-section-head">
+            <span class="kw-eyebrow">Neler yapıyoruz</span>
+            <h2 id="hizmetler-baslik">Hizmetlerimiz</h2>
+            <p>İşinizi büyütmek için sunduğumuz çözümler.</p>
         </div>
 
-    </div>
-</section>
-
-<!-- ======= Hero Section ======= -->
-<section id="hero" class="d-flex justify-cntent-center align-items-center">
-    @*@{
-           Html.RenderAction("SliderPartial", "Home");
-        }*@
-
-
-    <div id="heroCarousel" class="container carousel carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
-
-        @if (Model == null)
+        @if (hizmetler.Count == 0)
         {
-            <div class="carousel-item active">
-                <div class="carousel-container">
-
-                    @*<img src="@item.ResimURL" alt="@item.Baslik" />*@
-                    <h2 class="animate__animated animate__fadeInDown"><span>Model Bulunamadı</span></h2>
-                    <p class="animate__animated animate__fadeInUp"> Model Bulunamadı</p>
-                    <a href="" class="btn-get-started animate__animated animate__fadeInUp">Daha Fazlası için..</a>
-                </div>
+            <div class="kw-empty">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                Hizmetlerimiz yakında burada olacak. Bilgi almak için <a href="/Iletisim">bize ulaşın</a>.
             </div>
         }
         else
         {
-            int say = 0;
-            <!-- Slide 1 -->
-            foreach (var item in Model)
-            {
-
-
-
-                if (say < 1)
+            <div class="row g-4">
+                @foreach (var h in hizmetler)
                 {
-                    <div class="carousel-item active ">
-                        <div class="carousel-container">
-
-                            <img src="@item.ResimURL" alt="@item.Baslik" />
-                            <h2 class="animate__animated animate__fadeInDown"><span>@item.Baslik</span></h2>
-                            <p class="animate__animated animate__fadeInUp"> @item.Aciklama</p>
-                            <a href="" class="btn-get-started animate__animated animate__fadeInUp">Daha Fazlası için..</a>
-                        </div>
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                        <article class="kw-card">
+                            <div class="kw-card-body">
+                                <div class="kw-service-icon" aria-hidden="true">
+                                    @if (!string.IsNullOrEmpty(h.ResimUrl))
+                                    {
+                                        <img src="@h.ResimUrl" alt="" loading="lazy">
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-briefcase"></i>
+                                    }
+                                </div>
+                                <h3>@h.Baslik</h3>
+                                <p class="kw-card-text">@MetinHelper.Ozet(h.Aciklama, 150)</p>
+                            </div>
+                        </article>
                     </div>
-
                 }
-                else
-                {
-
-
-                    <div class="carousel-item  ">
-                        <div class="carousel-container">
-
-                            <img src="@item.ResimURL" alt="@item.Baslik" />
-                            <h2 class="animate__animated animate__fadeInDown"><span>@item.Baslik</span></h2>
-                            <p class="animate__animated animate__fadeInUp"> @item.Aciklama</p>
-                            <a href="" class="btn-get-started animate__animated animate__fadeInUp">Daha Fazlası için..</a>
-                        </div>
-                    </div>
-
-
-                }
-                say++;
-            }
+            </div>
+            <div class="text-center mt-5">
+                <a class="kw-btn kw-btn-outline" href="/Hizmetlerimiz">Tüm Hizmetler</a>
+            </div>
         }
-        <a class="carousel-control-prev" href="#heroCarousel" role="button" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon bx bx-chevron-left" aria-hidden="true"></span>
-        </a>
-
-        <a class="carousel-control-next" href="#heroCarousel" role="button" data-bs-slide="next">
-            <span class="carousel-control-next-icon bx bx-chevron-right" aria-hidden="true"></span>
-        </a>
-
     </div>
+</section>
 
-</section><!-- End Hero -->
+@* ======= Hakkımızda özeti ======= *@
+@if (!string.IsNullOrEmpty(hakkimizdaOzet))
+{
+    <section class="kw-section kw-section-alt" aria-labelledby="hakkimizda-baslik">
+        <div class="container">
+            <div class="row g-4 g-lg-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="kw-about-media">
+                        <img src="~/Content/SiteLayout/assets/img/why-us.jpg" alt="@unvan ekibi çalışırken" loading="lazy" width="640" height="480">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <span class="kw-eyebrow">Biz kimiz</span>
+                    <h2 id="hakkimizda-baslik">@unvan hakkında</h2>
+                    <p class="kw-prose">@hakkimizdaOzet</p>
+                    <a class="kw-link-arrow" href="/Hakkimizda">Daha fazla bilgi <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+}
 
-<main id="main">
-
-
-    <!-- ======= Services Section ======= -->
-    @{
-        Html.RenderAction("HizmetPartipal", "Home");
-    }
-
-    <!-- End Services Section -->
-
-
-</main>
+@* ======= Son yazılar ======= *@
+@if (yazilar.Count > 0)
+{
+    <section class="kw-section" aria-labelledby="blog-baslik">
+        <div class="container">
+            <div class="kw-section-head">
+                <span class="kw-eyebrow">Blog</span>
+                <h2 id="blog-baslik">Son yazılarımız</h2>
+            </div>
+            <div class="row g-4">
+                @foreach (var b in yazilar)
+                {
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                        @Html.Partial("_BlogKarti", b)
+                    </div>
+                }
+            </div>
+            <div class="text-center mt-5">
+                <a class="kw-btn kw-btn-outline" href="/BlogPost">Tüm Yazılar</a>
+            </div>
+        </div>
+    </section>
+}

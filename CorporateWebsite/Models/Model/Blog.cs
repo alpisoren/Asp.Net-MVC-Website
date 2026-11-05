@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -14,17 +15,26 @@ namespace CorporateWebsite.Models.Model
         [Key]
         public int BlogId { get; set; }
 
+        [DisplayName("Başlık")]
+
         public string Baslik { get; set; }
+
+        [DisplayName("İçerik")]
 
         public string Icerik { get; set; }
 
+        [DisplayName("Resim")]
+
         public string ResimURL { get; set; }
+
+
+        [DisplayName("Kategori")]
 
 
         public int? KategoriId { get; set; }
         public Kategori Kategori { get; set; }
 
-        public ICollection<Yorum> Yorums { get; set; }
+        public ICollection<Yorum> Yorumlar { get; set; }
 
     }
 }

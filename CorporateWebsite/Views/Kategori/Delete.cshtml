@@ -1,16 +1,13 @@
 ﻿@model CorporateWebsite.Models.Model.Kategori
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Kategoriyi Sil";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Kategori Sil</h2>
 
-<h3>Bu işlem yapıyı bozabilir.Silmek istedğinizden emin misiniz?</h3>
+<div class="alert alert-warning" role="alert"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Bu kategori silinecek. Bu kategorideki yazılar silinmez, "kategorisiz" olarak kalır. Emin misiniz?</div>
 <div>
-    <h4>Kategori</h4>
-    <hr />
     <dl class="dl-horizontal">
         <dt>
             @Html.DisplayNameFor(model => model.KategoriAd)
@@ -33,9 +30,9 @@
     @using (Html.BeginForm()) {
         @Html.AntiForgeryToken()
 
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Geri Dön", "Index")
+        <div class="kp-form-actions">
+            <button type="submit" class="btn btn-danger"><i class="fa fa-trash-o" aria-hidden="true"></i>Evet, Sil</button>
+            @Html.ActionLink("Vazgeç", "Index", null, new { @class = "btn btn-default" })
         </div>
     }
 </div>

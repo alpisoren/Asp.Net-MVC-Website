@@ -1,46 +1,56 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Admin>
-
 @{
-    ViewBag.Title = "Adminler";
+    ViewBag.Title = "Yöneticiler";
+    ViewBag.YeniEkleUrl = "/Admin/Create";
+    ViewBag.YeniEkleMetni = "Yeni Yönetici";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var aktifId = Session["adminid"] is int i ? i : 0;
 }
 
-<h2>Adminler</h2>
-
-<p>
-    @Html.ActionLink("Yeni Ekle", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Eposta)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Sifre)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Yetki)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Eposta)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Sifre)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Yetki)
-        </td>
-        <td>
-            @Html.ActionLink("Güncelle", "Edit", new { id=item.AdminId }) |
-            @Html.ActionLink("Detay", "Details", new { id=item.AdminId }) |
-            @Html.ActionLink("Sil", "Delete", new { id=item.AdminId })
-        </td>
-    </tr>
+@if (TempData["Uyari"] != null)
+{
+    <div class="alert alert-warning" role="alert">@TempData["Uyari"]</div>
 }
 
-</table>
+<p class="kp-muted"><strong>Admin</strong> tüm bölümleri yönetir. <strong>Editör</strong> yalnızca blog, hizmet, kategori ve yorumları yönetebilir.</p>
+
+<div class="table-responsive">
+    <table class="table kp-table">
+        <thead>
+            <tr>
+                <th scope="col">E-posta</th>
+                <th scope="col">Yetki</th>
+                <th scope="col"><span class="sr-only">İşlemler</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@item.Eposta</strong>
+                        @if (item.AdminId == aktifId)
+                        {<small class="kp-muted"> (siz)</small>}
+                    </td>
+                    <td>
+                        @if (item.Yetki == "Admin")
+                        {<span class="kp-status kp-status-ok">Admin</span>}
+                        else
+                        {<span class="kp-status kp-status-neutral">@(item.Yetki == "Editor" ? "Editör" : (item.Yetki ?? "—"))</span>}
+                    </td>
+                    <td>
+                        <a class="kp-row-action" href="/Admin/Edit/@item.AdminId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
+                        @if (item.AdminId != aktifId)
+                        {
+                            using (Html.BeginForm("Delete", "Admin", new { id = item.AdminId }, FormMethod.Post, new { @class = "kp-inline", data_onay = item.Eposta + " yöneticisi silinsin mi?" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="kp-row-action kp-row-action-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</button>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,46 +1,48 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Slider>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Slider";
+    ViewBag.YeniEkleUrl = "/Slider/Create";
+    ViewBag.YeniEkleMetni = "Yeni Slayt";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Index</h2>
+<p class="kp-muted">Ana sayfanın üst bölümünde dönen slaytlar. Slayt yoksa ana sayfada site ünvanı ve açıklaması gösterilir. Önerilen resim boyutu: 1920×700 px.</p>
 
-<p>
-    <a href="/Slider/Create/" class="btn btn-default">Yeni Oluştur </a>
-</p>
-<table class="table table-striped">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Baslik)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Aciklama)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ResimURL)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Baslik)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Aciklama)
-        </td>
-        <td>
-           <img src="@item.ResimURL" width="150" height="50" />
-        </td>
-        <td>
-            @Html.ActionLink("Düzenle", "Edit", new { id=item.SliderId }) |
-            @Html.ActionLink("Detaylar", "Details", new { id=item.SliderId }) |
-            @Html.ActionLink("Sil", "Delete", new { id=item.SliderId })
-        </td>
-    </tr>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-picture-o" aria-hidden="true"></i><p>Henüz slayt yok.</p><a class="btn btn-primary" href="/Slider/Create">İlk slaytı ekleyin</a></div>
 }
-
-</table>
+else
+{
+    <div class="table-responsive">
+        <table class="table kp-table">
+            <thead>
+                <tr>
+                    <th scope="col">Resim</th>
+                    <th scope="col">Başlık</th>
+                    <th scope="col">Açıklama</th>
+                    <th scope="col"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ResimURL))
+                            {<img class="kp-thumb" src="@item.ResimURL" alt="" />}
+                            else
+                            {<span class="kp-muted" aria-label="Resim yok">—</span>}
+                        </td>
+                        <td><strong>@item.Baslik</strong></td>
+                        <td><span class="kp-clamp">@item.Aciklama</span></td>
+                        <td>
+                            <a class="kp-row-action" href="/Slider/Edit/@item.SliderId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
+                            <a class="kp-row-action kp-row-action-danger" href="/Slider/Delete/@item.SliderId"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

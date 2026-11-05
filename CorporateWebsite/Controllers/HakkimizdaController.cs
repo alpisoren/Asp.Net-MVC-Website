@@ -6,8 +6,12 @@ using System.Web.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize(SadeceAdmin = true)]
     public class HakkimizdaController : Controller
     {
         KurumsalDBContext db = new KurumsalDBContext();
@@ -35,13 +39,26 @@ namespace CorporateWebsite.Controllers
             if (ModelState.IsValid)
             {
                 var h = db.Hakkimizda.Where(x => x.HakkimizdaId == id).SingleOrDefault();
-                h.Aciklama = hakkimizda.Aciklama;
+                if (h == null)
+                {
+                    return HttpNotFound();
+                }
+                h.Aciklama = HtmlTemizleyici.Temizle(hakkimizda.Aciklama);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
             return View(hakkimizda);
 
 
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

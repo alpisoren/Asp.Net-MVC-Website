@@ -8,8 +8,31 @@ namespace CorporateWebsite.Helper
 {
     public class SeoHelper
     {
+        /// <summary>Blog yazısının kalıcı adresi: /BlogPost/{slug}-{id}</summary>
+        public static string BlogUrl(string baslik, int id)
+        {
+            return "/BlogPost/" + Slug(baslik, "yazi") + "-" + id;
+        }
+
+        /// <summary>Kategori sayfasının kalıcı adresi: /BlogPost/{slug}/{id}</summary>
+        public static string KategoriUrl(string kategoriAd, int id)
+        {
+            return "/BlogPost/" + Slug(kategoriAd, "kategori") + "/" + id;
+        }
+
+        /// <summary>Boş sonuç üretebilecek başlıklar için (ör. sadece noktalama) yedek değerli slug.</summary>
+        public static string Slug(string metin, string yedek)
+        {
+            var slug = ToSeoUrl(metin);
+            return string.IsNullOrEmpty(slug) ? yedek : slug;
+        }
+
         public static string ToSeoUrl(string IncomingText)
         {
+            if (string.IsNullOrEmpty(IncomingText))
+            {
+                return "";
+            }
             IncomingText = IncomingText.Replace("ş", "s");
             IncomingText = IncomingText.Replace("Ş", "s");
             IncomingText = IncomingText.Replace("İ", "i");

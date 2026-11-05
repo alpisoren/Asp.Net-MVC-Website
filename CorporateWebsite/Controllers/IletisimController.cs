@@ -9,8 +9,12 @@ using System.Web.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 
+using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
+
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize(SadeceAdmin = true)]
     public class IletisimController : Controller
     {
         private KurumsalDBContext db = new KurumsalDBContext();

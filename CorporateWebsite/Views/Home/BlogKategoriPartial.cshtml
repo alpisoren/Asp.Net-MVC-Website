@@ -1,13 +1,24 @@
-﻿
-@model IEnumerable<CorporateWebsite.Models.Model.Kategori>
-
+﻿@model IEnumerable<CorporateWebsite.Models.Model.Kategori>
 @using CorporateWebsite.Helper;
-<h3 class="sidebar-title">Kategoriler</h3>
-<div class="sidebar-item categories">
-    <ul>
-        @foreach (var item in Model)
-        {
-            <li><a href="/BlogPost/@SeoHelper.ToSeoUrl(item.KategoriAd).ToLower()/@item.KategoriId"> @item.KategoriAd <span>@item.Blogs.Count()</span></a></li>
-        }
-    </ul>
-</div><!-- End sidebar categories-->
+<section class="kw-sidebar-box" aria-labelledby="kategoriler-baslik">
+    <h2 id="kategoriler-baslik">Kategoriler</h2>
+    @if (!Model.Any())
+    {
+        <p class="kw-form-note mb-0">Henüz kategori yok.</p>
+    }
+    else
+    {
+        <ul class="kw-sidebar-list">
+            @foreach (var item in Model)
+            {
+                var adet = item.Blogs == null ? 0 : item.Blogs.Count;
+                <li>
+                    <a href="@SeoHelper.KategoriUrl(item.KategoriAd, item.KategoriId)">
+                        <span>@item.KategoriAd</span>
+                        <span class="kw-count" aria-label="@adet yazı">@adet</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</section>

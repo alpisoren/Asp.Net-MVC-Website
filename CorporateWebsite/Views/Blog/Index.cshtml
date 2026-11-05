@@ -1,52 +1,48 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Blog>
-
+@using CorporateWebsite.Helper;
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Blog Yazıları";
+    ViewBag.YeniEkleUrl = "/Blog/Create";
+    ViewBag.YeniEkleMetni = "Yeni Yazı";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<script type="text/javascript">
-    $(document).ready(function () {
-        $('#myTable').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Turkish.json"
-            }
-        });
-
-    });
-
-</script>
-<h2>Blog Kayıtları</h2>
-
-<a class="btn btn-default" href="/Blog/Create">Yeni ekle </a>
-<table class="table table-striped" id="myTable">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Kategori</th>
-            <th>Başlık</th>
-            @*<th>İçerik</th>*@
-            <th>Resim Url</th>
-            <td>İşlemler</td>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-        <tr>
-            <td>@item.BlogId</td>
-
-            <td>@item.Kategori.KategoriAd</td>
-            <td>@item.Baslik</td>
-            @*<td>@Html.Raw(@item.Icerik)</td>*@
-            <td><img width="100" height="100" src="@item.ResimURL" /></td>
-            <td>
-                <a href="/Blog/Edit/@item.BlogId">Düzenle</a>
-                <a href="/Blog/Delete/@item.BlogId">Sil</a>
-            </td>
-        </tr>
-        }
-
-
-    </tbody>
-</table>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-file-text-o" aria-hidden="true"></i><p>Henüz blog yazısı yok.</p><a class="btn btn-primary" href="/Blog/Create">İlk yazıyı ekleyin</a></div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table kp-table" data-tablo>
+            <thead>
+                <tr>
+                    <th scope="col">Resim</th>
+                    <th scope="col">Başlık</th>
+                    <th scope="col">Kategori</th>
+                    <th scope="col"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ResimURL))
+                            {<img class="kp-thumb" src="@item.ResimURL" alt="" />}
+                            else
+                            {<span class="kp-muted" aria-label="Resim yok">—</span>}
+                        </td>
+                        <td><strong>@item.Baslik</strong></td>
+                        <td>@(item.Kategori?.KategoriAd ?? "—")</td>
+                        <td>
+                            <a class="kp-row-action" href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)" target="_blank" rel="noopener" title="Sitede görüntüle"><i class="fa fa-external-link" aria-hidden="true"></i><span class="sr-only">Sitede görüntüle: @item.Baslik</span></a>
+                            <a class="kp-row-action" href="/Blog/Edit/@item.BlogId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
+                            <a class="kp-row-action kp-row-action-danger" href="/Blog/Delete/@item.BlogId"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

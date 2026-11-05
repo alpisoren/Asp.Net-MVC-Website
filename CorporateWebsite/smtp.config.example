@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bu dosyayı smtp.config adıyla kopyalayıp kendi bilgilerinizi girin. smtp.config git'e eklenmez. -->
+<smtp deliveryMethod="Network" from="Kurumsal &lt;ornek@yandex.com&gt;">
+  <network host="smtp.yandex.com" port="587" enableSsl="true" defaultCredentials="false"
+           userName="ornek@yandex.com" password="BURAYA_UYGULAMA_SIFRESI" />
+</smtp>
