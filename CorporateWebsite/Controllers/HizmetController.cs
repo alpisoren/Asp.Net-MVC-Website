@@ -13,15 +13,15 @@ namespace CorporateWebsite.Controllers
         private readonly KurumsalDBContext db = new KurumsalDBContext();
         private HizmetServisi servis;
 
-        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
+        private HizmetServisi Servis
         {
-            base.Initialize(requestContext);
-            servis = new HizmetServisi(db, Server);
+            get { return servis ?? (servis = new HizmetServisi(db, HttpContext != null ? HttpContext.Server : null)); }
         }
 
         public ActionResult Index()
         {
-            return View(servis.Listele());
+            return View(Servis.Listele());
         }
 
         public ActionResult Create()
@@ -35,7 +35,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                var sonuc = servis.Olustur(model, ResimUrl);
+                var sonuc = Servis.Olustur(model, ResimUrl);
                 if (sonuc.Basarili)
                 {
                     return RedirectToAction("Index");
@@ -47,7 +47,7 @@ namespace CorporateWebsite.Controllers
 
         public ActionResult Edit(int? id)
         {
-            var model = id.HasValue ? servis.FormModeliGetir(id.Value) : null;
+            var model = id.HasValue ? Servis.FormModeliGetir(id.Value) : null;
             if (model == null)
             {
                 return HttpNotFound();
@@ -61,7 +61,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                var sonuc = servis.Guncelle(id, model, ResimUrl);
+                var sonuc = Servis.Guncelle(id, model, ResimUrl);
                 if (sonuc == null)
                 {
                     return HttpNotFound();
@@ -73,7 +73,7 @@ namespace CorporateWebsite.Controllers
                 sonuc.ModelStateAktar(ModelState);
             }
 
-            var mevcut = servis.FormModeliGetir(id);
+            var mevcut = Servis.FormModeliGetir(id);
             if (mevcut == null)
             {
                 return HttpNotFound();
@@ -87,7 +87,7 @@ namespace CorporateWebsite.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            if (!servis.Sil(id))
+            if (!Servis.Sil(id))
             {
                 return HttpNotFound();
             }

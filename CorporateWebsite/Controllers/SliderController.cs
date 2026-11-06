@@ -13,20 +13,20 @@ namespace CorporateWebsite.Controllers
         private readonly KurumsalDBContext db = new KurumsalDBContext();
         private SliderServisi servis;
 
-        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
+        private SliderServisi Servis
         {
-            base.Initialize(requestContext);
-            servis = new SliderServisi(db, Server);
+            get { return servis ?? (servis = new SliderServisi(db, HttpContext != null ? HttpContext.Server : null)); }
         }
 
         public ActionResult Index()
         {
-            return View(servis.Listele());
+            return View(Servis.Listele());
         }
 
         public ActionResult Details(int? id)
         {
-            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            var slider = id.HasValue ? Servis.Bul(id.Value) : null;
             return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
@@ -41,7 +41,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                var sonuc = servis.Olustur(slider, ResimURL);
+                var sonuc = Servis.Olustur(slider, ResimURL);
                 if (sonuc.Basarili)
                 {
                     return RedirectToAction("Index");
@@ -53,7 +53,7 @@ namespace CorporateWebsite.Controllers
 
         public ActionResult Edit(int? id)
         {
-            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            var slider = id.HasValue ? Servis.Bul(id.Value) : null;
             return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
@@ -63,7 +63,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                var sonuc = servis.Guncelle(id, slider, ResimURL);
+                var sonuc = Servis.Guncelle(id, slider, ResimURL);
                 if (sonuc == null)
                 {
                     return HttpNotFound();
@@ -76,13 +76,13 @@ namespace CorporateWebsite.Controllers
             }
             // Form yeniden gösterilirken mevcut resim önizlemesi kaybolmasın
             slider.SliderId = id;
-            slider.ResimURL = servis.Bul(id)?.ResimURL;
+            slider.ResimURL = Servis.Bul(id)?.ResimURL;
             return View(slider);
         }
 
         public ActionResult Delete(int? id)
         {
-            var slider = id.HasValue ? servis.Bul(id.Value) : null;
+            var slider = id.HasValue ? Servis.Bul(id.Value) : null;
             return slider == null ? (ActionResult)HttpNotFound() : View(slider);
         }
 
@@ -90,7 +90,7 @@ namespace CorporateWebsite.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            if (!servis.Sil(id))
+            if (!Servis.Sil(id))
             {
                 return HttpNotFound();
             }

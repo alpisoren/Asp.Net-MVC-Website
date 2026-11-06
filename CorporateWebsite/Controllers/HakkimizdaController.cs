@@ -12,22 +12,22 @@ namespace CorporateWebsite.Controllers
         private readonly KurumsalDBContext db = new KurumsalDBContext();
         private AyarServisi servis;
 
-        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
+        private AyarServisi Servis
         {
-            base.Initialize(requestContext);
-            servis = new AyarServisi(db, Server);
+            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
         }
 
         // "/Hakkimizda" sitenin ziyaretçi sayfasıdır (HomeController); panel listesi bu yüzden açık adla yönlendirilir.
         [Route("Hakkimizda/Index")]
         public ActionResult Index()
         {
-            return View(servis.HakkimizdaListele());
+            return View(Servis.HakkimizdaListele());
         }
 
         public ActionResult Edit(int? id)
         {
-            var h = id.HasValue ? servis.HakkimizdaBul(id.Value) : null;
+            var h = id.HasValue ? Servis.HakkimizdaBul(id.Value) : null;
             return h == null ? (ActionResult)HttpNotFound() : View(h);
         }
 
@@ -39,7 +39,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (!servis.HakkimizdaGuncelle(id, hakkimizda.Aciklama))
+                if (!Servis.HakkimizdaGuncelle(id, hakkimizda.Aciklama))
                 {
                     return HttpNotFound();
                 }

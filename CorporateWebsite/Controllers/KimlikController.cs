@@ -13,20 +13,20 @@ namespace CorporateWebsite.Controllers
         private readonly KurumsalDBContext db = new KurumsalDBContext();
         private AyarServisi servis;
 
-        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
+        private AyarServisi Servis
         {
-            base.Initialize(requestContext);
-            servis = new AyarServisi(db, Server);
+            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
         }
 
         public ActionResult Index()
         {
-            return View(servis.KimlikListele());
+            return View(Servis.KimlikListele());
         }
 
         public ActionResult Edit(int? id)
         {
-            var kimlik = id.HasValue ? servis.KimlikBul(id.Value) : null;
+            var kimlik = id.HasValue ? Servis.KimlikBul(id.Value) : null;
             return kimlik == null ? (ActionResult)HttpNotFound() : View(kimlik);
         }
 
@@ -36,7 +36,7 @@ namespace CorporateWebsite.Controllers
         {
             if (ModelState.IsValid)
             {
-                var sonuc = servis.KimlikGuncelle(id, kimlik, LogoURL);
+                var sonuc = Servis.KimlikGuncelle(id, kimlik, LogoURL);
                 if (sonuc == null)
                 {
                     return HttpNotFound();
@@ -48,7 +48,7 @@ namespace CorporateWebsite.Controllers
                 sonuc.ModelStateAktar(ModelState);
             }
             kimlik.KimlikId = id;
-            kimlik.LogoUrl = servis.KimlikBul(id)?.LogoUrl;
+            kimlik.LogoUrl = Servis.KimlikBul(id)?.LogoUrl;
             return View(kimlik);
         }
 

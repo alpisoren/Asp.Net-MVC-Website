@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
@@ -37,6 +37,27 @@ namespace CorporateWebsite.Tests
         public override System.Collections.IDictionary Items
         {
             get { return items; }
+        }
+
+        private readonly HttpRequestBase istek = new SahteIstek();
+
+        public override HttpServerUtilityBase Server
+        {
+            get { return new SahteServer(Path.GetTempPath()); }
+        }
+
+        public override HttpRequestBase Request
+        {
+            get { return istek; }
+        }
+    }
+
+    /// <summary>UrlHelper.IsLocalUrl gibi yalnızca isteğin varlığını bekleyen kodlar için.</summary>
+    internal class SahteIstek : HttpRequestBase
+    {
+        public override string ApplicationPath
+        {
+            get { return "/"; }
         }
     }
 
