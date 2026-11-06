@@ -1,58 +1,36 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Kimlik>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Site Kimliği";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<p class="kp-muted">Sitenin adı, logosu ve arama motorlarında görünen açıklaması.</p>
 
-
-<p>
-    @Html.ActionLink("Yeni Ekle", "Create")
-</p>
-<table class="table table-bordered table-striped table-responsive-sm" >
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Title)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Keywords)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.LogoUrl)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Unvan)
-        </th>
-        <th>İşlemler
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Title)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Keywords)
-        </td>
-        <td>
-            @Html.Raw(item.Description)
-        </td>
-        <td>
-           <img class="img-responsive" src="@item.LogoUrl" width="100" height="100" />
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Unvan)
-        </td>
-        <td>
-            @Html.ActionLink("Güncelle", "Edit", new { id=item.Kimlikd }) |
-        </td>
-    </tr>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-id-card-o" aria-hidden="true"></i><p>Site kimliği kaydı bulunamadı. Veritabanına bir kayıt eklenmesi gerekiyor.</p></div>
 }
 
-</table>
+@foreach (var item in Model)
+{
+    <dl class="dl-horizontal">
+        <dt>Logo</dt>
+        <dd>
+            @if (!string.IsNullOrEmpty(item.LogoUrl))
+            {<img class="kp-thumb" src="@item.LogoUrl" alt="Site logosu" />}
+            else
+            {<span class="kp-muted">Logo yüklenmemiş (sitede ünvan yazısı gösterilir)</span>}
+        </dd>
+        <dt>Ünvan</dt>
+        <dd>@(string.IsNullOrEmpty(item.Unvan) ? "—" : item.Unvan)</dd>
+        <dt>Site başlığı</dt>
+        <dd>@item.Title</dd>
+        <dt>Açıklama</dt>
+        <dd>@item.Description</dd>
+        <dt>Anahtar kelimeler</dt>
+        <dd>@item.Keywords</dd>
+    </dl>
+    <div class="kp-form-actions">
+        <a class="btn btn-primary" href="/Kimlik/Edit/@item.KimlikId"><i class="fa fa-pencil" aria-hidden="true"></i>Düzenle</a>
+    </div>
+}

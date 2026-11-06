@@ -1,57 +1,33 @@
-﻿
-@{
-    Layout = null;
+﻿@{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    ViewBag.Title = "Giriş Yap";
 }
 
-<!DOCTYPE html>
+<h1>Giriş yapın</h1>
+<p class="kp-sub">Yönetim paneline erişmek için hesap bilgilerinizi girin.</p>
 
-<html>
-<head>
+@if (ViewBag.Uyari != null)
+{
+    <div class="alert alert-danger" role="alert">@ViewBag.Uyari</div>
+}
 
-    <meta name="viewport" content="width=device-width" />
-    <title>Admin Panel Girişi</title>
-
-
-    <!-- Bootstrap CSS -->
-    <link href="/Content/AdminLayout/css/bootstrap.min.css" rel="stylesheet">
-    <!-- bootstrap theme -->
-    <link href="/Content/AdminLayout/css/bootstrap-theme.css" rel="stylesheet">
-    <!--external css-->
-    <!-- font icon -->
-    <link href="/Content/AdminLayout/css/elegant-icons-style.css" rel="stylesheet" />
-    <link href="/Content/AdminLayout/css/font-awesome.css" rel="stylesheet" />
-    <!-- Custom styles -->
-    <link href="/Content/AdminLayout/css/style.css" rel="stylesheet">
-    <link href="/Content/AdminLayout/css/style-responsive.css" rel="stylesheet" />
-
-</head>
-<body>
-    <div>
-        <form class="login-form" method="post" action="/Admin/Login">
-            <div class="login-wrap">
-                @if (Session["adminid"] == null)
-                {
-                    <p class="alert">
-                        @ViewBag.Uyari
-                    </p>
-                }
-
-                <p class="login-img"><i class="icon_lock_alt"></i></p>
-                <div class="input-group">
-                    <span class="input-group-addon"><i class="icon_profile"></i></span>
-                    <input type="text" class="form-control" name="Eposta" placeholder="E-posta" autofocus>
-                </div>
-                <div class="input-group">
-                    <span class="input-group-addon"><i class="icon_key_alt"></i></span>
-                    <input type="password" name="Sifre" class="form-control" placeholder="Şifre">
-                </div>
-
-                <button class="btn btn-primary btn-lg btn-block" type="submit">Giriş Yap</button>
-                <a class="btn btn-primary btn-lg btn-block" style="color:white" href="/Admin/ResetPassword/">Şifremi Unuttum</a>
-            </div>
-        </form>
-
-
+<form method="post" action="/Admin/Login">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+    <div class="form-group">
+        <label for="Eposta">E-posta</label>
+        <input type="email" class="form-control" id="Eposta" name="Eposta" autocomplete="username" required autofocus>
     </div>
-</body>
-</html>
+    <div class="form-group">
+        <label for="Sifre">Şifre</label>
+        <input type="password" class="form-control" id="Sifre" name="Sifre" autocomplete="current-password" required>
+    </div>
+    <div class="checkbox kp-remember">
+        <label><input type="checkbox" name="beniHatirla" value="true"> Beni hatırla (14 gün)</label>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Giriş Yap</button>
+</form>
+
+<div class="kp-auth-links">
+    <a href="/Admin/ResetPassword/">Şifremi unuttum</a>
+</div>

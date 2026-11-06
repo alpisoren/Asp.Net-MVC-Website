@@ -1,32 +1,24 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Hakkimizda>
-
+@using CorporateWebsite.Helper;
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Hakkımızda";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
+<p class="kp-muted">Sitedeki "Hakkımızda" sayfasının metni. Ana sayfada bu metnin kısa bir özeti de gösterilir.</p>
 
-
-
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Aciklama)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.Raw(item.Aciklama)
-        </td>
-        <td>
-            @Html.ActionLink("Güncelleme", "Edit", new { id=item.HakkimizdaId }) |
-     
-
-        </td>
-    </tr>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-info-circle" aria-hidden="true"></i><p>Hakkımızda kaydı bulunamadı.</p></div>
 }
 
-</table>
+@foreach (var item in Model)
+{
+    <div class="kp-preview">
+        @Html.Raw(HtmlTemizleyici.Temizle(item.Aciklama))
+    </div>
+    <div class="kp-form-actions">
+        <a class="btn btn-primary" href="/Hakkimizda/Edit/@item.HakkimizdaId"><i class="fa fa-pencil" aria-hidden="true"></i>Düzenle</a>
+        <a class="btn btn-default" href="/Hakkimizda" target="_blank" rel="noopener"><i class="fa fa-external-link" aria-hidden="true"></i>Sitede görüntüle</a>
+    </div>
+}

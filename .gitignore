@@ -340,3 +340,8 @@ ASALocalRun/
 healthchecksdb
 /Bilgisayar-Sistemleri-Egitsel-Oyun
 /Adisyon-Proje
+
+# SMTP gizli bilgileri
+CorporateWebsite/smtp.config
+CorporateWebsite/App_Data/Logs/
+CorporateWebsite/connectionStrings.config

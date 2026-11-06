@@ -1,0 +1,35 @@
+﻿@* Giriş, şifremi unuttum ve yeni şifre ekranlarının ortak düzeni *@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#F6F8FB">
+    <meta name="color-scheme" content="light dark">
+    <title>@ViewBag.Title - Yönetim Paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="~/Content/AdminLayout/vendor/bootstrap-3.4.1/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Content/AdminLayout/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/AdminLayout/css/panel.css")" rel="stylesheet" />
+    <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/tema-gecis.js")"></script>
+</head>
+<body class="kp-body">
+    <main class="kp-auth">
+        <button type="button" class="kp-icon-btn kp-theme-toggle kp-auth-theme" data-tema-degistir aria-pressed="false" aria-label="Koyu temaya geç" title="Koyu temaya geç">
+            <i class="fa fa-moon-o kp-icon-light" aria-hidden="true"></i>
+            <i class="fa fa-sun-o kp-icon-dark" aria-hidden="true"></i>
+        </button>
+        <div class="kp-auth-card">
+            <a class="kp-brand" href="/">
+                <span class="kp-brand-mark" aria-hidden="true"><i class="fa fa-building"></i></span>
+                Kurumsal Panel
+            </a>
+            @RenderBody()
+        </div>
+    </main>
+</body>
+</html>

@@ -1,37 +1,51 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Hizmet>
+@using CorporateWebsite.Helper;
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Hizmetler";
+    ViewBag.YeniEkleUrl = "/Hizmet/Create";
+    ViewBag.YeniEkleMetni = "Yeni Hizmet";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2>Hizmetler</h2>
-<a class="btn btn-default" href="/Hizmet/Create" >Yeni ekle </a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Başlık</th>
-            <th>Açıklama</th>
-            <th>Resim Url</th>
-            <td>İşlemler</td>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-        <tr>
-            <td>@item.HizmetId</td>
-            <td>@item.Baslik</td>
-            <td>@Html.Raw(@item.Aciklama)</td>
-            <td><img width="100" height="100" src="@item.ResimUrl" /></td>
-            <td>
-                <a href="/Hizmet/Edit/@item.HizmetId">Düzenle</a>
-                <a href="/Hizmet/Delete/@item.HizmetId">Sil</a><
-            </td>
-        </tr>
-        }
-
-
-    </tbody>
-</table>
-
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-briefcase" aria-hidden="true"></i><p>Henüz hizmet eklenmemiş.</p><a class="btn btn-primary" href="/Hizmet/Create">İlk hizmeti ekleyin</a></div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table kp-table">
+            <thead>
+                <tr>
+                    <th scope="col">Resim</th>
+                    <th scope="col">Başlık</th>
+                    <th scope="col">Açıklama</th>
+                    <th scope="col"><span class="sr-only">İşlemler</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.ResimUrl))
+                            {<img class="kp-thumb" src="@item.ResimUrl" alt="" />}
+                            else
+                            {<span class="kp-muted" aria-label="Resim yok">—</span>}
+                        </td>
+                        <td><strong>@item.Baslik</strong></td>
+                        <td><span class="kp-clamp">@MetinHelper.Ozet(item.Aciklama, 160)</span></td>
+                        <td>
+                            <a class="kp-row-action" href="/Hizmet/Edit/@item.HizmetId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
+                            @using (Html.BeginForm("Delete", "Hizmet", new { id = item.HizmetId }, FormMethod.Post, new { @class = "kp-inline", data_onay = "\"" + item.Baslik + "\" hizmeti silinsin mi? Bu işlem geri alınamaz." }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="kp-row-action kp-row-action-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

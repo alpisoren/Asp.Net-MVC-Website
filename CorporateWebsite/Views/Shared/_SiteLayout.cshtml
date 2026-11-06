@@ -1,170 +1,217 @@
 ﻿@using CorporateWebsite.Helper;
+@{
+    var kimlik = ViewBag.Kimlik;
+    var iletisim = ViewBag.Iletisim;
+    string unvan = kimlik?.Unvan ?? kimlik?.Title ?? "Kurumsal";
+    string logo = kimlik?.LogoUrl;
 
+    // Menüde bulunduğumuz sayfayı işaretle
+    var aksiyon = (ViewContext.Controller.ControllerContext.RouteData.Values["action"] as string) ?? "";
+    string aktif;
+    switch (aksiyon)
+    {
+        case "Hakkimizda": aktif = "hakkimizda"; break;
+        case "Hizmetlerimiz": aktif = "hizmetler"; break;
+        case "Blog":
+        case "BlogDetay":
+        case "KategoriBlog": aktif = "blog"; break;
+        case "Iletisim": aktif = "iletisim"; break;
+        default: aktif = "anasayfa"; break;
+    }
+    Func<string, string> aktifSinif = k => k == aktif ? "active" : null;
+    Func<string, string> aktifAria = k => k == aktif ? "page" : null;
+
+    string sayfaBasligi = ViewBag.SayfaBasligi;
+    string baslik = ViewBag.Title as string;
+    string tamBaslik = string.IsNullOrEmpty(baslik) ? (kimlik?.Title ?? unvan) : baslik + " | " + (kimlik?.Title ?? unvan);
+
+    string eposta = iletisim?.Eposta;
+    string telefon = iletisim?.Telefon;
+    string telefonLink = string.IsNullOrEmpty(telefon) ? null : "tel:" + System.Text.RegularExpressions.Regex.Replace(telefon, @"[^\d+]", "");
+}
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - @ViewBag.Kimlik.Title</title>
-    <meta content="@Html.Raw( @ViewBag.Kimlik.Description)" name="description">
-    <meta content="@Html.Raw( @ViewBag.Kimlik.Keywords)" name="keywords">
+    <title>@tamBaslik</title>
+    <meta name="description" content="@(ViewBag.Aciklama ?? kimlik?.Description)">
+    @if (!string.IsNullOrEmpty((string)kimlik?.Keywords))
+    {
+        <meta name="keywords" content="@kimlik.Keywords">
+    }
+    @if (ViewBag.Canonical != null)
+    {
+        <link rel="canonical" href="@ViewBag.Canonical" />
+    }
+    <link rel="alternate" type="application/rss+xml" title="@(kimlik?.Title ?? unvan) — Blog" href="/rss.xml">
+    <meta name="theme-color" content="#F6F8FB">
+    <meta name="color-scheme" content="light dark">
 
-    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
-    @*<script src="~/Scripts/modernizr-2.8.3.js"></script>*@
-
-
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-    <meta content="" name="keywords">
-
-    <!-- Favicons -->
     <link href="/Content/SiteLayout/assets/img/favicon.png" rel="icon">
     <link href="/Content/SiteLayout/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Roboto:300,300i,400,400i,500,500i,700,700i&display=swap" rel="stylesheet">
+    <!-- Yazı tipleri: başlık Poppins, metin Open Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Vendor CSS Files -->
     <link href="/Content/SiteLayout/assets/vendor/animate.css/animate.min.css" rel="stylesheet">
     <link href="/Content/SiteLayout/assets/vendor/aos/aos.css" rel="stylesheet">
     <link href="/Content/SiteLayout/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/Content/SiteLayout/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="/Content/SiteLayout/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
-    <!-- Template Main CSS File -->
+    <!-- Şablon + kurumsal tema (tema.css şablonun üzerine yazar) -->
     <link href="/Content/SiteLayout/assets/css/style.css" rel="stylesheet">
-
-    <!-- =======================================================
-    * Template Name: Moderna - v4.2.0
-    * Template URL: https://bootstrapmade.com/free-bootstrap-template-corporate-moderna/
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/css/tema.css")" rel="stylesheet">
+    <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/tema-gecis.js")"></script>
 </head>
 <body>
+    <a class="kw-skip-link" href="#main">İçeriğe geç</a>
 
-    <!-- ======= Header ======= -->
-    <header id="header" class="fixed-top d-flex align-items-center header-transparent" style="background-color:#212529">
+    <header id="header" class="fixed-top d-flex align-items-center">
         <div class="container d-flex justify-content-between align-items-center">
 
             <div class="logo">
-                <h1 class="text-light">
-                    <a href="/Anasayfa/">
-                        <span>@ViewBag.Kimlik.Unvan</span>
-                        <img src="@ViewBag.Kimlik.LogoUrl" height="30" width="75" />
+                <h1 class="m-0">
+                    <a href="/">
+                        @if (!string.IsNullOrEmpty(logo))
+                        {
+                            <img src="@logo" alt="" width="40" height="40">
+                        }
+                        <span>@unvan</span>
                     </a>
                 </h1>
-                <!-- Uncomment below if you prefer to use an image logo -->
-                <!-- <a href="index.html"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>-->
             </div>
 
-            <nav id="navbar" class="navbar">
+            <div class="kw-header-actions">
+            <nav id="navbar" class="navbar" aria-label="Ana menü">
                 <ul>
-                    <li><a class="active" href="/Anasayfa/">Ana Sayfa</a></li>
-                    <li><a href="/Hakkimizda/">Hakkımızda</a></li>
-                    <li><a href="/Hizmetlerimiz/">Hizmetlerimiz</a></li>
-                    <li><a href="/BlogPost/">Blog</a></li>
-
-                    @*<li class="dropdown">
-                            <a href="#"><span>Drop Down</span> <i class="bi bi-chevron-down"></i></a>
-                            <ul>
-                                <li><a href="#">Drop Down 1</a></li>
-                                <li class="dropdown">
-                                    <a href="#"><span>Deep Drop Down</span> <i class="bi bi-chevron-right"></i></a>
-                                    <ul>
-                                        <li><a href="#">Deep Drop Down 1</a></li>
-                                        <li><a href="#">Deep Drop Down 2</a></li>
-                                        <li><a href="#">Deep Drop Down 3</a></li>
-                                        <li><a href="#">Deep Drop Down 4</a></li>
-                                        <li><a href="#">Deep Drop Down 5</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="#">Drop Down 2</a></li>
-                                <li><a href="#">Drop Down 3</a></li>
-                                <li><a href="#">Drop Down 4</a></li>
-                            </ul>
-                        </li>*@
-                    <li><a href="/Iletisim/">İletişim</a></li>
+                    <li><a class="@aktifSinif("anasayfa")" aria-current="@aktifAria("anasayfa")" href="/">Ana Sayfa</a></li>
+                    <li><a class="@aktifSinif("hakkimizda")" aria-current="@aktifAria("hakkimizda")" href="/Hakkimizda">Hakkımızda</a></li>
+                    <li><a class="@aktifSinif("hizmetler")" aria-current="@aktifAria("hizmetler")" href="/Hizmetlerimiz">Hizmetlerimiz</a></li>
+                    <li><a class="@aktifSinif("blog")" aria-current="@aktifAria("blog")" href="/BlogPost">Blog</a></li>
+                    <li><a class="@aktifSinif("iletisim")" aria-current="@aktifAria("iletisim")" href="/Iletisim">İletişim</a></li>
                 </ul>
-                <i class="bi bi-list mobile-nav-toggle"></i>
-            </nav><!-- .navbar -->
+                <button type="button" class="bi bi-list mobile-nav-toggle" aria-label="Menüyü aç/kapat" aria-controls="navbar"></button>
+            </nav>
+            <button type="button" class="kw-theme-toggle" data-tema-degistir aria-pressed="false" aria-label="Koyu temaya geç" title="Koyu temaya geç">
+                <i class="bi bi-moon-stars kw-icon-light" aria-hidden="true"></i>
+                <i class="bi bi-sun kw-icon-dark" aria-hidden="true"></i>
+            </button>
+            </div>
 
         </div>
-    </header><!-- End Header -->
+    </header>
 
-    @RenderBody()
+    <main id="main" tabindex="-1">
+        @if (!string.IsNullOrEmpty(sayfaBasligi))
+        {
+            <section class="kw-page-header">
+                <div class="container">
+                    <h1>@sayfaBasligi</h1>
+                    <nav aria-label="Konum">
+                        <ol class="kw-breadcrumb">
+                            <li><a href="/">Ana Sayfa</a></li>
+                            @if (ViewBag.UstSayfaAd != null)
+                            {
+                                <li><a href="@ViewBag.UstSayfaUrl">@ViewBag.UstSayfaAd</a></li>
+                            }
+                            <li aria-current="page">@(ViewBag.KonumAd ?? sayfaBasligi)</li>
+                        </ol>
+                    </nav>
+                </div>
+            </section>
+        }
 
-    <!-- ======= Footer ======= -->
-    <footer id="footer" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-duration="500">
+        @RenderBody()
 
-        <div class="footer-newsletter">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <h4>Our Newsletter</h4>
-                        <p>Tamen quem nulla quae legam multos aute sint culpa legam noster magna</p>
+        @if (ViewBag.CtaGizle != true)
+        {
+            <section class="kw-cta" aria-labelledby="cta-baslik">
+                <div class="container d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                    <div>
+                        <h2 id="cta-baslik">Projeniz için bizimle görüşün</h2>
+                        <p>İhtiyacınızı dinleyelim, size en uygun çözümü birlikte planlayalım.</p>
                     </div>
-                    <div class="col-lg-6">
-                        <form action="" method="post">
-                            <input type="email" name="email"><input type="submit" value="Subscribe">
-                        </form>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="kw-btn kw-btn-light" href="/Iletisim"><i class="bi bi-envelope" aria-hidden="true"></i> İletişime Geçin</a>
+                        @if (telefonLink != null)
+                        {
+                            <a class="kw-btn kw-btn-ghost-light" href="@telefonLink"><i class="bi bi-telephone" aria-hidden="true"></i> @telefon</a>
+                        }
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
+        }
+    </main>
 
+    <footer id="footer">
         <div class="footer-top">
             <div class="container">
-                <div class="row">
+                <div class="row gy-4">
 
-                    <div class="col-lg-3 col-md-6 footer-contact">
-
-                        <h4>İletişim Bilgileri</h4>
-                        <p>
-                            <strong>@ViewBag.Iletisim.Adres </strong><br>
-
-                            <strong>Phone:</strong> @ViewBag.Iletisim?.Telefon<br>
-                            <strong>Email:</strong> @ViewBag.Iletisim?.Fax<br>
-                        </p>
-
-                    </div>
-                    <div class="col-lg-3 col-md-6 footer-links">
-                        <h4>Menü</h4>
-                        <ul>
-                            <li><i class="bx bx-chevron-right"></i> <a href="~/Anasayfa/">Anasayfa</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="~/Hakkimizda/">Hakkımızda</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="~/BlogPost/">Blog</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="~/Hizmetlerimiz/">Hizmetler</a></li>
-                            <li><i class="bx bx-chevron-right"></i> <a href="~/Iletisim/">İletişim</a></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 footer-links">
-                        <h4>Son Yazılar</h4>
-                        <ul>
-
-                            @foreach (var item in @ViewBag.Blog)
-                            {
-                                <li><i class="bx bx-chevron-right"></i> <a href="/BlogPost/@SeoHelper.ToSeoUrl(item.Baslik).ToLower()-@item.BlogId">@item.Baslik</a></li>
-                            }
-
-
-                        </ul>
-                    </div>
-
-
-
-                    <div class="col-lg-3 col-md-6 footer-info">
-                        <h3>Sosyal Medya</h3>
+                    <div class="col-lg-4 col-md-6">
+                        <h2>@unvan</h2>
+                        @if (!string.IsNullOrEmpty((string)kimlik?.Description))
+                        {
+                            <p>@kimlik.Description</p>
+                        }
                         <div class="social-links mt-3">
-                            <a href="www.twitter.com/@ViewBag.Iletisim.Twitter" class="twitter"><i class="bx bxl-twitter"></i></a>
-                            <a href="www.facebook.com/@ViewBag.Iletisim.Facebook" class="facebook"><i class="bx bxl-facebook"></i></a>
-                            <a href="www.instagram.com/@ViewBag.Iletisim.Instagram" class="instagram"><i class="bx bxl-instagram"></i></a>
-                            @*<a href="www.linkedin.com./@ViewBag.Iletisim.Linkedin" class="linkedin"><i class="bx bxl-linkedin"></i></a>*@
+                            @if (!string.IsNullOrEmpty((string)iletisim?.Twitter))
+                            {
+                                <a href="https://twitter.com/@iletisim.Twitter" aria-label="X (Twitter)" rel="noopener" target="_blank"><i class="bx bxl-twitter" aria-hidden="true"></i></a>
+                            }
+                            @if (!string.IsNullOrEmpty((string)iletisim?.Facebook))
+                            {
+                                <a href="https://www.facebook.com/@iletisim.Facebook" aria-label="Facebook" rel="noopener" target="_blank"><i class="bx bxl-facebook" aria-hidden="true"></i></a>
+                            }
+                            @if (!string.IsNullOrEmpty((string)iletisim?.Instagram))
+                            {
+                                <a href="https://www.instagram.com/@iletisim.Instagram" aria-label="Instagram" rel="noopener" target="_blank"><i class="bx bxl-instagram" aria-hidden="true"></i></a>
+                            }
                         </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 footer-links">
+                        <h2>Menü</h2>
+                        <ul>
+                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/">Ana Sayfa</a></li>
+                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Hakkimizda">Hakkımızda</a></li>
+                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Hizmetlerimiz">Hizmetlerimiz</a></li>
+                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/BlogPost">Blog</a></li>
+                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Iletisim">İletişim</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 footer-links">
+                        <h2>Son Yazılar</h2>
+                        <ul>
+                            @foreach (var item in ViewBag.Blog ?? new List<CorporateWebsite.Models.Model.Blog>())
+                            {
+                                <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)">@item.Baslik</a></li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h2>İletişim</h2>
+                        <address class="mb-0">
+                            @if (!string.IsNullOrEmpty((string)iletisim?.Adres))
+                            {
+                                <p class="mb-2"><i class="bi bi-geo-alt me-2" aria-hidden="true"></i>@iletisim.Adres</p>
+                            }
+                            @if (telefonLink != null)
+                            {
+                                <p class="mb-2"><i class="bi bi-telephone me-2" aria-hidden="true"></i><a href="@telefonLink">@telefon</a></p>
+                            }
+                            @if (!string.IsNullOrEmpty(eposta))
+                            {
+                                <p class="mb-2"><i class="bi bi-envelope me-2" aria-hidden="true"></i><a href="mailto:@eposta">@eposta</a></p>
+                            }
+                        </address>
                     </div>
 
                 </div>
@@ -173,30 +220,18 @@
 
         <div class="container">
             <div class="copyright">
-                <p>  @DateTime.Now.Year &copy; Tüm Hakları Gizlidir.</p>
-                <p> Designed by Alp İşören</p>
-
+                <p>&copy; @DateTime.Now.Year @unvan.TrimEnd('.'). Tüm hakları saklıdır.</p>
             </div>
-
         </div>
-    </footer><!-- End Footer -->
+    </footer>
 
-    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center" aria-label="Sayfanın başına dön"><i class="bi bi-arrow-up-short" aria-hidden="true"></i></a>
 
-    <!-- Vendor JS Files -->
     <script src="/Content/SiteLayout/assets/vendor/aos/aos.js"></script>
     <script src="/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/glightbox/js/glightbox.min.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/php-email-form/validate.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/purecounter/purecounter.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/swiper/swiper-bundle.min.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/waypoints/noframework.waypoints.js"></script>
-
-    <!-- Template Main JS File -->
-    <script src="/Content/SiteLayout/assets/js/main.js"></script>
-
-    <script src="~/Scripts/jquery-3.3.1.js"></script>
-    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/site.js")"></script>
+    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/yorum.js")"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/iletisim.js")"></script>
 </body>
 </html>

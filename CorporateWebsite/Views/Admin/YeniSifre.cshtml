@@ -1,0 +1,45 @@
+﻿@{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    ViewBag.Title = "Yeni Şifre Belirle";
+}
+
+<h1>Yeni şifre belirleyin</h1>
+
+@if (ViewBag.Basarili != null)
+{
+    <div class="alert alert-success" role="status">@ViewBag.Basarili</div>
+    <a class="btn btn-primary btn-block" href="/yonetimpaneli/giris">Giriş Yap</a>
+}
+else if (ViewBag.Hata != null)
+{
+    <div class="alert alert-danger" role="alert">@ViewBag.Hata</div>
+    <a class="btn btn-default btn-block" href="/Admin/ResetPassword/">Yeniden Bağlantı İste</a>
+}
+else
+{
+    <p class="kp-sub">Şifreniz en az 8 karakter olmalıdır.</p>
+    if (ViewBag.Uyari != null)
+    {
+        <div class="alert alert-warning" role="alert">@ViewBag.Uyari</div>
+    }
+
+    using (Html.BeginForm("YeniSifre", "Admin", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="token" value="@ViewBag.Token" />
+
+        <div class="form-group">
+            <label for="sifre">Yeni şifre</label>
+            <input class="form-control" type="password" id="sifre" name="sifre" required minlength="8" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+            <label for="sifreTekrar">Yeni şifre (tekrar)</label>
+            <input class="form-control" type="password" id="sifreTekrar" name="sifreTekrar" required minlength="8" autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Şifreyi Kaydet</button>
+    }
+}
+
+<div class="kp-auth-links">
+    <a href="/yonetimpaneli/giris"><i class="fa fa-angle-left" aria-hidden="true"></i> Girişe dön</a>
+</div>

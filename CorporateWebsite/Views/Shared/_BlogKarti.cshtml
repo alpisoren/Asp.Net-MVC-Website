@@ -1,0 +1,35 @@
+﻿@model CorporateWebsite.Models.Model.Blog
+@using CorporateWebsite.Helper;
+@{
+    var url = SeoHelper.BlogUrl(Model.Baslik, Model.BlogId);
+}
+<article class="kw-card">
+    <a class="kw-card-media d-block" href="@url" tabindex="-1" aria-hidden="true">
+        @if (!string.IsNullOrEmpty(Model.ResimURL))
+        {
+            <img src="@Model.ResimURL" alt="" loading="lazy" width="600" height="338">
+        }
+        else
+        {
+            <span class="kw-card-placeholder"><i class="bi bi-journal-text"></i></span>
+        }
+    </a>
+    <div class="kw-card-body">
+        @if (Model.Kategori != null)
+        {
+            <div class="mb-2"><span class="kw-badge"><i class="bi bi-folder2" aria-hidden="true"></i> @Model.Kategori.KategoriAd</span></div>
+        }
+        <p class="kw-meta">
+            <time datetime="@Model.YayinTarihi.ToString("yyyy-MM-dd")">@Model.YayinTarihi.ToString("d MMMM yyyy", TarihHelper.Tr)</time>
+            @if (!string.IsNullOrEmpty(Model.Yazar))
+            {
+                <span>· @Model.Yazar</span>
+            }
+        </p>
+        <h3><a href="@url">@Model.Baslik</a></h3>
+        <p class="kw-card-text">@MetinHelper.Ozet(Model.Icerik, 140)</p>
+        <div class="kw-card-footer">
+            <a class="kw-link-arrow" href="@url">Devamını oku<span class="visually-hidden">: @Model.Baslik</span> <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </div>
+</article>

@@ -1,69 +1,33 @@
 ﻿@model IEnumerable<CorporateWebsite.Models.Model.Iletisim>
-
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "İletişim Bilgileri";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    if (!Model.Any())
+    {
+        ViewBag.YeniEkleUrl = "/Iletisim/Create";
+    }
 }
 
+<p class="kp-muted">Sitenin İletişim sayfasında ve alt bilgisinde (footer) görünen bilgiler. Sitede yalnızca ilk kayıt kullanılır.</p>
 
-<p>
-    @Html.ActionLink("Yeni Oluştur", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Adres)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Telefon)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Fax)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Whatsapp)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Facebook)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Twitter)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Instagram)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Adres)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Telefon)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Fax)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Whatsapp)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Facebook)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Twitter)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Instagram)
-        </td>
-        <td>
-            @Html.ActionLink("Düzenle", "Edit", new { id=item.IletisimId }) |
-            @Html.ActionLink("Detaylar", "Details", new { id=item.IletisimId }) |
-            @Html.ActionLink("Sil", "Delete", new { id=item.IletisimId })
-        </td>
-    </tr>
+@if (!Model.Any())
+{
+    <div class="kp-empty"><i class="fa fa-address-book-o" aria-hidden="true"></i><p>İletişim bilgisi girilmemiş.</p><a class="btn btn-primary" href="/Iletisim/Create">Bilgileri girin</a></div>
 }
 
-</table>
+@foreach (var item in Model)
+{
+    <dl class="dl-horizontal">
+        <dt>Adres</dt><dd>@(item.Adres ?? "—")</dd>
+        <dt>Telefon</dt><dd>@(item.Telefon ?? "—")</dd>
+        <dt>E-posta</dt><dd>@(item.Eposta ?? "—")</dd>
+        <dt>WhatsApp</dt><dd>@(item.Whatsapp ?? "—")</dd>
+        <dt>Facebook</dt><dd>@(item.Facebook ?? "—")</dd>
+        <dt>X (Twitter)</dt><dd>@(item.Twitter ?? "—")</dd>
+        <dt>Instagram</dt><dd>@(item.Instagram ?? "—")</dd>
+    </dl>
+    <div class="kp-form-actions">
+        <a class="btn btn-primary" href="/Iletisim/Edit/@item.IletisimId"><i class="fa fa-pencil" aria-hidden="true"></i>Düzenle</a>
+        <a class="btn btn-default" href="/Iletisim/Delete/@item.IletisimId"><i class="fa fa-trash-o" aria-hidden="true"></i>Sil</a>
+    </div>
+}

@@ -11,8 +11,10 @@ namespace CorporateWebsite.Models.Model
     [Table("Kimlik")]
     public class Kimlik
     {
+        // Veritabanındaki kolon adı tarihsel olarak "Kimlikd"; şemayı değiştirmeden C# tarafında düzeltildi.
         [Key]
-        public int Kimlikd { get; set; }
+        [Column("Kimlikd")]
+        public int KimlikId { get; set; }
 
         [DisplayName("Site Başlık")]
         [Required, StringLength(100, ErrorMessage = "100 Karakter olmalıdır")]

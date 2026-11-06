@@ -1,38 +1,45 @@
-﻿
-@model IEnumerable<CorporateWebsite.Models.Model.Hizmet>
+﻿@model IEnumerable<CorporateWebsite.Models.Model.Hizmet>
+@using CorporateWebsite.Helper;
 @{
-    ViewBag.Title = "Hizmetlerimiz";
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    ViewBag.Title = "Hizmetlerimiz";
+    ViewBag.SayfaBasligi = "Hizmetlerimiz";
 }
-<div class="services">
+
+<section class="kw-section">
     <div class="container">
-        <div class="row">
-            <section class="breadcrumbs">
-                <div class="container">
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2>Hizmetlerimiz</h2>
-                    </div>
-
-                </div>
-                </section>
+        @if (!Model.Any())
+        {
+            <div class="kw-empty">
+                <i class="bi bi-briefcase" aria-hidden="true"></i>
+                Hizmetlerimiz yakında burada olacak. Bilgi almak için <a href="/Iletisim">bize ulaşın</a>.
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
                 @foreach (var item in Model)
                 {
-
-                    <div class="col-md-6 col-lg-3 d-flex align-items-stretch" data-aos="fade-up">
-                        <div class="icon-box icon-box-blue">
-
-                            <img class="icon-img" src="@item.ResimUrl" />
-                            <h4 class="title"><a href="">@item.Baslik</a></h4>
-                            @Html.Raw(item.Aciklama)
-
-
-                        </div>
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                        <article class="kw-card">
+                            @if (!string.IsNullOrEmpty(item.ResimUrl))
+                            {
+                                <div class="kw-card-media">
+                                    <img src="@item.ResimUrl" alt="" loading="lazy" width="500" height="281">
+                                </div>
+                            }
+                            <div class="kw-card-body">
+                                @if (string.IsNullOrEmpty(item.ResimUrl))
+                                {
+                                    <div class="kw-service-icon" aria-hidden="true"><i class="bi bi-briefcase"></i></div>
+                                }
+                                <h2 class="h5">@item.Baslik</h2>
+                                <div class="kw-card-text kw-prose">@Html.Raw(HtmlTemizleyici.Temizle(item.Aciklama))</div>
+                            </div>
+                        </article>
                     </div>
-
-
                 }
-        </div>
+            </div>
+        }
     </div>
-
-</div>
+</section>

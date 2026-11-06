@@ -1,118 +1,91 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
+﻿using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
+using CorporateWebsite.Services;
+using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize(SadeceAdmin = true)]
     public class IletisimController : Controller
     {
-        private KurumsalDBContext db = new KurumsalDBContext();
+        private const string Alanlar = "Adres,Telefon,Eposta,Whatsapp,Facebook,Twitter,Instagram";
 
-        // GET: Iletisim
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private AyarServisi servis;
+
+        /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
+        private AyarServisi Servis
+        {
+            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+        }
+
+        // "/Iletisim" sitenin ziyaretçi sayfasıdır (HomeController); panel listesi bu yüzden açık adla yönlendirilir.
+        [Route("Iletisim/Index")]
         public ActionResult Index()
         {
-            return View(db.Iletisim.ToList());
+            return View(Servis.IletisimListele());
         }
 
-        // GET: Iletisim/Details/5
         public ActionResult Details(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Iletisim iletisim = db.Iletisim.Find(id);
-            if (iletisim == null)
-            {
-                return HttpNotFound();
-            }
-            return View(iletisim);
+            var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
+            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
         }
 
-        // GET: Iletisim/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: Iletisim/Create
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "IletisimId,Adres,Telefon,Fax,Whatsapp,Facebook,Twitter,Instagram")] Iletisim iletisim)
+        public ActionResult Create([Bind(Include = Alanlar)] Iletisim iletisim)
         {
             if (ModelState.IsValid)
             {
-                db.Iletisim.Add(iletisim);
-                db.SaveChanges();
+                Servis.IletisimOlustur(iletisim);
                 return RedirectToAction("Index");
             }
-
             return View(iletisim);
         }
 
-        // GET: Iletisim/Edit/5
         public ActionResult Edit(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Iletisim iletisim = db.Iletisim.Find(id);
-            if (iletisim == null)
-            {
-                return HttpNotFound();
-            }
-            return View(iletisim);
+            var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
+            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
         }
 
-        // POST: Iletisim/Edit/5
-        // Aşırı gönderim saldırılarından korunmak için bağlamak istediğiniz belirli özellikleri etkinleştirin. 
-        // Daha fazla bilgi için bkz. https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "IletisimId,Adres,Telefon,Fax,Whatsapp,Facebook,Twitter,Instagram")] Iletisim iletisim)
+        public ActionResult Edit(int id, [Bind(Include = Alanlar)] Iletisim iletisim)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(iletisim).State = EntityState.Modified;
-                db.SaveChanges();
+                if (!Servis.IletisimGuncelle(id, iletisim))
+                {
+                    return HttpNotFound();
+                }
                 return RedirectToAction("Index");
             }
+            iletisim.IletisimId = id;
             return View(iletisim);
         }
 
-        // GET: Iletisim/Delete/5
         public ActionResult Delete(int? id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Iletisim iletisim = db.Iletisim.Find(id);
-            if (iletisim == null)
-            {
-                return HttpNotFound();
-            }
-            return View(iletisim);
+            var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
+            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
         }
 
-        // POST: Iletisim/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Iletisim iletisim = db.Iletisim.Find(id);
-            db.Iletisim.Remove(iletisim);
-            db.SaveChanges();
+            if (!Servis.IletisimSil(id))
+            {
+                return HttpNotFound();
+            }
             return RedirectToAction("Index");
         }
 

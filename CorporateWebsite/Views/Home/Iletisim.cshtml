@@ -1,94 +1,93 @@
 ﻿@model CorporateWebsite.Models.Model.Iletisim
 @{
-    ViewBag.Title = "İletisim";
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    ViewBag.Title = "İletişim";
+    ViewBag.SayfaBasligi = "İletişim";
+    ViewBag.CtaGizle = true; // bu sayfada "iletişime geçin" şeridine gerek yok
+
+    string eposta = Model?.Eposta;
+    string telefon = Model?.Telefon;
+    string telefonLink = string.IsNullOrEmpty(telefon) ? null : "tel:" + System.Text.RegularExpressions.Regex.Replace(telefon, @"[^\d+]", "");
+    string haritaUrl = string.IsNullOrWhiteSpace(Model?.Adres) ? null
+        : "https://www.google.com/maps?q=" + Uri.EscapeDataString(Model.Adres) + "&output=embed";
+
+    string uyari = ViewBag.Uyari;
+    bool uyariBasarili = ViewBag.UyariBasarili == true;
 }
 
-<main id="main">
+<section class="kw-section">
+    <div class="container">
+        <div class="row g-4 g-lg-5">
 
-    <!-- ======= Contact Section ======= -->
-    <section class="breadcrumbs">
-        <div class="container">
+            <div class="col-lg-5">
+                <span class="kw-eyebrow">Bize ulaşın</span>
+                <h2 class="mb-3">Size nasıl yardımcı olabiliriz?</h2>
+                <p class="text-secondary mb-4">Formu doldurun, en kısa sürede size dönüş yapalım. Dilerseniz doğrudan arayabilir ya da e-posta gönderebilirsiniz.</p>
 
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>İletişim</h2>
+                @if (!string.IsNullOrEmpty(Model?.Adres))
+                {
+                    <div class="kw-contact-item">
+                        <span class="kw-contact-icon" aria-hidden="true"><i class="bi bi-geo-alt"></i></span>
+                        <div><h3>Adres</h3><p>@Model.Adres</p></div>
+                    </div>
+                }
+                @if (telefonLink != null)
+                {
+                    <div class="kw-contact-item">
+                        <span class="kw-contact-icon" aria-hidden="true"><i class="bi bi-telephone"></i></span>
+                        <div><h3>Telefon</h3><p><a href="@telefonLink">@telefon</a></p></div>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(eposta))
+                {
+                    <div class="kw-contact-item">
+                        <span class="kw-contact-icon" aria-hidden="true"><i class="bi bi-envelope"></i></span>
+                        <div><h3>E-posta</h3><p><a href="mailto:@eposta">@eposta</a></p></div>
+                    </div>
+                }
             </div>
 
-        </div>
-    </section><!-- End Contact Section -->
-    <!-- ======= Contact Section ======= -->
-    <section class="contact" data-aos="fade-up" data-aos-easing="ease-in-out" data-aos-duration="500">
-        <div class="container">
-
-            <div class="row">
-
-                <div class="col-lg-6">
-
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="info-box">
-                                <i class="bx bx-map"></i>
-                                <h3>Adres</h3>
-                                <p>@Model.Adres</p>
+            <div class="col-lg-7">
+                <div class="kw-sidebar-box p-4 p-md-5">
+                    <h2 class="h4 mb-4" id="form-baslik">Mesaj gönderin</h2>
+                    <form id="iletisimFormu" class="kw-form" action="/Home/Iletisim" method="post" aria-labelledby="form-baslik">
+                        @Html.AntiForgeryToken()
+                        <div class="visually-hidden" aria-hidden="true"><label for="website">Bu alanı boş bırakın</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="name">Adınız Soyadınız <span class="kw-required" aria-hidden="true">*</span></label>
+                                <input type="text" name="name" class="form-control" id="name" required maxlength="100" autocomplete="name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="email">E-posta <span class="kw-required" aria-hidden="true">*</span></label>
+                                <input type="email" class="form-control" name="email" id="email" required maxlength="100" autocomplete="email">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="subject">Konu <span class="kw-required" aria-hidden="true">*</span></label>
+                                <input type="text" class="form-control" name="subject" id="subject" required maxlength="200">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="message">Mesajınız <span class="kw-required" aria-hidden="true">*</span></label>
+                                <textarea class="form-control" name="message" id="message" rows="6" required maxlength="5000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <div id="iletisimDurum" role="status" aria-live="polite" class="kw-alert @(uyari != null ? "is-visible " + (uyariBasarili ? "kw-alert-success" : "kw-alert-error") : null)">@uyari</div>
+                            </div>
+                            <div class="col-12 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <span class="kw-form-note"><span aria-hidden="true">*</span> Zorunlu alanlar</span>
+                                <button type="submit" class="kw-btn kw-btn-primary">Gönder <i class="bi bi-send" aria-hidden="true"></i></button>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="info-box">
-                                <i class="bx bx-envelope"></i>
-                                <h3>Email</h3>
-                                <p>@Model.Fax</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="info-box">
-                                <i class="bx bx-phone-call"></i>
-                                <h3>Call Us</h3>
-                                <p>@Model.Telefon</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="col-lg-6">
-                    <form action="/Home/Iletisim" method="post" role="form" class="php-email-form">
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <input type="text" name="name" class="form-control" id="name" placeholder="Adınız" required>
-                            </div>
-                            <div class="col-md-6 form-group mt-3 mt-md-0">
-                                <input type="email" class="form-control" name="email" id="email" placeholder="Mail Adresiniz" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 form-group mt-3">
-                                <input type="text" class="form-control" name="subject" id="subject" placeholder="Konu" required>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12 form-group mt-3">
-                                <textarea class="form-control" name="message" rows="5" placeholder="Mesaj" required></textarea>
-                            </div>
-                        </div >
-                        <div class="my-3">
-                            <div class="loading">Yükleniyor..</div>
-                            <div class="error-message">Mesaj İletilemedi!</div>
-                            <div class="sent-message">@ViewBag.Uyari</div>
-                        </div>
-                        <div class="text-center"><button type="submit">Gönder</button></div>
                     </form>
                 </div>
-
             </div>
-
         </div>
-    </section><!-- End Contact Section -->
-    <!-- ======= Map Section ======= -->
-    <section class="map mt-2">
-        <div class="container-fluid p-0">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a23e28c1191%3A0x49f75d3281df052a!2s150%20Park%20Row%2C%20New%20York%2C%20NY%2010007%2C%20USA!5e0!3m2!1sen!2sbg!4v1579767901424!5m2!1sen!2sbg" frameborder="0" style="border:0;" allowfullscreen=""></iframe>
-        </div>
-    </section><!-- End Map Section -->
 
-</main>
-
+        @if (haritaUrl != null)
+        {
+            <div class="mt-5">
+                <iframe class="kw-map" src="@haritaUrl" title="Adresimiz haritada: @Model.Adres" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        }
+    </div>
+</section>

@@ -1,16 +1,18 @@
-﻿
-@model IEnumerable<CorporateWebsite.Models.Model.Blog>
-<h3 class="sidebar-title">Son Gönderiler</h3>
-<div class="sidebar-item recent-posts">
-
-    @foreach (var item in Model)
+﻿@model IEnumerable<CorporateWebsite.Models.Model.Blog>
+@using CorporateWebsite.Helper;
+<section class="kw-sidebar-box" aria-labelledby="son-gonderiler-baslik">
+    <h2 id="son-gonderiler-baslik">Son Gönderiler</h2>
+    @if (!Model.Any())
     {
-        <div class="post-item clearfix">
-            <img src="@item.ResimURL" alt="">
-            <h4><a href="/Home/BlogDetay/@item.BlogId">@item.Baslik</a></h4>
-
-        </div>
+        <p class="kw-form-note mb-0">Henüz yazı yok.</p>
     }
-
-
-</div>
+    else
+    {
+        <ul class="kw-sidebar-list">
+            @foreach (var item in Model)
+            {
+                <li><a href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)"><span>@item.Baslik</span></a></li>
+            }
+        </ul>
+    }
+</section>

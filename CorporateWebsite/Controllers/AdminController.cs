@@ -1,22 +1,34 @@
-﻿using CorporateWebsite.Models;
+﻿using CorporateWebsite.Filters;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
-using System;
-using System.Collections.Generic;
+using CorporateWebsite.Models.ViewModel;
+using CorporateWebsite.Services;
+using System.Data.Entity;
 using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Web;
-using System.Web.Helpers;
 using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
+    [AdminAuthorize]
     public class AdminController : Controller
     {
-        KurumsalDBContext db = new KurumsalDBContext();
-        // GET: Admin
-       
+        private const string SifirlamaMesaji = "Bu e-posta adresi kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Bağlantı 1 saat geçerlidir.";
+        private const string GecersizBaglanti = "Bağlantı geçersiz ya da süresi dolmuş. Lütfen yeniden şifre sıfırlama isteyin.";
+
+        private readonly KurumsalDBContext db = new KurumsalDBContext();
+        private readonly YoneticiServisi servis;
+
+        public AdminController()
+        {
+            servis = new YoneticiServisi(db);
+        }
+
+        private int AktifAdminId
+        {
+            get { return YoneticiOturumu.Aktif(HttpContext)?.Id ?? 0; }
+        }
+
         [Route("yonetimpaneli")]
         public ActionResult Index()
         {
@@ -24,145 +36,222 @@ namespace CorporateWebsite.Controllers
             ViewBag.KategoriSay = db.Kategori.Count();
             ViewBag.HizmetSay = db.Hizmet.Count();
             ViewBag.YorumSay = db.Yorum.Count();
-
-            ViewBag.YorumOnay = db.Yorum.Where(x => x.Onayli == false).Count();
-            var sorgu = db.Kategori.ToList();
-            return View(sorgu);
+            ViewBag.BekleyenYorumlar = db.Yorum.AsNoTracking().Include(y => y.Blog)
+                .Where(y => !y.Onayli).OrderByDescending(y => y.YorumId).Take(5).ToList();
+            return View(db.Kategori.AsNoTracking().ToList());
         }
+
+        /// <summary>Layout'taki bildirim rozeti için bekleyen (onaysız) yorum sayısı.</summary>
+        [ChildActionOnly]
+        public ActionResult BekleyenYorumSayisi()
+        {
+            return Content(servis.BekleyenYorumSayisi().ToString());
+        }
+
+        // ---------------------------------------------------------------- Giriş / çıkış
+
+        [AllowAnonymous]
         [Route("yonetimpaneli/giris")]
-        public ActionResult Login()
+        public ActionResult Login(string returnUrl = null)
         {
-
-            return View();
-        }
-        [HttpPost]
-        public ActionResult Login(Admin admin)
-        {
-            var login = db.Admin.Where(x => x.Eposta == admin.Eposta).SingleOrDefault();
-            if (login.Eposta==admin.Eposta && login.Sifre== Crypto.Hash(admin.Sifre, "MD5"))
+            // Zaten giriş yapılmışsa panele geç
+            if (YoneticiOturumu.KimlikId(User) != null)
             {
-                Session["adminid"] = login.AdminId;
-                Session["eposta"] = login.Eposta;
-                Session["yetki"] = login.Yetki;
-
                 return RedirectToAction("Index", "Admin");
             }
-            ViewBag.Uyari = "Kullanıcı adı ya da şifre yanlış";
-            return View(admin);
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Login(string eposta, string sifre, bool beniHatirla = false, string returnUrl = null)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            Admin admin;
+            switch (servis.GirisYap(eposta, sifre, Request.UserHostAddress, out admin))
+            {
+                case GirisDurumu.Basarili:
+                    // Şifreli, HttpOnly oturum cookie'si; uygulama yeniden başlasa da geçerli kalır.
+                    Session.Clear();
+                    YoneticiOturumu.GirisYap(Response, admin.AdminId, admin.Eposta, beniHatirla);
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                    return RedirectToAction("Index", "Admin");
+
+                case GirisDurumu.GeciciOlarakEngellendi:
+                    ViewBag.Uyari = "Çok fazla hatalı giriş denemesi. Lütfen " + (int)YoneticiServisi.GirisEngelSuresi.TotalMinutes + " dakika sonra tekrar deneyin.";
+                    return View();
+
+                default:
+                    ViewBag.Uyari = "Kullanıcı adı ya da şifre yanlış";
+                    return View();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Logout()
         {
-            Session["adminid"] = null;
-            Session["eposta"] = null;
+            YoneticiOturumu.CikisYap();
+            Session.Clear();
             Session.Abandon();
             return RedirectToAction("Login", "Admin");
         }
 
+        // ---------------------------------------------------------------- Şifre sıfırlama
+
+        [AllowAnonymous]
         public ActionResult ResetPassword()
         {
             return View();
         }
+
+        [AllowAnonymous]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult ResetPassword(string eposta)
         {
-            var userAdmin = db.Admin.Where(x => x.Eposta == eposta).SingleOrDefault();
-            if (userAdmin != null )
-            {
-                //ssl ile ilgili mail gönderme sorunu çözümü :https://www.google.com/settings/security/lesssecureapps
-                //google hizmetlerinde mail gönderimi yapılamıyor bu tyüzden yandex üzerinden mail gönderildi.
-
-
-                //var newpass = Guid.NewGuid();
-                Random rnd = new Random();
-                var newpass = rnd.Next().ToString();
-                // Admin user = new Admin();
-                userAdmin.Sifre = Crypto.Hash(newpass, "MD5");
-                db.SaveChanges();
-                MailMessage mail = new MailMessage();
-                mail.From = new MailAddress("exehiro@yandex.com", "Kurumsal");
-
-                mail.To.Add(eposta);
-                // mail.Bcc.Add("exehiro@yandex.com");
-
-                mail.Subject = "Şifre Sıfırlama";
-                mail.IsBodyHtml = true;
-                var body = String.Format("Admin panel Yeni giriş şifreniz :{0}", newpass);
-                mail.Body = body;
-
-
-                SmtpClient sc = new SmtpClient();
-                sc.Port = 587;
-                sc.EnableSsl = true;
-                sc.Host = "smtp.yandex.com";
-                sc.UseDefaultCredentials = false;
-                sc.Credentials = new NetworkCredential("exehiro@yandex.com", "karahirolol123");
-
-                sc.Send(mail);
-
-                ViewBag.Uyarı = "Şifreniz başarı ile gönderildi.";
-            }
-            else
-            {
-                ViewBag.Uyarı = "Hata Oluştu Tekrar Deneyiniz.";
-            }
+            servis.SifirlamaBaslat(eposta, token => Url.Action("YeniSifre", "Admin", new { token = token }, Request.Url.Scheme));
+            // Hesabın var olup olmadığını belli etmemek için her durumda aynı mesaj.
+            ViewBag.Uyari = SifirlamaMesaji;
             return View();
         }
 
+        [AllowAnonymous]
+        public ActionResult YeniSifre(string token)
+        {
+            if (servis.TokenIleBul(token) == null)
+            {
+                ViewBag.Hata = GecersizBaglanti;
+            }
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult YeniSifre(string token, string sifre, string sifreTekrar)
+        {
+            ViewBag.Token = token;
+            if (servis.TokenIleBul(token) == null)
+            {
+                ViewBag.Hata = GecersizBaglanti;
+                return View();
+            }
+
+            var sonuc = servis.SifreyiYenile(token, sifre, sifreTekrar);
+            if (!sonuc.Basarili)
+            {
+                ViewBag.Uyari = sonuc.Hatalar.First().Value;
+                return View();
+            }
+
+            ViewBag.Basarili = "Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.";
+            return View();
+        }
+
+        // ---------------------------------------------------------------- Yönetici yönetimi
+
+        [AdminAuthorize(SadeceAdmin = true)]
         public ActionResult Adminler()
         {
-            return View(db.Admin.ToList());
+            return View(servis.Listele());
         }
+
+        [AdminAuthorize(SadeceAdmin = true)]
         public ActionResult Create()
         {
-            return View();
+            ViewBag.YetkiListesi = Yetkiler.SecimListesi(Yetkiler.Editor);
+            return View(new YoneticiFormModeli { Yetki = Yetkiler.Editor });
         }
-        [HttpPost]
-        public ActionResult Create(Admin admin,string sifre,string eposta)
-        {
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AdminAuthorize(SadeceAdmin = true)]
+        public ActionResult Create(YoneticiFormModeli model)
+        {
+            if (string.IsNullOrEmpty(model.Sifre))
+            {
+                ModelState.AddModelError("Sifre", "Şifre zorunludur.");
+            }
             if (ModelState.IsValid)
             {
-                admin.Sifre = Crypto.Hash(sifre, "MD5");
-                db.Admin.Add(admin);
-                db.SaveChanges();
-                return RedirectToAction("Adminler");
+                var sonuc = servis.Olustur(model);
+                if (sonuc.Basarili)
+                {
+                    return RedirectToAction("Adminler");
+                }
+                sonuc.ModelStateAktar(ModelState);
             }
-            return View();
+
+            model.Sifre = null;
+            ViewBag.YetkiListesi = Yetkiler.SecimListesi(model.Yetki);
+            return View(model);
         }
+
+        [AdminAuthorize(SadeceAdmin = true)]
         public ActionResult Edit(int id)
         {
-            var a = db.Admin.Where(x => x.AdminId == id).SingleOrDefault();
-            return View();
+            var model = servis.FormModeliGetir(id);
+            if (model == null)
+            {
+                return HttpNotFound();
+            }
+            ViewBag.YetkiListesi = Yetkiler.SecimListesi(model.Yetki);
+            return View(model);
         }
+
         [HttpPost]
-        public ActionResult Edit(int id,Admin admin, string sifre,string eposta , string yetki)
+        [ValidateAntiForgeryToken]
+        [AdminAuthorize(SadeceAdmin = true)]
+        public ActionResult Edit(int id, YoneticiFormModeli model)
         {
-         
             if (ModelState.IsValid)
             {
-                var a = db.Admin.Where(x => x.AdminId == id).SingleOrDefault();
-                a.Sifre = Crypto.Hash(sifre, "MD5");
-                a.Eposta = admin.Eposta;
-                a.Yetki = admin.Yetki;
-
-
-                db.Admin.Add(admin);
-                db.SaveChanges();
-                return RedirectToAction("Adminler");
+                var sonuc = servis.Guncelle(id, model, AktifAdminId);
+                if (sonuc == null)
+                {
+                    return HttpNotFound();
+                }
+                if (sonuc.Basarili)
+                {
+                    return RedirectToAction("Adminler");
+                }
+                sonuc.ModelStateAktar(ModelState);
             }
-            return View();
+
+            model.AdminId = id;
+            model.Sifre = null;
+            ViewBag.YetkiListesi = Yetkiler.SecimListesi(model.Yetki);
+            return View(model);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AdminAuthorize(SadeceAdmin = true)]
         public ActionResult Delete(int id)
         {
-            var a = db.Admin.Where(x => x.AdminId == id).SingleOrDefault();
-            if (a!=null)
+            var sonuc = servis.Sil(id, AktifAdminId);
+            if (!sonuc.Basarili)
             {
-                db.Admin.Remove(a);
-                db.SaveChanges();
-                return RedirectToAction("Adminler");
+                TempData["Uyari"] = sonuc.Hatalar.First().Value;
             }
-            return View();
+            return RedirectToAction("Adminler");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }
