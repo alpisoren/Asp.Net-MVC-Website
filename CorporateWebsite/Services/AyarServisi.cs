@@ -140,7 +140,7 @@ namespace CorporateWebsite.Services
         {
             hedef.Adres = MetinHelper.Kirp(kaynak.Adres);
             hedef.Telefon = MetinHelper.Kirp(kaynak.Telefon);
-            hedef.Fax = MetinHelper.Kirp(kaynak.Fax);
+            hedef.Eposta = MetinHelper.Kirp(kaynak.Eposta);
             hedef.Whatsapp = MetinHelper.Kirp(kaynak.Whatsapp);
             hedef.Facebook = MetinHelper.Kirp(kaynak.Facebook);
             hedef.Twitter = MetinHelper.Kirp(kaynak.Twitter);

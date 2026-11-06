@@ -25,7 +25,7 @@
     string baslik = ViewBag.Title as string;
     string tamBaslik = string.IsNullOrEmpty(baslik) ? (kimlik?.Title ?? unvan) : baslik + " | " + (kimlik?.Title ?? unvan);
 
-    string eposta = iletisim?.Fax;      // İletişim tablosunda e-posta tarihsel olarak "Fax" alanında tutuluyor
+    string eposta = iletisim?.Eposta;
     string telefon = iletisim?.Telefon;
     string telefonLink = string.IsNullOrEmpty(telefon) ? null : "tel:" + System.Text.RegularExpressions.Regex.Replace(telefon, @"[^\d+]", "");
 }

@@ -9,7 +9,7 @@ namespace CorporateWebsite.Controllers
     [AdminAuthorize(SadeceAdmin = true)]
     public class IletisimController : Controller
     {
-        private const string Alanlar = "Adres,Telefon,Fax,Whatsapp,Facebook,Twitter,Instagram";
+        private const string Alanlar = "Adres,Telefon,Eposta,Whatsapp,Facebook,Twitter,Instagram";
 
         private readonly KurumsalDBContext db = new KurumsalDBContext();
         private AyarServisi servis;

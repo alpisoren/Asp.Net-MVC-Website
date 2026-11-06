@@ -30,6 +30,33 @@ namespace CorporateWebsite.Tests
         }
 
         [TestMethod]
+        public void IletisimEposta_migrationi_Fax_kolonundaki_adresi_korur()
+        {
+            var migrator = new DbMigrator(new Configuration());
+            var oncesi = migrator.GetLocalMigrations().Last(x => x.EndsWith("_GirisKilidi"));
+            migrator.Update(oncesi); // IletisimEposta geri alınır: kolon yeniden "Fax"
+            try
+            {
+                using (var db = VeritabaniTestOrtami.YeniBaglam())
+                {
+                    db.Database.ExecuteSqlCommand("INSERT INTO Iletisim (Adres, Fax) VALUES (N'migration testi', N'bilgi@ornek.com')");
+                }
+            }
+            finally
+            {
+                new DbMigrator(new Configuration()).Update();
+            }
+
+            using (var db = VeritabaniTestOrtami.YeniBaglam())
+            {
+                var kayit = db.Iletisim.Single(x => x.Adres == "migration testi");
+                Assert.AreEqual("bilgi@ornek.com", kayit.Eposta);
+                db.Iletisim.Remove(kayit);
+                db.SaveChanges();
+            }
+        }
+
+        [TestMethod]
         public void Otomatik_migration_doneminden_kalan_veritabani_Baslangica_baglanir()
         {
             using (var db = VeritabaniTestOrtami.YeniBaglam())

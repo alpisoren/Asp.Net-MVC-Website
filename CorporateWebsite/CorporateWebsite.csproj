@@ -187,6 +187,9 @@
     <Content Include="Views\Shared\Error.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202611060741124_IletisimEposta.resx">
+      <DependentUpon>202611060741124_IletisimEposta.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202611060735337_GirisKilidi.resx">
       <DependentUpon>202611060735337_GirisKilidi.cs</DependentUpon>
     </EmbeddedResource>
@@ -198,6 +201,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\202611060741124_IletisimEposta.cs" />
+    <Compile Include="Migrations\202611060741124_IletisimEposta.Designer.cs">
+      <DependentUpon>202611060741124_IletisimEposta.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helper\VarlikHelper.cs" />
     <Compile Include="Migrations\202611060735337_GirisKilidi.cs" />
     <Compile Include="Migrations\202611060735337_GirisKilidi.Designer.cs">

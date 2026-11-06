@@ -5,7 +5,7 @@
     ViewBag.SayfaBasligi = "İletişim";
     ViewBag.CtaGizle = true; // bu sayfada "iletişime geçin" şeridine gerek yok
 
-    string eposta = Model?.Fax;   // e-posta tarihsel olarak "Fax" alanında tutuluyor
+    string eposta = Model?.Eposta;
     string telefon = Model?.Telefon;
     string telefonLink = string.IsNullOrEmpty(telefon) ? null : "tel:" + System.Text.RegularExpressions.Regex.Replace(telefon, @"[^\d+]", "");
     string haritaUrl = string.IsNullOrWhiteSpace(Model?.Adres) ? null

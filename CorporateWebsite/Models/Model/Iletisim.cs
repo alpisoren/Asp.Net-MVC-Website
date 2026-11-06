@@ -24,8 +24,8 @@ namespace CorporateWebsite.Models.Model
         public string Telefon { get; set; }
 
         [DisplayName("E-posta")]
-
-        public string Fax { get; set; }
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz")]
+        public string Eposta { get; set; }
 
         [DisplayName("WhatsApp")]
 
