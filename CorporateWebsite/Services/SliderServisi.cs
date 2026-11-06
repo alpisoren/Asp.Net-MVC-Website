@@ -1,9 +1,9 @@
-﻿using CorporateWebsite.Helper;
+﻿using Microsoft.AspNetCore.Http;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace CorporateWebsite.Services
 {
@@ -15,12 +15,10 @@ namespace CorporateWebsite.Services
         public const int ResimYukseklik = 700;
 
         private readonly KurumsalDBContext db;
-        private readonly HttpServerUtilityBase server;
 
-        public SliderServisi(KurumsalDBContext db, HttpServerUtilityBase server)
+        public SliderServisi(KurumsalDBContext db)
         {
             this.db = db;
-            this.server = server;
         }
 
         public List<Slider> Listele()
@@ -33,7 +31,7 @@ namespace CorporateWebsite.Services
             return db.Slider.AsNoTracking().SingleOrDefault(x => x.SliderId == id);
         }
 
-        public IslemSonucu Olustur(Slider model, HttpPostedFileBase resim)
+        public IslemSonucu Olustur(Slider model, IFormFile resim)
         {
             string url = null;
             if (resim != null)
@@ -57,7 +55,7 @@ namespace CorporateWebsite.Services
         }
 
         /// <summary>Kayıt yoksa null döner.</summary>
-        public IslemSonucu Guncelle(int id, Slider model, HttpPostedFileBase resim)
+        public IslemSonucu Guncelle(int id, Slider model, IFormFile resim)
         {
             var s = db.Slider.SingleOrDefault(x => x.SliderId == id);
             if (s == null)
@@ -73,7 +71,7 @@ namespace CorporateWebsite.Services
                 {
                     return IslemSonucu.Hata("", hata);
                 }
-                ResimHelper.Sil(server, s.ResimURL);
+                ResimHelper.Sil(s.ResimURL);
                 s.ResimURL = url;
             }
 
@@ -90,7 +88,7 @@ namespace CorporateWebsite.Services
             {
                 return false;
             }
-            ResimHelper.Sil(server, s.ResimURL);
+            ResimHelper.Sil(s.ResimURL);
             db.Slider.Remove(s);
             db.SaveChanges();
             return true;

@@ -3,23 +3,36 @@ using CorporateWebsite.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Web.Script.Serialization;
+using System.IO;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace CorporateWebsite.Tests
 {
     [TestClass]
     public class SeoTests
     {
+        private static string Metin(Microsoft.AspNetCore.Html.IHtmlContent icerik)
+        {
+            using (var w = new StringWriter())
+            {
+                icerik.WriteTo(w, HtmlEncoder.Default);
+                return w.ToString();
+            }
+        }
+
         [TestMethod]
         public void JsonLd_icerikteki_script_kapanisi_blogu_kapatamaz()
         {
-            var json = JsonLd.Yaz(new Dictionary<string, object> { { "headline", "Kötü </script><script>alert(1)</script> & \"tırnak\"" } }).ToHtmlString();
+            Microsoft.AspNetCore.Html.IHtmlContent json0 = JsonLd.Yaz(new Dictionary<string, object> { { "headline", "Kötü </script><script>alert(1)</script> & \"tırnak\"" } });
+            var json = Metin(json0);
 
             StringAssert.DoesNotMatch(json, new System.Text.RegularExpressions.Regex("</script", System.Text.RegularExpressions.RegexOptions.IgnoreCase));
             Assert.IsFalse(json.Contains("<") || json.Contains(">") || json.Contains("&"), json);
             // Kaçışlanmış hâli yine aynı metne çözülür.
-            var geri = new JavaScriptSerializer().Deserialize<Dictionary<string, object>>(json);
+            var geri = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
             Assert.AreEqual("Kötü </script><script>alert(1)</script> & \"tırnak\"", geri["headline"]);
+            StringAssert.Contains(json, "Kötü", "Türkçe karakterler kaçışlanmadan yazılır");
         }
 
         [TestMethod]
@@ -57,7 +70,9 @@ namespace CorporateWebsite.Tests
         [TestMethod]
         public void Mutlak_adres_SiteAdresi_ayarini_kullanir()
         {
-            var istek = new SahteIstek(new Uri("http://ic-sunucu:8080/BlogPost"));
+            var ctx = Sahte.HttpBaglami(yol: "/BlogPost");
+            ctx.Request.Host = new Microsoft.AspNetCore.Http.HostString("ic-sunucu:8080");
+            var istek = ctx.Request;
             Assert.AreEqual("http://ic-sunucu:8080/Hakkimizda", SeoAdres.Mutlak(istek, "/Hakkimizda", ""), "Ayar boşsa isteğin adresi");
 
             const string ayar = "https://www.ornek.com.tr/";

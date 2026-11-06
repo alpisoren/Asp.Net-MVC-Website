@@ -1,18 +1,18 @@
 ﻿using CorporateWebsite.Controllers;
-using System.Configuration;
-using System.Web.Mvc;
+using CorporateWebsite.Helper;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace CorporateWebsite.Filters
 {
     /// <summary>
-    /// Content-Security-Policy başlığını ekler.
+    /// Content-Security-Policy başlığını ekler (Program.cs'te global filtre).
     ///  - Ziyaretçi sitesi (Home, Hata): inline script'e izin verilmez; XSS'e karşı asıl koruma budur.
-    ///    Google Analytics yalnızca Web.config'te GoogleAnalyticsId doluysa ve yalnızca gereken Google adresleri için açılır.
+    ///    Google Analytics yalnızca appsettings → Site:GoogleAnalyticsId doluysa ve yalnızca gereken Google adresleri için açılır.
     ///  - Yönetim paneli: aynı şekilde inline script yasak (Jodit editörü inline olay özniteliği kullanmaz).
     ///    Editör ve tablolar satır içi stil kullandığı için yalnızca style-src'de 'unsafe-inline' var.
-    /// Yazı tipleri sitenin kendi sunucusundan gelir (Content/SiteLayout/fonts). Diğer güvenlik başlıkları Web.config'de.
+    /// Yazı tipleri sitenin kendi sunucusundan gelir (wwwroot/Content/SiteLayout/fonts). Diğer başlıklar Program.cs'te.
     /// </summary>
-    public class GuvenlikBasliklariAttribute : ActionFilterAttribute
+    public class GuvenlikBasliklariAttribute : ResultFilterAttribute
     {
         private const string GoogleAnalyticsBetik = " https://www.googletagmanager.com";
         private const string GoogleAnalyticsBaglanti = " https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com";
@@ -38,10 +38,10 @@ namespace CorporateWebsite.Filters
             "connect-src 'self'; " +
             "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'";
 
-        /// <summary>Web.config → GoogleAnalyticsId (G-XXXXXXXXXX). Boşsa analitik kapalı.</summary>
+        /// <summary>appsettings → Site:GoogleAnalyticsId (G-XXXXXXXXXX). Boşsa analitik kapalı.</summary>
         public static string AnalitikKimligi
         {
-            get { return AnalitikKimligiDogrula(ConfigurationManager.AppSettings["GoogleAnalyticsId"]); }
+            get { return AnalitikKimligiDogrula(Ayarlar.Site.GoogleAnalyticsId); }
         }
 
         /// <summary>Yalnızca GA4 biçimi (G-XXXXXXXX) kabul edilir: değer HTML'e ve CSP'ye yazıldığı için doğrulanır.</summary>
@@ -53,16 +53,9 @@ namespace CorporateWebsite.Filters
 
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
-            // Child action'lar (partial) ana isteğin başlıklarını paylaşır; ikinci kez ekleme.
-            if (filterContext.IsChildAction)
-            {
-                return;
-            }
-
             var siteMi = filterContext.Controller is HomeController || filterContext.Controller is HataController;
-            var response = filterContext.HttpContext.Response;
-            response.Headers.Remove("Content-Security-Policy");
-            response.AddHeader("Content-Security-Policy", siteMi ? SitePolitikasi(AnalitikKimligi != null) : PanelPolitikasi);
+            filterContext.HttpContext.Response.Headers["Content-Security-Policy"] =
+                siteMi ? SitePolitikasi(AnalitikKimligi != null) : PanelPolitikasi;
         }
     }
 }

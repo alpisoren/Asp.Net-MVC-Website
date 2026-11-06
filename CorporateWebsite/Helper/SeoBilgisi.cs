@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
-using System.Web;
-using System.Web.Script.Serialization;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 
 namespace CorporateWebsite.Helper
 {
@@ -40,15 +42,15 @@ namespace CorporateWebsite.Helper
     public static class SeoAdres
     {
         /// <summary>
-        /// Site içi yolu mutlak adrese çevirir. Web.config → appSettings → SiteAdresi doluysa o kullanılır
+        /// Site içi yolu mutlak adrese çevirir. appsettings → Site:SiteAdresi doluysa o kullanılır
         /// (ör. https://www.alanadi.com.tr); boşsa isteğin kendi adresi. Ters vekil (proxy) arkasında ayarı doldurun.
         /// </summary>
-        public static string Mutlak(HttpRequestBase istek, string yol)
+        public static string Mutlak(HttpRequest istek, string yol)
         {
-            return Mutlak(istek, yol, ConfigurationManager.AppSettings["SiteAdresi"]);
+            return Mutlak(istek, yol, Ayarlar.Site.SiteAdresi);
         }
 
-        public static string Mutlak(HttpRequestBase istek, string yol, string siteAdresi)
+        public static string Mutlak(HttpRequest istek, string yol, string siteAdresi)
         {
             if (string.IsNullOrEmpty(yol))
             {
@@ -70,18 +72,18 @@ namespace CorporateWebsite.Helper
         }
 
         /// <summary>Şema + alan adı, sonda eğik çizgi olmadan.</summary>
-        public static string Kok(HttpRequestBase istek)
+        public static string Kok(HttpRequest istek)
         {
-            return Kok(istek, ConfigurationManager.AppSettings["SiteAdresi"]);
+            return Kok(istek, Ayarlar.Site.SiteAdresi);
         }
 
-        public static string Kok(HttpRequestBase istek, string siteAdresi)
+        public static string Kok(HttpRequest istek, string siteAdresi)
         {
             if (!string.IsNullOrWhiteSpace(siteAdresi))
             {
                 return siteAdresi.Trim().TrimEnd('/');
             }
-            return istek.Url.GetLeftPart(UriPartial.Authority);
+            return istek.Scheme + "://" + istek.Host.Value;
         }
     }
 
@@ -91,11 +93,15 @@ namespace CorporateWebsite.Helper
         /// schema.org nesnesini &lt;script type="application/ld+json"&gt; içine güvenle konacak JSON'a çevirir.
         /// "&lt;" kaçışlanır; içerikteki "&lt;/script&gt;" bloğu kapatamaz.
         /// </summary>
-        public static IHtmlString Yaz(object veri)
+        // Türkçe karakterler olduğu gibi yazılır; HTML'e duyarlı karakterler (<, >, &, ', +) yine kaçışlanır.
+        private static readonly JsonSerializerOptions Secenekler = new JsonSerializerOptions
         {
-            var json = new JavaScriptSerializer().Serialize(veri)
-                .Replace("<", "\\u003c").Replace(">", "\\u003e").Replace("&", "\\u0026");
-            return new HtmlString(json);
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        };
+
+        public static IHtmlContent Yaz(object veri)
+        {
+            return new HtmlString(JsonSerializer.Serialize(veri, Secenekler));
         }
     }
 }

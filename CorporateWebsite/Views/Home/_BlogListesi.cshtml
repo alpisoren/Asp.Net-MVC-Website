@@ -1,6 +1,4 @@
-﻿@using PagedList;
-@using PagedList.Mvc;
-@model IPagedList<CorporateWebsite.Models.Model.Blog>
+﻿@model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
     // Sayfa adresi üreticisi view'dan gelir (blog ana listesi ya da kategori listesi)
     var sayfaUrl = (Func<int, string>)ViewData["SayfaUrl"];
@@ -38,7 +36,7 @@
                         @foreach (var item in Model)
                         {
                             <div class="col-md-6">
-                                @Html.Partial("_BlogKarti", item)
+                                @await Html.PartialAsync("_BlogKarti", item)
                             </div>
                         }
                     </div>
@@ -48,7 +46,7 @@
                 }
             </div>
             <div class="col-lg-4">
-                @Html.Partial("_BlogKenarCubugu")
+                @await Html.PartialAsync("_BlogKenarCubugu")
             </div>
         </div>
     </div>

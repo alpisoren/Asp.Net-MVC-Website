@@ -52,7 +52,7 @@
                                     <td><span class="kp-clamp">@y.Icerik</span></td>
                                     <td><span class="kp-clamp">@(y.Blog?.Baslik)</span></td>
                                     <td>
-                                        @using (Html.BeginForm("OnayDegistir", "Yorum", new { id = y.YorumId, donus = "/yonetimpaneli" }, FormMethod.Post, new { @class = "kp-inline" }))
+                                        @using (Html.BeginForm("OnayDegistir", "Yorum", new { id = y.YorumId, donus = "/yonetimpaneli" }, FormMethod.Post, null, new { @class = "kp-inline" }))
                                         {
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="kp-row-action"><i class="fa fa-check" aria-hidden="true"></i> Onayla</button>

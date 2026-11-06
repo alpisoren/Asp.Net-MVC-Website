@@ -6,7 +6,7 @@
     string logo = kimlik?.LogoUrl;
 
     // Menüde bulunduğumuz sayfayı işaretle
-    var aksiyon = (ViewContext.Controller.ControllerContext.RouteData.Values["action"] as string) ?? "";
+    var aksiyon = (ViewContext.RouteData.Values["action"] as string) ?? "";
     string aktif;
     switch (aksiyon)
     {
@@ -39,10 +39,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@tamBaslik</title>
-    @Html.Partial("_SeoEtiketleri")
-    @if (!string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["GoogleSiteDogrulama"]))
+    @await Html.PartialAsync("_SeoEtiketleri")
+    @if (!string.IsNullOrEmpty(Ayarlar.Site.GoogleSiteDogrulama))
     {
-        <meta name="google-site-verification" content="@System.Configuration.ConfigurationManager.AppSettings["GoogleSiteDogrulama"]">
+        <meta name="google-site-verification" content="@Ayarlar.Site.GoogleSiteDogrulama">
     }
     <link rel="alternate" type="application/rss+xml" title="@(kimlik?.Title ?? unvan) — Blog" href="/rss.xml">
     <meta name="theme-color" content="#F6F8FB">
@@ -54,17 +54,17 @@
     <!-- Yazı tipleri (başlık Poppins, metin Open Sans) sitenin kendi sunucusundan; en çok kullanılan ikisi önceden yüklenir -->
     <link rel="preload" href="/Content/SiteLayout/fonts/open-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/Content/SiteLayout/fonts/poppins-600-latin.woff2" as="font" type="font/woff2" crossorigin>
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/fonts/fonts.css")" rel="stylesheet">
+    <link href="~/Content/SiteLayout/fonts/fonts.css" asp-append-version="true" rel="stylesheet">
 
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/aos/aos.css")" rel="stylesheet">
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap-icons/bootstrap-icons.css")" rel="stylesheet">
+    <link href="~/Content/SiteLayout/assets/vendor/aos/aos.css" asp-append-version="true" rel="stylesheet">
+    <link href="~/Content/SiteLayout/assets/vendor/bootstrap/css/bootstrap.min.css" asp-append-version="true" rel="stylesheet">
+    <link href="~/Content/SiteLayout/assets/vendor/bootstrap-icons/bootstrap-icons.css" asp-append-version="true" rel="stylesheet">
 
     <!-- Şablon + kurumsal tema (tema.css şablonun üzerine yazar) -->
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/css/style.css")" rel="stylesheet">
-    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/css/tema.css")" rel="stylesheet">
+    <link href="~/Content/SiteLayout/assets/css/style.css" asp-append-version="true" rel="stylesheet">
+    <link href="~/Content/SiteLayout/css/tema.css" asp-append-version="true" rel="stylesheet">
     <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
-    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/tema-gecis.js")"></script>
+    <script src="~/Content/tema-gecis.js" asp-append-version="true"></script>
 </head>
 <body>
     <a class="kw-skip-link" href="#main">İçeriğe geç</a>
@@ -247,15 +247,15 @@
 
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center" aria-label="Sayfanın başına dön"><i class="bi bi-arrow-up-short" aria-hidden="true"></i></a>
 
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/aos/aos.js")"></script>
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js")"></script>
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/site.js")"></script>
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Scripts/jquery-3.7.1.min.js")"></script>
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/yorum.js")"></script>
-    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/iletisim.js")"></script>
+    <script defer src="~/Content/SiteLayout/assets/vendor/aos/aos.js" asp-append-version="true"></script>
+    <script defer src="~/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script defer src="~/Content/SiteLayout/js/site.js" asp-append-version="true"></script>
+    <script defer src="~/Scripts/jquery-3.7.1.min.js" asp-append-version="true"></script>
+    <script defer src="~/Content/SiteLayout/js/yorum.js" asp-append-version="true"></script>
+    <script defer src="~/Content/SiteLayout/js/iletisim.js" asp-append-version="true"></script>
     @if (analitikKimligi != null)
     {
-        <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/analitik.js")"></script>
+        <script defer src="~/Content/SiteLayout/js/analitik.js" asp-append-version="true"></script>
     }
 </body>
 </html>

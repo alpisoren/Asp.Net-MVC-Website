@@ -1,0 +1,73 @@
+# Kurumsal Web'i tek bir Linux sunucuda çalıştırır: site + SQL Server + Caddy (otomatik HTTPS).
+# Kullanım (sunucuda):
+#   cp .env.example .env      # değerleri doldurun
+#   docker compose up -d --build
+# Ayrıntılar: README → "Linux sunucuda yayın (Docker)".
+
+services:
+  web:
+    build: .
+    image: kurumsal-web
+    restart: unless-stopped
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__KurumsalDB: "Server=sqlserver;Database=KurumsalDB;User Id=sa;Password=${SQL_SA_SIFRE};TrustServerCertificate=True;Connect Timeout=60"
+      Site__SiteAdresi: "https://${ALAN_ADI}"
+      Site__ArkadaVekil: "true"
+      Site__IletisimAliciMail: "${ILETISIM_ALICI}"
+      Site__GoogleSiteDogrulama: "${GOOGLE_SITE_DOGRULAMA:-}"
+      Site__GoogleAnalyticsId: "${GOOGLE_ANALYTICS_ID:-}"
+      Smtp__Sunucu: "${SMTP_SUNUCU:-smtp.yandex.com}"
+      Smtp__Port: "${SMTP_PORT:-587}"
+      Smtp__Kullanici: "${SMTP_KULLANICI}"
+      Smtp__Sifre: "${SMTP_SIFRE}"
+      Smtp__Gonderen: "${SMTP_GONDEREN:-}"
+    volumes:
+      - yuklemeler:/uygulama/wwwroot/Uploads
+      - uygulama-verisi:/uygulama/App_Data
+    expose:
+      - "8080"
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"          # ücretsiz sürüm (veritabanı başına 10 GB)
+      MSSQL_SA_PASSWORD: "${SQL_SA_SIFRE}"
+      TZ: "Europe/Istanbul"
+    volumes:
+      - sql-verisi:/var/opt/mssql
+      - ./yedek:/var/opt/mssql/yedek   # BACKUP DATABASE ... TO DISK='/var/opt/mssql/yedek/...'
+    # Port dışarı AÇILMAZ; yalnızca bu ağdaki "web" servisi erişir.
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ALAN_ADI: "${ALAN_ADI}"
+      ALAN_ADI_CIPLAK: "${ALAN_ADI_CIPLAK:-}"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-verisi:/data
+      - caddy-ayar:/config
+
+volumes:
+  yuklemeler:
+  uygulama-verisi:
+  sql-verisi:
+  caddy-verisi:
+  caddy-ayar:

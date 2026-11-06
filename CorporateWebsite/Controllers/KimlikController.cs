@@ -1,9 +1,9 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -16,7 +16,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private AyarServisi Servis
         {
-            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new AyarServisi(db)); }
         }
 
         public ActionResult Index()
@@ -27,19 +27,19 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int? id)
         {
             var kimlik = id.HasValue ? Servis.KimlikBul(id.Value) : null;
-            return kimlik == null ? (ActionResult)HttpNotFound() : View(kimlik);
+            return kimlik == null ? (ActionResult)NotFound() : View(kimlik);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind(Include = "Title,Keywords,Description,Unvan")] Kimlik kimlik, HttpPostedFileBase LogoURL)
+        public ActionResult Edit(int id, [Bind("Title,Keywords,Description,Unvan")] Kimlik kimlik, IFormFile LogoURL)
         {
             if (ModelState.IsValid)
             {
                 var sonuc = Servis.KimlikGuncelle(id, kimlik, LogoURL);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {

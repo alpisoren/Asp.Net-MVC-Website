@@ -1,32 +1,37 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using SkiaSharp;
+using System;
 using System.IO;
 using System.Linq;
-using System.Web;
-using System.Web.Helpers;
 
 namespace CorporateWebsite.Helper
 {
+    /// <summary>
+    /// Resim yükleme: doğrular, kutuya sığdırır (en-boy oranı korunur, küçükler büyütülmez) ve
+    /// wwwroot/Uploads/{klasor}/ altına GUID adla kaydeder. Görsel işleme SkiaSharp (MIT) ile yapılır.
+    /// </summary>
     public static class ResimHelper
     {
         private const string YuklemeKoku = "/Uploads/";
         private const int MaksimumBoyut = 4 * 1024 * 1024; // 4 MB
+        private const int JpegKalitesi = 88;
         private static readonly string[] IzinliUzantilar = { ".jpg", ".jpeg", ".png" };
 
-        /// <summary>
-        /// Yüklenen resmi doğrular, boyutlandırır ve ~/Uploads/{klasor}/ altına rastgele bir adla kaydeder.
-        /// Başarılıysa site içi URL'yi, değilse null döner ve hata mesajını doldurur.
-        /// </summary>
-        public static string Kaydet(HttpPostedFileBase dosya, string klasor, int genislik, int yukseklik, out string hata)
+        /// <summary>wwwroot klasörünün tam yolu (Program.cs açılışta ayarlar; testler geçici klasör verir).</summary>
+        public static string KokKlasor { get; set; }
+
+        /// <summary>Başarılıysa site içi URL'yi (/Uploads/...), değilse null döner ve hata mesajını doldurur.</summary>
+        public static string Kaydet(IFormFile dosya, string klasor, int genislik, int yukseklik, out string hata)
         {
             hata = null;
 
-            if (dosya == null || dosya.ContentLength == 0)
+            if (dosya == null || dosya.Length == 0)
             {
                 hata = "Dosya seçilmedi.";
                 return null;
             }
 
-            if (dosya.ContentLength > MaksimumBoyut)
+            if (dosya.Length > MaksimumBoyut)
             {
                 hata = "Resim en fazla 4 MB olabilir.";
                 return null;
@@ -39,42 +44,52 @@ namespace CorporateWebsite.Helper
                 return null;
             }
 
-            WebImage img;
-            try
+            SKBitmap kaynak;
+            using (var akis = dosya.OpenReadStream())
             {
-                img = new WebImage(dosya.InputStream);
+                kaynak = SKBitmap.Decode(akis); // içerik gerçekten resim değilse null
             }
-            catch (Exception)
+            if (kaynak == null)
             {
                 hata = "Geçerli bir resim dosyası değil.";
                 return null;
             }
 
-            var dosyaAdi = Guid.NewGuid().ToString("N") + uzanti;
-            var url = YuklemeKoku + klasor + "/" + dosyaAdi;
-
-            // En-boy oranı korunur ve resim kutuya sığdırılır; küçük resimler büyütülmez (bulanıklaşmasın).
-            img.Resize(genislik, yukseklik, preserveAspectRatio: true, preventEnlarge: true);
-            var klasorYolu = System.Web.Hosting.HostingEnvironment.MapPath("~" + YuklemeKoku + klasor);
-            if (klasorYolu != null)
+            using (kaynak)
             {
-                Directory.CreateDirectory(klasorYolu); // ilk yüklemede klasör yoksa oluştur
-            }
-            img.Save("~" + url);
+                var oran = Math.Min(1.0, Math.Min((double)genislik / kaynak.Width, (double)yukseklik / kaynak.Height));
+                var yeniGenislik = Math.Max(1, (int)Math.Round(kaynak.Width * oran));
+                var yeniYukseklik = Math.Max(1, (int)Math.Round(kaynak.Height * oran));
 
-            return url;
+                var dosyaAdi = Guid.NewGuid().ToString("N") + uzanti;
+                var url = YuklemeKoku + klasor + "/" + dosyaAdi;
+                var hedefKlasor = Path.Combine(KokKlasorGerekli(), "Uploads", klasor);
+                Directory.CreateDirectory(hedefKlasor); // ilk yüklemede klasör yoksa oluştur
+
+                var bicim = uzanti == ".png" ? SKEncodedImageFormat.Png : SKEncodedImageFormat.Jpeg;
+                using (var hedef = oran < 1.0
+                           ? kaynak.Resize(new SKImageInfo(yeniGenislik, yeniYukseklik), new SKSamplingOptions(SKCubicResampler.Mitchell))
+                           : null)
+                using (var resim = SKImage.FromBitmap(hedef ?? kaynak))
+                using (var veri = resim.Encode(bicim, JpegKalitesi))
+                using (var cikis = File.Create(Path.Combine(hedefKlasor, dosyaAdi)))
+                {
+                    veri.SaveTo(cikis);
+                }
+                return url;
+            }
         }
 
-        /// <summary>Sadece ~/Uploads/ altındaki dosyaları siler; boş ya da dışarıyı gösteren yolları yok sayar.</summary>
-        public static void Sil(HttpServerUtilityBase server, string url)
+        /// <summary>Sadece /Uploads/ altındaki dosyaları siler; boş ya da dışarıyı gösteren yolları yok sayar.</summary>
+        public static void Sil(string url)
         {
             if (string.IsNullOrWhiteSpace(url) || !url.StartsWith(YuklemeKoku, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            var kok = Path.GetFullPath(server.MapPath("~" + YuklemeKoku));
-            var tamYol = Path.GetFullPath(server.MapPath("~" + url));
+            var kok = Path.GetFullPath(Path.Combine(KokKlasorGerekli(), "Uploads")) + Path.DirectorySeparatorChar;
+            var tamYol = Path.GetFullPath(Path.Combine(KokKlasorGerekli(), url.TrimStart('/').Replace('/', Path.DirectorySeparatorChar)));
             if (!tamYol.StartsWith(kok, StringComparison.OrdinalIgnoreCase))
             {
                 return;
@@ -84,6 +99,11 @@ namespace CorporateWebsite.Helper
             {
                 File.Delete(tamYol);
             }
+        }
+
+        private static string KokKlasorGerekli()
+        {
+            return KokKlasor ?? throw new InvalidOperationException("ResimHelper.KokKlasor ayarlanmamış.");
         }
     }
 }

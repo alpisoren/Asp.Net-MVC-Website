@@ -40,7 +40,7 @@ else
                         <td><span class="kp-clamp">@item.Icerik</span></td>
                         <td><span class="kp-clamp">@(item.Blog?.Baslik ?? "—")</span></td>
                         <td>
-                            @using (Html.BeginForm("OnayDegistir", "Yorum", new { id = item.YorumId }, FormMethod.Post, new { @class = "kp-inline" }))
+                            @using (Html.BeginForm("OnayDegistir", "Yorum", new { id = item.YorumId }, FormMethod.Post, null, new { @class = "kp-inline" }))
                             {
                                 @Html.AntiForgeryToken()
                                 if (item.Onayli)

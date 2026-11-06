@@ -1,8 +1,8 @@
-using CorporateWebsite.Models.ViewModel;
+﻿using CorporateWebsite.Models.ViewModel;
 using CorporateWebsite.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CorporateWebsite.Tests
 {

@@ -1,7 +1,7 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Helper;
 using System.Collections.Generic;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -23,9 +23,9 @@ namespace CorporateWebsite.Controllers
             var resimMi = new List<bool>();
             var mesajlar = new List<string>();
 
-            for (int i = 0; i < Request.Files.Count; i++)
+            for (int i = 0; i < Request.Form.Files.Count; i++)
             {
-                var dosya = Request.Files[i];
+                var dosya = Request.Form.Files[i];
                 string hata;
                 var url = ResimHelper.Kaydet(dosya, Klasor, MaksimumKenar, MaksimumKenar, out hata);
                 if (url == null)
@@ -37,7 +37,7 @@ namespace CorporateWebsite.Controllers
                 resimMi.Add(true);
             }
 
-            if (Request.Files.Count == 0)
+            if (Request.Form.Files.Count == 0)
             {
                 mesajlar.Add("Dosya seçilmedi.");
             }

@@ -1,4 +1,6 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
@@ -6,7 +8,7 @@ using CorporateWebsite.Models.ViewModel;
 using CorporateWebsite.Services;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Mvc;
+using System.Threading.Tasks;
 
 namespace CorporateWebsite.Controllers
 {
@@ -41,13 +43,6 @@ namespace CorporateWebsite.Controllers
             return View(db.Kategori.AsNoTracking().ToList());
         }
 
-        /// <summary>Layout'taki bildirim rozeti için bekleyen (onaysız) yorum sayısı.</summary>
-        [ChildActionOnly]
-        public ActionResult BekleyenYorumSayisi()
-        {
-            return Content(servis.BekleyenYorumSayisi().ToString());
-        }
-
         // ---------------------------------------------------------------- Giriş / çıkış
 
         [AllowAnonymous]
@@ -66,16 +61,15 @@ namespace CorporateWebsite.Controllers
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(string eposta, string sifre, bool beniHatirla = false, string returnUrl = null)
+        public async Task<ActionResult> Login(string eposta, string sifre, bool beniHatirla = false, string returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
             Admin admin;
-            switch (servis.GirisYap(eposta, sifre, Request.UserHostAddress, out admin))
+            switch (servis.GirisYap(eposta, sifre, HttpContext.Connection.RemoteIpAddress?.ToString(), out admin))
             {
                 case GirisDurumu.Basarili:
-                    // Şifreli, HttpOnly oturum cookie'si; uygulama yeniden başlasa da geçerli kalır.
-                    Session.Clear();
-                    YoneticiOturumu.GirisYap(Response, admin.AdminId, admin.Eposta, beniHatirla);
+                    // Şifreli, HttpOnly oturum çerezi; uygulama yeniden başlasa da geçerli kalır.
+                    await YoneticiOturumu.GirisYap(HttpContext, admin.AdminId, admin.Eposta, beniHatirla);
                     if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
                     {
                         return Redirect(returnUrl);
@@ -95,11 +89,9 @@ namespace CorporateWebsite.Controllers
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Logout()
+        public async Task<ActionResult> Logout()
         {
-            YoneticiOturumu.CikisYap();
-            Session.Clear();
-            Session.Abandon();
+            await YoneticiOturumu.CikisYap(HttpContext);
             return RedirectToAction("Login", "Admin");
         }
 
@@ -116,7 +108,7 @@ namespace CorporateWebsite.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult ResetPassword(string eposta)
         {
-            servis.SifirlamaBaslat(eposta, token => Url.Action("YeniSifre", "Admin", new { token = token }, Request.Url.Scheme));
+            servis.SifirlamaBaslat(eposta, token => Url.Action("YeniSifre", "Admin", new { token = token }, Request.Scheme));
             // Hesabın var olup olmadığını belli etmemek için her durumda aynı mesaj.
             ViewBag.Uyari = SifirlamaMesaji;
             return View();
@@ -201,7 +193,7 @@ namespace CorporateWebsite.Controllers
             var model = servis.FormModeliGetir(id);
             if (model == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             ViewBag.YetkiListesi = Yetkiler.SecimListesi(model.Yetki);
             return View(model);
@@ -217,7 +209,7 @@ namespace CorporateWebsite.Controllers
                 var sonuc = servis.Guncelle(id, model, AktifAdminId);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {

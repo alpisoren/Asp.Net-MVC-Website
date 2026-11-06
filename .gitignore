@@ -345,3 +345,9 @@ healthchecksdb
 CorporateWebsite/smtp.config
 CorporateWebsite/App_Data/Logs/
 CorporateWebsite/connectionStrings.config
+
+# .NET 10 sürümü: gizli ayarlar ve çalışma verisi
+CorporateWebsite/appsettings.Production.json
+CorporateWebsite/App_Data/
+.env
+yedek/

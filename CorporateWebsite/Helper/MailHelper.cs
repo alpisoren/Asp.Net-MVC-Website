@@ -1,19 +1,32 @@
+using System;
+using System.Net;
 using System.Net.Mail;
 
 namespace CorporateWebsite.Helper
 {
     /// <summary>
-    /// SMTP ayarları (sunucu, port, kullanıcı, şifre, gönderen) Web.config içindeki
-    /// system.net/mailSettings/smtp bölümünden okunur. Bu bölüm git'e girmeyen smtp.config dosyasındadır.
+    /// E-posta gönderimi. SMTP ayarları appsettings → "Smtp" bölümünden gelir (bkz. SmtpAyarlari);
+    /// şifre depoya girmez: geliştirmede user-secrets, sunucuda ortam değişkeni ya da appsettings.Production.json.
     /// </summary>
     public static class MailHelper
     {
         public static void Gonder(string alici, string konu, string govde, bool html = false, string yanitAdresi = null)
         {
-            using (var mail = new MailMessage())
-            using (var smtp = new SmtpClient())
+            var ayar = Ayarlar.Smtp;
+            if (string.IsNullOrWhiteSpace(ayar.Sunucu) || string.IsNullOrWhiteSpace(ayar.Kullanici))
             {
-                // From, smtp.config içindeki "from" niteliğinden gelir.
+                throw new InvalidOperationException("SMTP ayarları eksik (appsettings → Smtp).");
+            }
+
+            using (var mail = new MailMessage())
+            using (var smtp = new SmtpClient(ayar.Sunucu, ayar.Port))
+            {
+                smtp.EnableSsl = ayar.Ssl;
+                smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtp.UseDefaultCredentials = false;
+                smtp.Credentials = new NetworkCredential(ayar.Kullanici, ayar.Sifre);
+
+                mail.From = new MailAddress(string.IsNullOrWhiteSpace(ayar.Gonderen) ? ayar.Kullanici : ayar.Gonderen);
                 mail.To.Add(alici);
                 mail.Subject = TekSatir(konu);
                 mail.Body = govde;
@@ -25,7 +38,7 @@ namespace CorporateWebsite.Helper
                     {
                         mail.ReplyToList.Add(new MailAddress(yanitAdresi));
                     }
-                    catch (System.FormatException)
+                    catch (FormatException)
                     {
                         // Geçersiz yanıt adresi yok sayılır.
                     }

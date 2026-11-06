@@ -1,10 +1,9 @@
-﻿@using PagedList;
-@using CorporateWebsite.Helper;
+﻿@using CorporateWebsite.Helper;
 @model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
     string kategoriAd = ViewBag.KategoriAd;
-    string kategoriUrl = Request.Path;
+    string kategoriUrl = Context.Request.Path.Value;
     ViewBag.Title = kategoriAd + " yazıları";
     ViewBag.SayfaBasligi = kategoriAd;
     ViewBag.UstSayfaAd = "Blog";
@@ -12,4 +11,4 @@
     // Önceden sayfalama bağlantıları yanlışlıkla genel blog listesine gidiyordu; artık kategori içinde kalır.
     ViewData["SayfaUrl"] = (Func<int, string>)(p => p > 1 ? kategoriUrl + "?Page=" + p : kategoriUrl);
 }
-@Html.Partial("_BlogListesi", Model)
+@await Html.PartialAsync("_BlogListesi", Model)

@@ -1,4 +1,5 @@
-﻿using CorporateWebsite.Helper;
+﻿using Microsoft.AspNetCore.Http;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Models.ViewModel;
@@ -6,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;
 
 namespace CorporateWebsite.Services
 {
@@ -18,12 +18,10 @@ namespace CorporateWebsite.Services
         private const int ResimYukseklik = 400;
 
         private readonly KurumsalDBContext db;
-        private readonly HttpServerUtilityBase server;
 
-        public BlogServisi(KurumsalDBContext db, HttpServerUtilityBase server)
+        public BlogServisi(KurumsalDBContext db)
         {
             this.db = db;
-            this.server = server;
         }
 
         public List<Blog> Listele()
@@ -106,7 +104,7 @@ namespace CorporateWebsite.Services
             };
         }
 
-        public IslemSonucu Olustur(BlogFormModeli model, HttpPostedFileBase resim)
+        public IslemSonucu Olustur(BlogFormModeli model, IFormFile resim)
         {
             var sonuc = KategoriKontrol(model);
             if (!sonuc.Basarili)
@@ -140,7 +138,7 @@ namespace CorporateWebsite.Services
         }
 
         /// <summary>Kayıt yoksa null döner.</summary>
-        public IslemSonucu Guncelle(int id, BlogFormModeli model, HttpPostedFileBase resim)
+        public IslemSonucu Guncelle(int id, BlogFormModeli model, IFormFile resim)
         {
             var b = db.Blog.SingleOrDefault(x => x.BlogId == id);
             if (b == null)
@@ -162,7 +160,7 @@ namespace CorporateWebsite.Services
                 {
                     return IslemSonucu.Hata("", hata);
                 }
-                ResimHelper.Sil(server, b.ResimURL);
+                ResimHelper.Sil(b.ResimURL);
                 b.ResimURL = url;
             }
 
@@ -184,7 +182,7 @@ namespace CorporateWebsite.Services
             {
                 return false;
             }
-            ResimHelper.Sil(server, b.ResimURL);
+            ResimHelper.Sil(b.ResimURL);
             // Yorumlar bloga bağlı; önce onları kaldır ki yabancı anahtar hatası olmasın.
             if (b.Yorumlar != null)
             {

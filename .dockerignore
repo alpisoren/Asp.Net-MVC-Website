@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.vs/
+**/TestResults/
+**/App_Data/
+**/*.user
+**/appsettings.Production.json
+**/smtp.config
+**/connectionStrings.config
+CorporateWebsite.Tests/
+.git/
+.env
+yedek/
+design-system/

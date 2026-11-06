@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using System.Web;
 
 namespace CorporateWebsite.Helper
 {
@@ -18,7 +17,7 @@ namespace CorporateWebsite.Helper
             {
                 return "";
             }
-            var metin = HttpUtility.HtmlDecode(EtiketDesen.Replace(html, " "));
+            var metin = System.Net.WebUtility.HtmlDecode(EtiketDesen.Replace(html, " "));
             metin = BoslukDesen.Replace(metin, " ").Trim();
             if (metin.Length <= uzunluk)
             {

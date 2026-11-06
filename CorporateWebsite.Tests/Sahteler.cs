@@ -1,121 +1,99 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CorporateWebsite.Tests
 {
-    /// <summary>Testler için basit HttpContext/Session/Server/HttpPostedFile sahteleri.</summary>
-    internal class SahteSession : HttpSessionStateBase
+    /// <summary>Testler için ASP.NET Core bağlamı ve dosya sahteleri.</summary>
+    internal static class Sahte
     {
-        private readonly Dictionary<string, object> degerler = new Dictionary<string, object>();
-
-        public override object this[string name]
+        /// <summary>Çerez kimlik doğrulaması kayıtlı servislerle bir HTTP bağlamı (çıkış/giriş çağrıları çalışsın).</summary>
+        public static DefaultHttpContext HttpBaglami(ClaimsPrincipal kullanici = null, string yol = "/", string yontem = "GET")
         {
-            get { object v; return degerler.TryGetValue(name, out v) ? v : null; }
-            set { degerler[name] = value; }
+            var servisler = new ServiceCollection();
+            servisler.AddLogging();
+            servisler.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+            var ctx = new DefaultHttpContext { RequestServices = servisler.BuildServiceProvider() };
+            ctx.Request.Method = yontem;
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            var soru = yol.IndexOf('?');
+            ctx.Request.Path = soru < 0 ? yol : yol.Substring(0, soru);
+            ctx.Request.QueryString = soru < 0 ? QueryString.Empty : new QueryString(yol.Substring(soru));
+            ctx.User = kullanici ?? new ClaimsPrincipal(new ClaimsIdentity()); // anonim
+            return ctx;
+        }
+
+        /// <summary>Çerezden okunmuş gibi, belirtilen yönetici kimliği talebini taşıyan kullanıcı.</summary>
+        public static ClaimsPrincipal Yonetici(string kimlikDegeri)
+        {
+            return new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(Helper.YoneticiOturumu.KimlikTalebi, kimlikDegeri)
+            }, CookieAuthenticationDefaults.AuthenticationScheme));
+        }
+
+        public static IFormFile Dosya(string ad, byte[] veri, long? bildirilenBoyut = null)
+        {
+            return new SahteDosya(ad, veri ?? new byte[0], bildirilenBoyut);
+        }
+
+        private sealed class SahteDosya : IFormFile
+        {
+            private readonly byte[] veri;
+
+            public SahteDosya(string ad, byte[] veri, long? bildirilenBoyut)
+            {
+                FileName = ad;
+                Name = "dosya";
+                this.veri = veri;
+                Length = bildirilenBoyut ?? veri.Length;
+            }
+
+            public string ContentType { get; } = "application/octet-stream";
+            public string ContentDisposition { get; } = "";
+            public IHeaderDictionary Headers { get; } = new HeaderDictionary();
+            public long Length { get; }
+            public string Name { get; }
+            public string FileName { get; }
+
+            public Stream OpenReadStream()
+            {
+                return new MemoryStream(veri, false);
+            }
+
+            public void CopyTo(Stream target)
+            {
+                target.Write(veri, 0, veri.Length);
+            }
+
+            public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default)
+            {
+                return target.WriteAsync(veri, 0, veri.Length, cancellationToken);
+            }
         }
     }
 
-    internal class SahteHttpContext : HttpContextBase
+    /// <summary>TempData'yı bellekte tutar (controller testlerinde TempData["Basari"] vb.).</summary>
+    internal sealed class BellekTempDataSaglayici : ITempDataProvider
     {
-        private readonly HttpSessionStateBase session;
-        private readonly System.Collections.IDictionary items = new System.Collections.Hashtable();
+        private IDictionary<string, object> veri = new Dictionary<string, object>();
 
-        public SahteHttpContext(HttpSessionStateBase session)
+        public IDictionary<string, object> LoadTempData(HttpContext context)
         {
-            this.session = session;
+            return veri;
         }
 
-        public override HttpSessionStateBase Session
+        public void SaveTempData(HttpContext context, IDictionary<string, object> values)
         {
-            get { return session; }
-        }
-
-        public override System.Security.Principal.IPrincipal User { get; set; }
-
-        public override System.Collections.IDictionary Items
-        {
-            get { return items; }
-        }
-
-        private readonly HttpRequestBase istek = new SahteIstek();
-
-        public override HttpServerUtilityBase Server
-        {
-            get { return new SahteServer(Path.GetTempPath()); }
-        }
-
-        public override HttpRequestBase Request
-        {
-            get { return istek; }
-        }
-    }
-
-    /// <summary>UrlHelper.IsLocalUrl gibi yalnızca isteğin varlığını bekleyen kodlar için.</summary>
-    internal class SahteIstek : HttpRequestBase
-    {
-        private readonly Uri adres;
-
-        public SahteIstek(Uri adres = null)
-        {
-            this.adres = adres ?? new Uri("http://localhost/");
-        }
-
-        public override Uri Url
-        {
-            get { return adres; }
-        }
-
-        public override string ApplicationPath
-        {
-            get { return "/"; }
-        }
-    }
-
-    /// <summary>"~/..." yollarını verilen kök klasöre eşler.</summary>
-    internal class SahteServer : HttpServerUtilityBase
-    {
-        private readonly string kok;
-
-        public SahteServer(string kok)
-        {
-            this.kok = kok;
-        }
-
-        public override string MapPath(string path)
-        {
-            var goreli = path.TrimStart('~').TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            return Path.Combine(kok, goreli);
-        }
-    }
-
-    internal class SahteDosya : HttpPostedFileBase
-    {
-        private readonly string ad;
-        private readonly Stream icerik;
-        private readonly int boyut;
-
-        public SahteDosya(string ad, byte[] veri, int? bildirilenBoyut = null)
-        {
-            this.ad = ad;
-            icerik = new MemoryStream(veri ?? new byte[0]);
-            boyut = bildirilenBoyut ?? (veri == null ? 0 : veri.Length);
-        }
-
-        public override string FileName
-        {
-            get { return ad; }
-        }
-
-        public override int ContentLength
-        {
-            get { return boyut; }
-        }
-
-        public override Stream InputStream
-        {
-            get { return icerik; }
+            veri = values;
         }
     }
 

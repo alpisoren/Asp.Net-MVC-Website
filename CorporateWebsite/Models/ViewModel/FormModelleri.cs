@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Models.ViewModel
 {
@@ -57,7 +59,6 @@ namespace CorporateWebsite.Models.ViewModel
     }
 
     // Dosya input'u da "ResimURL" adını taşıdığı için bu alan model bağlamaya dahil edilmez.
-    [Bind(Exclude = "ResimURL")]
     public class BlogFormModeli
     {
         public int BlogId { get; set; }
@@ -68,7 +69,6 @@ namespace CorporateWebsite.Models.ViewModel
         public string Baslik { get; set; }
 
         [DisplayName("İçerik")]
-        [AllowHtml]
         public string Icerik { get; set; }
 
         [DisplayName("Kategori")]
@@ -76,6 +76,7 @@ namespace CorporateWebsite.Models.ViewModel
 
         /// <summary>Mevcut resmin adresi (sadece gösterim için; formdan bağlanmaz).</summary>
         [DisplayName("Resim")]
+        [BindNever] // dosya input'u aynı adı taşır; formdan bağlanmaz
         public string ResimURL { get; set; }
 
         [DisplayName("Yayın Tarihi")]
@@ -92,7 +93,6 @@ namespace CorporateWebsite.Models.ViewModel
         public string Etiketler { get; set; }
     }
 
-    [Bind(Exclude = "ResimUrl")]
     public class HizmetFormModeli
     {
         public int HizmetId { get; set; }
@@ -103,11 +103,11 @@ namespace CorporateWebsite.Models.ViewModel
         public string Baslik { get; set; }
 
         [DisplayName("Hizmet Açıklama")]
-        [AllowHtml]
         public string Aciklama { get; set; }
 
         /// <summary>Mevcut resmin adresi (sadece gösterim için; formdan bağlanmaz).</summary>
         [DisplayName("Hizmet Resim")]
+        [BindNever] // dosya input'u aynı adı taşır; formdan bağlanmaz
         public string ResimUrl { get; set; }
     }
 }

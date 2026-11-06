@@ -1,9 +1,8 @@
-﻿@using PagedList;
-@model IPagedList<CorporateWebsite.Models.Model.Blog>
+﻿@model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
     string arama = ViewBag.Arama;
-    string q = string.IsNullOrEmpty(arama) ? "" : "q=" + Url.Encode(arama);
+    string q = string.IsNullOrEmpty(arama) ? "" : "q=" + Uri.EscapeDataString(arama);
     if (string.IsNullOrEmpty(arama))
     {
         ViewBag.Title = Model.PageNumber > 1 ? "Blog - Sayfa " + Model.PageNumber : "Blog";
@@ -23,4 +22,4 @@
     ViewData["SayfaUrl"] = (Func<int, string>)(p =>
         "/BlogPost" + (p > 1 ? "?Page=" + p + (q.Length > 0 ? "&" + q : "") : (q.Length > 0 ? "?" + q : "")));
 }
-@Html.Partial("_BlogListesi", Model)
+@await Html.PartialAsync("_BlogListesi", Model)

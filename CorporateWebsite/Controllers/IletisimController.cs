@@ -1,8 +1,8 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -17,7 +17,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private AyarServisi Servis
         {
-            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new AyarServisi(db)); }
         }
 
         // "/Iletisim" sitenin ziyaretçi sayfasıdır (HomeController); panel listesi bu yüzden açık adla yönlendirilir.
@@ -30,7 +30,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Details(int? id)
         {
             var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
-            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
+            return iletisim == null ? (ActionResult)NotFound() : View(iletisim);
         }
 
         public ActionResult Create()
@@ -40,7 +40,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = Alanlar)] Iletisim iletisim)
+        public ActionResult Create([Bind(Alanlar)] Iletisim iletisim)
         {
             if (ModelState.IsValid)
             {
@@ -53,18 +53,18 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int? id)
         {
             var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
-            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
+            return iletisim == null ? (ActionResult)NotFound() : View(iletisim);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind(Include = Alanlar)] Iletisim iletisim)
+        public ActionResult Edit(int id, [Bind(Alanlar)] Iletisim iletisim)
         {
             if (ModelState.IsValid)
             {
                 if (!Servis.IletisimGuncelle(id, iletisim))
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 return RedirectToAction("Index");
             }
@@ -75,7 +75,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Delete(int? id)
         {
             var iletisim = id.HasValue ? Servis.IletisimBul(id.Value) : null;
-            return iletisim == null ? (ActionResult)HttpNotFound() : View(iletisim);
+            return iletisim == null ? (ActionResult)NotFound() : View(iletisim);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -84,7 +84,7 @@ namespace CorporateWebsite.Controllers
         {
             if (!Servis.IletisimSil(id))
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return RedirectToAction("Index");
         }
