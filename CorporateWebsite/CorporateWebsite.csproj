@@ -195,6 +195,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper\GunlukDinleyici.cs" />
     <Compile Include="Migrations\202611052248321_BlogAlanlari.Designer.cs">
       <DependentUpon>202611052248321_BlogAlanlari.cs</DependentUpon>
     </Compile>

@@ -76,6 +76,7 @@
     <Compile Include="ResimHelperTests.cs" />
     <Compile Include="AdminAuthorizeAttributeTests.cs" />
     <Compile Include="ServisKurallariTests.cs" />
+    <Compile Include="GunlukDinleyiciTests.cs" />
     <Compile Include="ControllerTests.cs" />
     <Compile Include="ServisVeritabaniTests.cs" />
     <Compile Include="MigrationTests.cs" />

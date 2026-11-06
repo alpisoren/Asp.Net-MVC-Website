@@ -63,10 +63,14 @@ namespace CorporateWebsite
         {
             try
             {
-                var klasor = HostingEnvironment.MapPath("~/App_Data/Logs");
-                Directory.CreateDirectory(klasor);
-                var dosya = Path.Combine(klasor, "hatalar.log");
-                Trace.Listeners.Add(new TextWriterTraceListener(dosya, "dosyaGunlugu"));
+                // App_Data/Logs/hatalar-YYYY-AA-GG.log: günlük dosya, dosya başına en fazla 5 MB,
+                // "HataGunluguSaklamaGun" (varsayılan 30) günden eskiler silinir.
+                int gun;
+                if (!int.TryParse(ConfigurationManager.AppSettings["HataGunluguSaklamaGun"], out gun))
+                {
+                    gun = 30;
+                }
+                Trace.Listeners.Add(new Helper.GunlukDinleyici(HostingEnvironment.MapPath("~/App_Data/Logs"), gun));
                 Trace.AutoFlush = true;
             }
             catch (Exception)
