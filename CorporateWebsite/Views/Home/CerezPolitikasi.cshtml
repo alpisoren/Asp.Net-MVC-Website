@@ -1,0 +1,71 @@
+﻿@{
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    ViewBag.Title = "Çerez Politikası";
+    ViewBag.SayfaBasligi = "Çerez Politikası";
+    ViewBag.CtaGizle = true;
+    string unvan = ViewBag.Kimlik?.Unvan ?? ViewBag.Kimlik?.Title ?? "Şirketimiz";
+    bool analitik = CorporateWebsite.Filters.GuvenlikBasliklariAttribute.AnalitikKimligi != null;
+    // NOT: Bu metin sitenin teknik olarak kullandığı çerezleri doğru listeler; yayına almadan önce
+    // KVKK aydınlatma metninizle birlikte hukuki açıdan gözden geçirilmesi önerilir.
+}
+<section class="kw-section">
+    <div class="container">
+        <div class="kw-prose kw-politika">
+            <p>
+                Bu sayfa, @unvan web sitesinin hangi çerezleri ve tarayıcı depolama alanlarını neden kullandığını açıklar.
+                Çerezler, ziyaret ettiğiniz sitelerin tarayıcınıza kaydettiği küçük metin dosyalarıdır.
+            </p>
+
+            <h2>Zorunlu çerezler</h2>
+            <p>Sitenin güvenli çalışması için gereklidir; onayınıza bağlı değildir ve kapatılamaz.</p>
+            <table>
+                <thead><tr><th scope="col">Ad</th><th scope="col">Amaç</th><th scope="col">Süre</th></tr></thead>
+                <tbody>
+                    <tr><td><code>__RequestVerificationToken</code></td><td>Form gönderimlerini sahte isteklere karşı korur (iletişim ve yorum formları).</td><td>Tarayıcı kapanana kadar</td></tr>
+                    <tr><td><code>.KurumsalPanel</code></td><td>Yalnızca yönetim paneline giriş yapan site yöneticileri için oturum çerezi.</td><td>2 saat; "Beni hatırla" ile 14 gün</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Tarayıcıda saklanan tercihler</h2>
+            <p>Çerez değildir; yalnızca sizin tarayıcınızda tutulur ve sunucuya gönderilmez.</p>
+            <table>
+                <thead><tr><th scope="col">Ad</th><th scope="col">Amaç</th></tr></thead>
+                <tbody>
+                    <tr><td><code>kw-tema</code></td><td>Açık / koyu tema seçiminiz.</td></tr>
+                    <tr><td><code>kw-cerez</code></td><td>Analitik çerezlere verdiğiniz onay ya da ret.</td></tr>
+                </tbody>
+            </table>
+
+            <h2>Analitik çerezler</h2>
+            @if (analitik)
+            {
+                <p>
+                    Siteyi nasıl kullandığınızı (hangi sayfaların ziyaret edildiği, ziyaretin süresi gibi) anlamak için
+                    <strong>yalnızca onay vermeniz hâlinde</strong> Google Analytics kullanılır. Onay vermezseniz Google'a hiçbir istek gönderilmez.
+                    Reklam ve kişiselleştirilmiş reklam özellikleri kapalıdır.
+                </p>
+                <table>
+                    <thead><tr><th scope="col">Ad</th><th scope="col">Sağlayıcı</th><th scope="col">Amaç</th><th scope="col">Süre</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>_ga</code></td><td>Google</td><td>Ziyaretçileri ayırt etmek (anonim istatistik)</td><td>2 yıl</td></tr>
+                        <tr><td><code>_ga_*</code></td><td>Google</td><td>Oturum durumunu korumak</td><td>2 yıl</td></tr>
+                    </tbody>
+                </table>
+                <p>
+                    Google Analytics verileri Google tarafından yurt dışındaki sunucularda işlenebilir. Onayınızı istediğiniz zaman
+                    <a href="#kw-cerez" data-cerez-ayar>çerez tercihlerinden</a> geri alabilirsiniz.
+                </p>
+            }
+            else
+            {
+                <p>Bu sitede şu anda analitik ya da reklam çerezi kullanılmamaktadır.</p>
+            }
+
+            <h2>Çerezleri tarayıcınızdan yönetmek</h2>
+            <p>
+                Tarayıcınızın ayarlarından çerezleri silebilir ya da engelleyebilirsiniz. Zorunlu çerezleri engellerseniz
+                iletişim ve yorum formları çalışmayabilir.
+            </p>
+        </div>
+    </div>
+</section>

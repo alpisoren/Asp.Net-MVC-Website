@@ -73,6 +73,22 @@ Testler `CorporateWebsite.Tests` projesindedir (MSTest). `Veritabani` kategorisi
 | `design-system/kurumsal-web/MASTER.md` | Renk, yazı tipi ve bileşen kuralları |
 | `tools/MachineKeyOlustur.ps1` | Çok sunuculu kurulum için `<machineKey>` üretir |
 
+## SEO ve Google araçları
+
+`Web.config` → `appSettings`:
+
+| Ayar | Ne işe yarar |
+|---|---|
+| `SiteAdresi` | Kalıcı alan adı (ör. `https://www.alanadi.com.tr`). Canonical, Open Graph, sitemap, RSS ve robots.txt bunu kullanır. **Canlıda mutlaka doldurun.** |
+| `GoogleSiteDogrulama` | Google Search Console "HTML etiketi" doğrulama kodu (yalnızca `content` değeri) |
+| `GoogleAnalyticsId` | GA4 ölçüm kimliği (`G-XXXXXXXXXX`). Boşsa analitik ve çerez bandı tamamen kapalıdır |
+
+- Her sayfada başlık, açıklama, canonical, Open Graph / Twitter etiketleri; ana sayfada `Organization` + `WebSite` (site içi arama), yazılarda `BlogPosting`, iç sayfalarda `BreadcrumbList` JSON-LD (`Views/Shared/_SeoEtiketleri.cshtml`, `Helper/Sema.cs`).
+- Arama sonuçları `noindex`; olmayan sayfalar tasarımlı ve **gerçek 404** döner; `/Anasayfa` → `/` (301).
+- Google Analytics yalnızca ziyaretçi çerez bandında **Kabul et** derse yüklenir (KVKK); reklam izinleri kapalı. Çerez politikası: `/cerez-politikasi`.
+- Yazı tipleri sitenin kendi sunucusundan (`Content/SiteLayout/fonts`); statik dosyalar 1 yıl önbelleklenir, kendi CSS/JS dosyalarımız `?v=` ile sürümlenir.
+- Yayından sonra: Search Console'da alan adını doğrulayın ve `/sitemap.xml`'i gönderin; [PageSpeed Insights](https://pagespeed.web.dev/) ve [Zengin Sonuçlar Testi](https://search.google.com/test/rich-results) ile canlı adresi test edin.
+
 ## Güvenlik notları
 
 - Panel oturumu şifreli, `HttpOnly` bir cookie ile tutulur (Forms Authentication); uygulama yeniden başlasa da düşmez. "Beni hatırla" 14 gün geçerlidir. Yetki her istekte veritabanından okunur.
