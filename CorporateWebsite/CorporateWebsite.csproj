@@ -198,6 +198,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helper\VarlikHelper.cs" />
     <Compile Include="Migrations\202611060735337_GirisKilidi.cs" />
     <Compile Include="Migrations\202611060735337_GirisKilidi.Designer.cs">
       <DependentUpon>202611060735337_GirisKilidi.cs</DependentUpon>

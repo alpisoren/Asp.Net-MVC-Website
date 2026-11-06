@@ -64,9 +64,9 @@
 
     <!-- Şablon + kurumsal tema (tema.css şablonun üzerine yazar) -->
     <link href="/Content/SiteLayout/assets/css/style.css" rel="stylesheet">
-    <link href="~/Content/SiteLayout/css/tema.css" rel="stylesheet">
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/css/tema.css")" rel="stylesheet">
     <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
-    <script src="~/Content/tema-gecis.js"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/tema-gecis.js")"></script>
 </head>
 <body>
     <a class="kw-skip-link" href="#main">İçeriğe geç</a>
@@ -229,9 +229,9 @@
 
     <script src="/Content/SiteLayout/assets/vendor/aos/aos.js"></script>
     <script src="/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/Content/SiteLayout/js/site.js"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/site.js")"></script>
     <script src="~/Scripts/jquery-3.7.1.min.js"></script>
-    <script src="~/Content/SiteLayout/js/yorum.js"></script>
-    <script src="~/Content/SiteLayout/js/iletisim.js"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/yorum.js")"></script>
+    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/iletisim.js")"></script>
 </body>
 </html>

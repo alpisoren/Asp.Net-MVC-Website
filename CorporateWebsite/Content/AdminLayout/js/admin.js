@@ -19,10 +19,29 @@
         aria: { sortAscending: ": artan sırala", sortDescending: ": azalan sırala" }
     };
 
+    // Mobil kart görünümü için: her hücreye sütun başlığını data-label olarak yaz (bkz. panel.css).
+    // Başlığı yalnızca ekran okuyucuya yönelik olan (sr-only) sütun etiketsiz kalır.
+    function hucreleriEtiketle(tablo) {
+        var basliklar = $(tablo).find("> thead > tr:first > th").map(function () {
+            return $(this).find(".sr-only").length ? "" : $.trim($(this).text());
+        }).get();
+        $(tablo).find("> tbody > tr").each(function () {
+            $(this).children("td").each(function (i) {
+                if (basliklar[i]) {
+                    $(this).attr("data-label", basliklar[i]);
+                }
+            });
+        });
+    }
+
     $(function () {
-        // data-tablo özniteliği olan tablolar DataTables ile zenginleştirilir.
+        $("table.kp-table").each(function () { hucreleriEtiketle(this); });
+
+        // data-tablo özniteliği olan tablolar DataTables ile zenginleştirilir (her sayfa çiziminde etiketler yenilenir).
         if ($.fn.DataTable) {
-            $("table[data-tablo]").DataTable({ language: turkce, order: [] });
+            $("table[data-tablo]")
+                .on("draw.dt", function () { hucreleriEtiketle(this); })
+                .DataTable({ language: turkce, order: [] });
         }
 
         // Zengin metin editörü (Jodit, MIT lisanslı). Kaydedilen HTML sunucuda HtmlTemizleyici'den geçer.
