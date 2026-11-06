@@ -99,6 +99,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Runtime.Caching" />
@@ -130,6 +131,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\SiteLayout\js\analitik.js" />
+    <Content Include="Views\Home\CerezPolitikasi.cshtml" />
+    <Content Include="Content\SiteLayout\assets\img\paylasim-varsayilan.jpg" />
+    <Content Include="Content\SiteLayout\assets\img\why-us-640.jpg" />
+    <Content Include="Content\SiteLayout\fonts\poppins-700-latin.woff2" />
+    <Content Include="Content\SiteLayout\fonts\poppins-700-latin-ext.woff2" />
+    <Content Include="Content\SiteLayout\fonts\poppins-600-latin.woff2" />
+    <Content Include="Content\SiteLayout\fonts\poppins-600-latin-ext.woff2" />
+    <Content Include="Content\SiteLayout\fonts\poppins-500-latin.woff2" />
+    <Content Include="Content\SiteLayout\fonts\poppins-500-latin-ext.woff2" />
+    <Content Include="Content\SiteLayout\fonts\open-sans-latin.woff2" />
+    <Content Include="Content\SiteLayout\fonts\open-sans-latin-ext.woff2" />
+    <Content Include="Content\SiteLayout\fonts\fonts.css" />
+    <Content Include="Views\Hata\Bulunamadi.cshtml" />
+    <Content Include="Views\Shared\_SeoEtiketleri.cshtml" />
     <Content Include="Views\Home\Etiket.cshtml" />
     <Content Include="Views\Blog\_BlogEkAlanlar.cshtml" />
     <Content Include="Content\AdminLayout\css\font-awesome.min.css" />
@@ -139,14 +155,11 @@
     <Content Include="Content\SiteLayout\assets\img\favicon.png" />
     <Content Include="Content\SiteLayout\assets\img\hero-bg.jpg" />
     <Content Include="Content\SiteLayout\assets\img\why-us.jpg" />
-    <Content Include="Content\SiteLayout\assets\vendor\animate.css\animate.min.css" />
     <Content Include="Content\SiteLayout\assets\vendor\aos\aos.css" />
     <Content Include="Content\SiteLayout\assets\vendor\aos\aos.js" />
     <Content Include="Content\SiteLayout\assets\vendor\bootstrap-icons\bootstrap-icons.css" />
     <Content Include="Content\SiteLayout\assets\vendor\bootstrap\css\bootstrap.min.css" />
     <Content Include="Content\SiteLayout\assets\vendor\bootstrap\js\bootstrap.bundle.min.js" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\css\boxicons.min.css" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\fonts\boxicons.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\AdminLayout\fonts\fontawesome-webfont.eot" />
     <Content Include="Content\AdminLayout\fonts\fontawesome-webfont.ttf" />
@@ -154,10 +167,6 @@
     <Content Include="Content\AdminLayout\fonts\fontawesome-webfont.woff2" />
     <Content Include="Content\SiteLayout\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff" />
     <Content Include="Content\SiteLayout\assets\vendor\bootstrap-icons\fonts\bootstrap-icons.woff2" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\fonts\boxicons.eot" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\fonts\boxicons.ttf" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\fonts\boxicons.woff" />
-    <Content Include="Content\SiteLayout\assets\vendor\boxicons\fonts\boxicons.woff2" />
     <Content Include="Scripts\jquery-3.7.1.min.js" />
     <Content Include="Web.config" />
     <Content Include="Views\Shared\_AdminLayout.cshtml" />
@@ -201,6 +210,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\HataController.cs" />
+    <Compile Include="Helper\Sema.cs" />
+    <Compile Include="Helper\SeoBilgisi.cs" />
     <Compile Include="Migrations\202611060741124_IletisimEposta.cs" />
     <Compile Include="Migrations\202611060741124_IletisimEposta.Designer.cs">
       <DependentUpon>202611060741124_IletisimEposta.cs</DependentUpon>

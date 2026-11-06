@@ -48,15 +48,36 @@ namespace CorporateWebsite
                 return;
             }
 
-            // 404'leri günlüğe yazma; gürültü yaratır.
+            // 404'ler günlüğe yazılmaz (gürültü); ziyaretçiye site tasarımında, gerçek 404 koduyla sayfa gösterilir.
             var httpHata = hata as HttpException;
             if (httpHata != null && httpHata.GetHttpCode() == 404)
             {
+                BulunamadiGoster();
                 return;
             }
 
             var url = Context != null && Context.Request != null ? Context.Request.RawUrl : "";
             Trace.TraceError("[{0:u}] {1} -> {2}", DateTime.UtcNow, url, hata);
+        }
+
+        private void BulunamadiGoster()
+        {
+            try
+            {
+                Server.ClearError();
+                Response.Clear();
+                var rota = new RouteData();
+                rota.Values["controller"] = "Hata";
+                rota.Values["action"] = "Bulunamadi";
+                IController hata = new Controllers.HataController();
+                hata.Execute(new RequestContext(new HttpContextWrapper(Context), rota));
+            }
+            catch (Exception ex)
+            {
+                // Hata sayfası da çizilemezse en azından doğru durum kodu dönsün.
+                Trace.TraceError("404 sayfası gösterilemedi: " + ex);
+                Response.StatusCode = 404;
+            }
         }
 
         private void HataGunluguBaslat()

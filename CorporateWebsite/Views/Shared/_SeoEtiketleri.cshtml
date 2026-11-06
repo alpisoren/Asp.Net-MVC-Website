@@ -1,0 +1,80 @@
+﻿@using CorporateWebsite.Helper
+@* Arama motoru ve sosyal paylaşım etiketleri. Veri: ViewBag.Seo (SeoBilgisi); eksikler site kimliğinden tamamlanır. *@
+@{
+    var seo = ViewBag.Seo as SeoBilgisi ?? new SeoBilgisi();
+    var kimlik = ViewBag.Kimlik as CorporateWebsite.Models.Model.Kimlik;
+    string siteAdi = kimlik?.Title ?? kimlik?.Unvan ?? "Kurumsal";
+    string tamBaslik = ViewBag.TamBaslik as string ?? siteAdi;
+    string aciklama = seo.Aciklama ?? kimlik?.Description;
+    string canonical = SeoAdres.Mutlak(Request, seo.Canonical);
+    string sayfaAdresi = canonical ?? SeoAdres.Mutlak(Request, Request.RawUrl);
+
+    // Paylaşım görseli: sayfanın kendi görseli, yoksa 1200×630 varsayılan görsel (büyük kart).
+    string resim = SeoAdres.Mutlak(Request, seo.Resim ?? "/Content/SiteLayout/assets/img/paylasim-varsayilan.jpg");
+
+    // Konum (breadcrumb) yapılandırılmış verisi: layout'taki görünür konum çubuğuyla aynı bilgi
+    string sayfaBasligi = ViewBag.SayfaBasligi as string;
+    var kirinti = new List<Tuple<string, string>>();
+    if (!string.IsNullOrEmpty(sayfaBasligi))
+    {
+        kirinti.Add(Tuple.Create("Ana Sayfa", "/"));
+        if (ViewBag.UstSayfaAd != null)
+        {
+            kirinti.Add(Tuple.Create((string)ViewBag.UstSayfaAd, (string)ViewBag.UstSayfaUrl));
+        }
+        kirinti.Add(Tuple.Create((string)(ViewBag.KonumAd ?? sayfaBasligi), (string)null));
+    }
+}
+@if (!string.IsNullOrEmpty(aciklama))
+{
+    <meta name="description" content="@aciklama">
+}
+@if (!string.IsNullOrEmpty(seo.Robots))
+{
+    <meta name="robots" content="@seo.Robots">
+}
+@if (canonical != null)
+{
+    <link rel="canonical" href="@canonical">
+}
+<meta property="og:site_name" content="@siteAdi">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:type" content="@seo.Tur">
+<meta property="og:title" content="@tamBaslik">
+@if (!string.IsNullOrEmpty(aciklama))
+{
+    <meta property="og:description" content="@aciklama">
+}
+<meta property="og:url" content="@sayfaAdresi">
+<meta property="og:image" content="@resim">
+<meta property="og:image:alt" content="@tamBaslik">
+@if (seo.Tur == "article")
+{
+    if (seo.YayinTarihi.HasValue)
+    {
+        <meta property="article:published_time" content="@Sema.Tarih(seo.YayinTarihi.Value)">
+    }
+    if (seo.GuncellemeTarihi.HasValue)
+    {
+        <meta property="article:modified_time" content="@Sema.Tarih(seo.GuncellemeTarihi.Value)">
+    }
+    foreach (var e in seo.Etiketler)
+    {
+        <meta property="article:tag" content="@e">
+    }
+}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="@tamBaslik">
+@if (!string.IsNullOrEmpty(aciklama))
+{
+    <meta name="twitter:description" content="@aciklama">
+}
+<meta name="twitter:image" content="@resim">
+@if (kirinti.Count > 1 && seo.Robots == null)
+{
+    <script type="application/ld+json">@JsonLd.Yaz(Sema.Kirinti(Request, kirinti, canonical ?? sayfaAdresi))</script>
+}
+@foreach (var veri in seo.YapisalVeri)
+{
+    <script type="application/ld+json">@JsonLd.Yaz(veri)</script>
+}

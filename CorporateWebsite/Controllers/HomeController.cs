@@ -34,10 +34,47 @@ namespace CorporateWebsite.Controllers
         [Route("Anasayfa")]
         public ActionResult Index()
         {
+            // Ana sayfanın tek adresi "/" (eski /Anasayfa bağlantıları kalıcı olarak yönlenir).
+            if (!string.Equals(Request.Path, "/", StringComparison.Ordinal))
+            {
+                return RedirectPermanent("/");
+            }
+
             FooterLoader();
             ViewBag.Hizmetler = db.Hizmet.AsNoTracking().OrderByDescending(x => x.HizmetId).Take(6).ToList();
             ViewBag.HakkimizdaOzet = MetinHelper.Ozet(db.Hakkimizda.AsNoTracking().Select(x => x.Aciklama).FirstOrDefault(), 320);
-            return View(db.Slider.AsNoTracking().OrderBy(x => x.SliderId).ToList());
+            var slaytlar = db.Slider.AsNoTracking().OrderBy(x => x.SliderId).ToList();
+
+            var kimlik = ViewBag.Kimlik as Models.Model.Kimlik;
+            var seo = SeoAyarla("/", null);
+            seo.Resim = slaytlar.Select(x => x.ResimURL).FirstOrDefault(x => !string.IsNullOrEmpty(x));
+            seo.YapisalVeri.Add(Sema.Kurum(Request, kimlik, ViewBag.Iletisim as Models.Model.Iletisim));
+            seo.YapisalVeri.Add(Sema.WebSitesi(Request, kimlik?.Title ?? kimlik?.Unvan));
+            return View(slaytlar);
+        }
+
+        /// <summary>Site tasarımında, gerçek 404 durum koduyla "sayfa bulunamadı" (soft 404 olmasın).</summary>
+        private ActionResult SayfaBulunamadi()
+        {
+            FooterLoader();
+            SeoAyarla(null, null).Robots = "noindex, follow";
+            Response.StatusCode = 404;
+            Response.TrySkipIisCustomErrors = true;
+            return View("~/Views/Hata/Bulunamadi.cshtml");
+        }
+
+        /// <summary>Sayfanın SEO bilgisini oluşturur (layout'taki _SeoEtiketleri okur). Açıklama boşsa site açıklaması kullanılır.</summary>
+        private SeoBilgisi SeoAyarla(string canonical, string aciklama)
+        {
+            var seo = new SeoBilgisi { Canonical = canonical, Aciklama = string.IsNullOrWhiteSpace(aciklama) ? null : MetinHelper.Ozet(aciklama, 160) };
+            ViewBag.Seo = seo;
+            return seo;
+        }
+
+        /// <summary>Sayfalı listelerde 2. ve sonraki sayfalar kendi adresini canonical gösterir.</summary>
+        private static string SayfaliAdres(string yol, int sayfa)
+        {
+            return sayfa > 1 ? yol + "?Page=" + sayfa : yol;
         }
 
         /// <summary>Layout'un (başlık, meta, footer) ihtiyaç duyduğu verileri yükler.</summary>
@@ -54,21 +91,46 @@ namespace CorporateWebsite.Controllers
         public ActionResult Hakkimizda()
         {
             FooterLoader();
-            return View(db.Hakkimizda.AsNoTracking().FirstOrDefault());
+            var h = db.Hakkimizda.AsNoTracking().FirstOrDefault();
+            SeoAyarla("/Hakkimizda", h?.Aciklama).Resim = "/Content/SiteLayout/assets/img/why-us.jpg";
+            return View(h);
         }
 
         [Route("Hizmetlerimiz")]
         public ActionResult Hizmetlerimiz()
         {
             FooterLoader();
-            return View(db.Hizmet.AsNoTracking().OrderByDescending(x => x.HizmetId).ToList());
+            var hizmetler = db.Hizmet.AsNoTracking().OrderByDescending(x => x.HizmetId).ToList();
+            var seo = SeoAyarla("/Hizmetlerimiz", hizmetler.Count == 0 ? null
+                : "Hizmetlerimiz: " + string.Join(", ", hizmetler.Select(x => x.Baslik)) + ".");
+            seo.Resim = hizmetler.Select(x => x.ResimUrl).FirstOrDefault(x => !string.IsNullOrEmpty(x));
+            return View(hizmetler);
         }
 
         [Route("Iletisim")]
         public ActionResult Iletisim()
         {
             FooterLoader();
+            IletisimSeo();
             return View(db.Iletisim.AsNoTracking().FirstOrDefault());
+        }
+
+        [Route("cerez-politikasi")]
+        public ActionResult CerezPolitikasi()
+        {
+            FooterLoader();
+            SeoAyarla("/cerez-politikasi", "Sitede kullanılan zorunlu çerezler, tarayıcıda saklanan tercihler ve analitik çerezler hakkında bilgi.");
+            return View();
+        }
+
+        /// <summary>İletişim sayfası: adres/telefon/e-posta açıklamada ve kurum yapılandırılmış verisinde.</summary>
+        private void IletisimSeo()
+        {
+            var i = ViewBag.Iletisim as Models.Model.Iletisim;
+            var parcalar = new[] { i?.Adres, i?.Telefon, i?.Eposta }.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            var seo = SeoAyarla("/Iletisim", parcalar.Count == 0 ? null
+                : "Bize ulaşın: " + string.Join(" · ", parcalar) + ". İletişim formundan mesaj da gönderebilirsiniz.");
+            seo.YapisalVeri.Add(Sema.Kurum(Request, ViewBag.Kimlik as Models.Model.Kimlik, i));
         }
 
         [HttpPost]
@@ -85,6 +147,7 @@ namespace CorporateWebsite.Controllers
             }
 
             FooterLoader();
+            IletisimSeo();
             ViewBag.Uyari = mesaj;
             ViewBag.UyariBasarili = basarili;
             return View(db.Iletisim.AsNoTracking().FirstOrDefault());
@@ -145,6 +208,17 @@ namespace CorporateWebsite.Controllers
                 q = q.Substring(0, 100);
             }
             ViewBag.Arama = q;
+            if (q != null)
+            {
+                // Arama sonuçları dizine alınmaz (sınırsız sayıda ince içerikli sayfa üretir), bağlantıları izlenir.
+                SeoAyarla(null, null).Robots = "noindex, follow";
+            }
+            else
+            {
+                var kimlik = ViewBag.Kimlik as Models.Model.Kimlik;
+                SeoAyarla(SayfaliAdres("/BlogPost", Page), "Blog yazıları" + (Page > 1 ? " (sayfa " + Page + ")" : "")
+                    + (string.IsNullOrEmpty(kimlik?.Description) ? "" : ": " + kimlik.Description));
+            }
             return View(blogServisi.Ara(q).ToPagedList(Math.Max(Page, 1), SayfaBoyutu));
         }
 
@@ -154,16 +228,17 @@ namespace CorporateWebsite.Controllers
             etiket = (EtiketHelper.Duzenle(etiket) ?? "").Split(',')[0].Trim();
             if (etiket.Length == 0)
             {
-                return HttpNotFound();
+                return SayfaBulunamadi();
             }
             var yazilar = blogServisi.EtiketliYazilar(etiket).ToPagedList(Math.Max(Page, 1), SayfaBoyutu);
             if (yazilar.TotalItemCount == 0)
             {
-                return HttpNotFound();
+                return SayfaBulunamadi();
             }
             FooterLoader();
             ViewBag.Etiket = etiket;
-            ViewBag.Canonical = MutlakUrl(EtiketHelper.Url(etiket));
+            SeoAyarla(SayfaliAdres(EtiketHelper.Url(etiket), Page),
+                "#" + etiket + " etiketli yazılar: " + string.Join(", ", yazilar.Select(x => x.Baslik)));
             return View(yazilar);
         }
 
@@ -242,7 +317,7 @@ namespace CorporateWebsite.Controllers
             var kategori = db.Kategori.AsNoTracking().FirstOrDefault(x => x.KategoriId == id);
             if (kategori == null)
             {
-                return HttpNotFound();
+                return SayfaBulunamadi();
             }
 
             // Yanlış/eski slug ile gelen istekleri tek kalıcı adrese yönlendir (yinelenen içerik olmasın).
@@ -253,7 +328,8 @@ namespace CorporateWebsite.Controllers
             }
 
             FooterLoader();
-            ViewBag.Canonical = MutlakUrl(dogruUrl);
+            SeoAyarla(SayfaliAdres(dogruUrl, Page), kategori.KategoriAd + " kategorisindeki blog yazıları"
+                + (string.IsNullOrWhiteSpace(kategori.Aciklama) ? "." : ": " + kategori.Aciklama));
             ViewBag.KategoriAd = kategori.KategoriAd;
             var b = blogServisi.Yayindakiler()
                 .Where(x => x.KategoriId == id)
@@ -269,7 +345,7 @@ namespace CorporateWebsite.Controllers
             // Planlı (yayın tarihi gelmemiş) yazıyı yalnızca oturum açmış yönetici önizleyebilir.
             if (blog == null || (blog.YayinTarihi > DateTime.Now && !YoneticiOturumAcik()))
             {
-                return HttpNotFound();
+                return SayfaBulunamadi();
             }
 
             // Başlık değişse ya da slug elle yazılsa bile tek kalıcı adres kullanılır (301).
@@ -280,8 +356,21 @@ namespace CorporateWebsite.Controllers
             }
 
             FooterLoader();
-            ViewBag.Canonical = MutlakUrl(dogruUrl);
-            ViewBag.Aciklama = MetinHelper.Ozet(blog.Icerik, 160);
+            var seo = SeoAyarla(dogruUrl, blog.Icerik);
+            seo.Tur = "article";
+            seo.Resim = blog.ResimURL;
+            seo.YayinTarihi = blog.YayinTarihi;
+            seo.GuncellemeTarihi = blog.GuncellemeTarihi;
+            seo.Yazar = blog.Yazar;
+            seo.Etiketler = EtiketHelper.Ayir(blog.Etiketler);
+            if (blog.YayinTarihi > DateTime.Now)
+            {
+                seo.Robots = "noindex, nofollow"; // yönetici önizlemesi
+            }
+            else
+            {
+                seo.YapisalVeri.Add(Sema.BlogYazisi(Request, blog, SeoAdres.Mutlak(Request, dogruUrl), seo.Aciklama, ViewBag.Kimlik as Models.Model.Kimlik));
+            }
             return View(blog);
         }
 
@@ -290,7 +379,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Sitemap()
         {
             XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
-            var adresler = new List<string> { "/", "/Hakkimizda", "/Hizmetlerimiz", "/Iletisim", "/BlogPost" };
+            var adresler = new List<string> { "/", "/Hakkimizda", "/Hizmetlerimiz", "/Iletisim", "/BlogPost", "/cerez-politikasi" };
 
             adresler.AddRange(db.Kategori.AsNoTracking()
                 .Select(x => new { x.KategoriId, x.KategoriAd }).ToList()
@@ -312,9 +401,19 @@ namespace CorporateWebsite.Controllers
         [Route("robots.txt")]
         public ActionResult Robots()
         {
+            // Panel adresleri taranmaz (sayfalar ayrıca noindex taşır). "/Blog/" kuralı "/BlogPost"u etkilemez.
             var metin = "User-agent: *\n"
                         + "Disallow: /yonetimpaneli\n"
                         + "Disallow: /Admin/\n"
+                        + "Disallow: /Blog/\n"
+                        + "Disallow: /Hizmet/\n"
+                        + "Disallow: /Kategori/\n"
+                        + "Disallow: /Slider/\n"
+                        + "Disallow: /Yorum/\n"
+                        + "Disallow: /Kimlik/\n"
+                        + "Disallow: /Medya/\n"
+                        + "Disallow: /Hakkimizda/\n"
+                        + "Disallow: /Iletisim/\n"
                         + "Sitemap: " + MutlakUrl("/sitemap.xml") + "\n";
             return Content(metin, "text/plain", Encoding.UTF8);
         }
@@ -326,9 +425,10 @@ namespace CorporateWebsite.Controllers
             return id.HasValue && db.Admin.Any(x => x.AdminId == id.Value);
         }
 
+        /// <summary>Mutlak adres; Web.config'te SiteAdresi doluysa o alan adıyla (bkz. SeoAdres).</summary>
         private string MutlakUrl(string yol)
         {
-            return Request.Url.GetLeftPart(UriPartial.Authority) + yol;
+            return SeoAdres.Mutlak(Request, yol);
         }
 
         [HttpPost]

@@ -1,0 +1,27 @@
+﻿@{
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    ViewBag.Title = "Sayfa bulunamadı";
+    ViewBag.SayfaBasligi = "Sayfa bulunamadı";
+    ViewBag.CtaGizle = true;
+}
+<section class="kw-section">
+    <div class="container">
+        <div class="kw-hata-kutusu">
+            <p class="kw-hata-kod" aria-hidden="true">404</p>
+            <p class="lead">Aradığınız sayfa taşınmış, adı değişmiş ya da hiç var olmamış olabilir.</p>
+            <form class="kw-search kw-hata-arama" method="get" action="/BlogPost" role="search">
+                <label class="visually-hidden" for="hata-ara">Blogda ara</label>
+                <input class="form-control" type="search" id="hata-ara" name="q" maxlength="100" placeholder="Blogda ara">
+                <button class="kw-btn kw-btn-primary" type="submit" aria-label="Ara"><i class="bi bi-search" aria-hidden="true"></i></button>
+            </form>
+            <nav aria-label="Önerilen sayfalar">
+                <ul class="kw-hata-baglantilar">
+                    <li><a class="kw-btn kw-btn-primary" href="/"><i class="bi bi-house" aria-hidden="true"></i> Ana Sayfa</a></li>
+                    <li><a class="kw-btn kw-btn-outline" href="/Hizmetlerimiz">Hizmetlerimiz</a></li>
+                    <li><a class="kw-btn kw-btn-outline" href="/BlogPost">Blog</a></li>
+                    <li><a class="kw-btn kw-btn-outline" href="/Iletisim">İletişim</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</section>

@@ -55,6 +55,18 @@ namespace CorporateWebsite.Tests
     /// <summary>UrlHelper.IsLocalUrl gibi yalnızca isteğin varlığını bekleyen kodlar için.</summary>
     internal class SahteIstek : HttpRequestBase
     {
+        private readonly Uri adres;
+
+        public SahteIstek(Uri adres = null)
+        {
+            this.adres = adres ?? new Uri("http://localhost/");
+        }
+
+        public override Uri Url
+        {
+            get { return adres; }
+        }
+
         public override string ApplicationPath
         {
             get { return "/"; }

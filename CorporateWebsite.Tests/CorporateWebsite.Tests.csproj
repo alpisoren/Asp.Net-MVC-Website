@@ -63,6 +63,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +77,7 @@
     <Compile Include="ResimHelperTests.cs" />
     <Compile Include="AdminAuthorizeAttributeTests.cs" />
     <Compile Include="ServisKurallariTests.cs" />
+    <Compile Include="SeoTests.cs" />
     <Compile Include="GunlukDinleyiciTests.cs" />
     <Compile Include="ControllerTests.cs" />
     <Compile Include="ServisVeritabaniTests.cs" />

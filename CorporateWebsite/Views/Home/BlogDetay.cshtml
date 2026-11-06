@@ -38,7 +38,7 @@
                     @if (!string.IsNullOrEmpty(Model.ResimURL))
                     {
                         <figure class="kw-article-cover">
-                            <img src="@Model.ResimURL" alt="" width="1200" height="675">
+                            <img src="@Model.ResimURL" alt="@Model.Baslik" width="1200" height="675" fetchpriority="high">
                         </figure>
                     }
 

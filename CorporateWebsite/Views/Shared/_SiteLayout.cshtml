@@ -16,6 +16,8 @@
         case "BlogDetay":
         case "KategoriBlog": aktif = "blog"; break;
         case "Iletisim": aktif = "iletisim"; break;
+        case "Bulunamadi":
+        case "CerezPolitikasi": aktif = ""; break;
         default: aktif = "anasayfa"; break;
     }
     Func<string, string> aktifSinif = k => k == aktif ? "active" : null;
@@ -24,10 +26,12 @@
     string sayfaBasligi = ViewBag.SayfaBasligi;
     string baslik = ViewBag.Title as string;
     string tamBaslik = string.IsNullOrEmpty(baslik) ? (kimlik?.Title ?? unvan) : baslik + " | " + (kimlik?.Title ?? unvan);
+    ViewBag.TamBaslik = tamBaslik;
 
     string eposta = iletisim?.Eposta;
     string telefon = iletisim?.Telefon;
     string telefonLink = string.IsNullOrEmpty(telefon) ? null : "tel:" + System.Text.RegularExpressions.Regex.Replace(telefon, @"[^\d+]", "");
+    string analitikKimligi = CorporateWebsite.Filters.GuvenlikBasliklariAttribute.AnalitikKimligi;
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -35,14 +39,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@tamBaslik</title>
-    <meta name="description" content="@(ViewBag.Aciklama ?? kimlik?.Description)">
-    @if (!string.IsNullOrEmpty((string)kimlik?.Keywords))
+    @Html.Partial("_SeoEtiketleri")
+    @if (!string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["GoogleSiteDogrulama"]))
     {
-        <meta name="keywords" content="@kimlik.Keywords">
-    }
-    @if (ViewBag.Canonical != null)
-    {
-        <link rel="canonical" href="@ViewBag.Canonical" />
+        <meta name="google-site-verification" content="@System.Configuration.ConfigurationManager.AppSettings["GoogleSiteDogrulama"]">
     }
     <link rel="alternate" type="application/rss+xml" title="@(kimlik?.Title ?? unvan) — Blog" href="/rss.xml">
     <meta name="theme-color" content="#F6F8FB">
@@ -51,19 +51,17 @@
     <link href="/Content/SiteLayout/assets/img/favicon.png" rel="icon">
     <link href="/Content/SiteLayout/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
-    <!-- Yazı tipleri: başlık Poppins, metin Open Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Yazı tipleri (başlık Poppins, metin Open Sans) sitenin kendi sunucusundan; en çok kullanılan ikisi önceden yüklenir -->
+    <link rel="preload" href="/Content/SiteLayout/fonts/open-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/Content/SiteLayout/fonts/poppins-600-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/fonts/fonts.css")" rel="stylesheet">
 
-    <link href="/Content/SiteLayout/assets/vendor/animate.css/animate.min.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/aos/aos.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="/Content/SiteLayout/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/aos/aos.css")" rel="stylesheet">
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap-icons/bootstrap-icons.css")" rel="stylesheet">
 
     <!-- Şablon + kurumsal tema (tema.css şablonun üzerine yazar) -->
-    <link href="/Content/SiteLayout/assets/css/style.css" rel="stylesheet">
+    <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/css/style.css")" rel="stylesheet">
     <link href="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/css/tema.css")" rel="stylesheet">
     <!-- Açık/koyu tema: sayfa çizilmeden uygulanır (defer YOK) -->
     <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/tema-gecis.js")"></script>
@@ -75,7 +73,7 @@
         <div class="container d-flex justify-content-between align-items-center">
 
             <div class="logo">
-                <h1 class="m-0">
+                <p class="kw-logo-baslik">
                     <a href="/">
                         @if (!string.IsNullOrEmpty(logo))
                         {
@@ -83,7 +81,7 @@
                         }
                         <span>@unvan</span>
                     </a>
-                </h1>
+                </p>
             </div>
 
             <div class="kw-header-actions">
@@ -162,15 +160,15 @@
                         <div class="social-links mt-3">
                             @if (!string.IsNullOrEmpty((string)iletisim?.Twitter))
                             {
-                                <a href="https://twitter.com/@iletisim.Twitter" aria-label="X (Twitter)" rel="noopener" target="_blank"><i class="bx bxl-twitter" aria-hidden="true"></i></a>
+                                <a href="https://twitter.com/@iletisim.Twitter" aria-label="X (Twitter)" rel="noopener" target="_blank"><i class="bi bi-twitter-x" aria-hidden="true"></i></a>
                             }
                             @if (!string.IsNullOrEmpty((string)iletisim?.Facebook))
                             {
-                                <a href="https://www.facebook.com/@iletisim.Facebook" aria-label="Facebook" rel="noopener" target="_blank"><i class="bx bxl-facebook" aria-hidden="true"></i></a>
+                                <a href="https://www.facebook.com/@iletisim.Facebook" aria-label="Facebook" rel="noopener" target="_blank"><i class="bi bi-facebook" aria-hidden="true"></i></a>
                             }
                             @if (!string.IsNullOrEmpty((string)iletisim?.Instagram))
                             {
-                                <a href="https://www.instagram.com/@iletisim.Instagram" aria-label="Instagram" rel="noopener" target="_blank"><i class="bx bxl-instagram" aria-hidden="true"></i></a>
+                                <a href="https://www.instagram.com/@iletisim.Instagram" aria-label="Instagram" rel="noopener" target="_blank"><i class="bi bi-instagram" aria-hidden="true"></i></a>
                             }
                         </div>
                     </div>
@@ -178,11 +176,11 @@
                     <div class="col-lg-2 col-md-6 footer-links">
                         <h2>Menü</h2>
                         <ul>
-                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/">Ana Sayfa</a></li>
-                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Hakkimizda">Hakkımızda</a></li>
-                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Hizmetlerimiz">Hizmetlerimiz</a></li>
-                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/BlogPost">Blog</a></li>
-                            <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="/Iletisim">İletişim</a></li>
+                            <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="/">Ana Sayfa</a></li>
+                            <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="/Hakkimizda">Hakkımızda</a></li>
+                            <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="/Hizmetlerimiz">Hizmetlerimiz</a></li>
+                            <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="/BlogPost">Blog</a></li>
+                            <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="/Iletisim">İletişim</a></li>
                         </ul>
                     </div>
 
@@ -191,7 +189,7 @@
                         <ul>
                             @foreach (var item in ViewBag.Blog ?? new List<CorporateWebsite.Models.Model.Blog>())
                             {
-                                <li><i class="bx bx-chevron-right" aria-hidden="true"></i> <a href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)">@item.Baslik</a></li>
+                                <li><i class="bi bi-chevron-right" aria-hidden="true"></i> <a href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)">@item.Baslik</a></li>
                             }
                         </ul>
                     </div>
@@ -221,17 +219,43 @@
         <div class="container">
             <div class="copyright">
                 <p>&copy; @DateTime.Now.Year @unvan.TrimEnd('.'). Tüm hakları saklıdır.</p>
+                <p class="kw-yasal">
+                    <a href="/cerez-politikasi">Çerez Politikası</a>
+                    @if (analitikKimligi != null)
+                    {
+                        <span aria-hidden="true">·</span>
+                        <a href="#kw-cerez" data-cerez-ayar>Çerez tercihleri</a>
+                    }
+                </p>
             </div>
         </div>
     </footer>
 
+    @if (analitikKimligi != null)
+    {
+        <div id="kw-cerez" class="kw-cerez" role="region" aria-label="Çerez tercihi" data-ga="@analitikKimligi" hidden>
+            <p>
+                Siteyi nasıl kullandığınızı anlamak için, onay verirseniz Google Analytics çerezlerini kullanırız.
+                Reklam amaçlı çerez kullanmıyoruz. <a href="/cerez-politikasi">Ayrıntılar</a>
+            </p>
+            <div class="kw-cerez-dugmeler">
+                <button type="button" class="kw-btn kw-btn-outline" data-cerez="ret">Reddet</button>
+                <button type="button" class="kw-btn kw-btn-primary" data-cerez="kabul">Kabul et</button>
+            </div>
+        </div>
+    }
+
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center" aria-label="Sayfanın başına dön"><i class="bi bi-arrow-up-short" aria-hidden="true"></i></a>
 
-    <script src="/Content/SiteLayout/assets/vendor/aos/aos.js"></script>
-    <script src="/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/site.js")"></script>
-    <script src="~/Scripts/jquery-3.7.1.min.js"></script>
-    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/yorum.js")"></script>
-    <script src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/iletisim.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/aos/aos.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/assets/vendor/bootstrap/js/bootstrap.bundle.min.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/site.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Scripts/jquery-3.7.1.min.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/yorum.js")"></script>
+    <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/iletisim.js")"></script>
+    @if (analitikKimligi != null)
+    {
+        <script defer src="@CorporateWebsite.Helper.VarlikHelper.Url("~/Content/SiteLayout/js/analitik.js")"></script>
+    }
 </body>
 </html>
