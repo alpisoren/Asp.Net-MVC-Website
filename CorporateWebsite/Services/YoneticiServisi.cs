@@ -1,4 +1,4 @@
-using CorporateWebsite.Helper;
+﻿using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Models.ViewModel;
@@ -33,25 +33,47 @@ namespace CorporateWebsite.Services
 
         // ---------------------------------------------------------------- Giriş
 
+        /// <summary>
+        /// Kayıtlı hesapta art arda 5 hatalı şifre hesabı 10 dakika kilitler (veritabanında; yeniden başlatmada
+        /// sıfırlanmaz, sunucular arasında ortaktır). IP başına ve kayıtlı olmayan e-postalar için ayrıca bellek içi
+        /// sınır vardır. Dışarıya hepsi aynı mesajla döner; hesabın var olup olmadığı anlaşılmaz.
+        /// </summary>
         public GirisDurumu GirisYap(string eposta, string sifre, string ip, out Admin admin)
         {
             admin = null;
+            var simdi = DateTime.UtcNow;
 
-            // Hem IP hem e-posta bazında sınır: tek IP'den çok hesap ya da çok IP'den tek hesap denenemesin.
-            var epostaAnahtari = (eposta ?? "").Trim().ToLowerInvariant();
+            var epostaAnahtari = "eposta:" + (eposta ?? "").Trim().ToLowerInvariant();
             if (SpamKorumasi.SinirAsildi(GirisIslemi, ip, MaksimumHataliGiris)
-                || SpamKorumasi.SinirAsildi(GirisIslemi, "eposta:" + epostaAnahtari, MaksimumHataliGiris))
+                || SpamKorumasi.SinirAsildi(GirisIslemi, epostaAnahtari, MaksimumHataliGiris))
             {
                 return GirisDurumu.GeciciOlarakEngellendi;
             }
 
             var kayit = string.IsNullOrWhiteSpace(eposta) ? null : db.Admin.SingleOrDefault(x => x.Eposta == eposta);
+            if (kayit != null && kayit.KilitBitis.HasValue && kayit.KilitBitis.Value > simdi)
+            {
+                return GirisDurumu.GeciciOlarakEngellendi;
+            }
 
             bool yenidenHashle;
             if (kayit == null || !SifreHelper.Dogrula(kayit.Sifre, sifre, out yenidenHashle))
             {
                 SpamKorumasi.BasarisizDenemeEkle(GirisIslemi, ip, GirisEngelSuresi);
-                SpamKorumasi.BasarisizDenemeEkle(GirisIslemi, "eposta:" + epostaAnahtari, GirisEngelSuresi);
+                if (kayit == null)
+                {
+                    SpamKorumasi.BasarisizDenemeEkle(GirisIslemi, epostaAnahtari, GirisEngelSuresi);
+                }
+                else
+                {
+                    kayit.HataliGirisSayisi++;
+                    if (kayit.HataliGirisSayisi >= MaksimumHataliGiris)
+                    {
+                        kayit.KilitBitis = simdi.Add(GirisEngelSuresi);
+                        kayit.HataliGirisSayisi = 0;
+                    }
+                    db.SaveChanges();
+                }
                 return GirisDurumu.HataliBilgi;
             }
 
@@ -59,11 +81,12 @@ namespace CorporateWebsite.Services
             {
                 // Eski MD5 hash'ini PBKDF2'ye yükselt.
                 kayit.Sifre = SifreHelper.Hashle(sifre);
-                db.SaveChanges();
             }
+            kayit.HataliGirisSayisi = 0;
+            kayit.KilitBitis = null;
+            db.SaveChanges();
 
             SpamKorumasi.Sifirla(GirisIslemi, ip);
-            SpamKorumasi.Sifirla(GirisIslemi, "eposta:" + epostaAnahtari);
             admin = kayit;
             return GirisDurumu.Basarili;
         }

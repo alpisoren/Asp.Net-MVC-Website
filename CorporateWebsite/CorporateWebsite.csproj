@@ -187,6 +187,9 @@
     <Content Include="Views\Shared\Error.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202611060735337_GirisKilidi.resx">
+      <DependentUpon>202611060735337_GirisKilidi.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202611052248321_BlogAlanlari.resx">
       <DependentUpon>202611052248321_BlogAlanlari.cs</DependentUpon>
     </EmbeddedResource>
@@ -195,6 +198,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\202611060735337_GirisKilidi.cs" />
+    <Compile Include="Migrations\202611060735337_GirisKilidi.Designer.cs">
+      <DependentUpon>202611060735337_GirisKilidi.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helper\GunlukDinleyici.cs" />
     <Compile Include="Migrations\202611052248321_BlogAlanlari.Designer.cs">
       <DependentUpon>202611052248321_BlogAlanlari.cs</DependentUpon>

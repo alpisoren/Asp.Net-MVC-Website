@@ -28,5 +28,12 @@ namespace CorporateWebsite.Models.Model
         public string SifreSifirlamaToken { get; set; }
 
         public DateTime? SifreSifirlamaSonTarih { get; set; }
+
+        // Hesap kilidi veritabanında tutulur: uygulama yeniden başlasa ya da birden fazla sunucu olsa da geçerlidir.
+        /// <summary>Son başarılı girişten bu yana art arda hatalı şifre sayısı.</summary>
+        public int HataliGirisSayisi { get; set; }
+
+        /// <summary>Doluysa bu ana (UTC) kadar doğru şifreyle bile giriş yapılamaz.</summary>
+        public DateTime? KilitBitis { get; set; }
     }
 }

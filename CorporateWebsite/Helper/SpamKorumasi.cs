@@ -5,8 +5,9 @@ using System.Runtime.Caching;
 namespace CorporateWebsite.Helper
 {
     /// <summary>
-    /// Herkese açık formlar (yorum, iletişim) için basit, bellek içi istek sınırlayıcı.
-    /// Tek sunuculu kurulum için yeterlidir; uygulama yeniden başlayınca sayaçlar sıfırlanır.
+    /// Herkese açık formlar (yorum, iletişim) ve giriş için IP bazlı, bellek içi istek sınırlayıcı.
+    /// Uygulama yeniden başlayınca sayaçlar sıfırlanır ve sunucular arasında paylaşılmaz; bu yüzden
+    /// kayıtlı yönetici hesaplarının kilidi ayrıca veritabanında tutulur (Admin.KilitBitis, YoneticiServisi.GirisYap).
     /// </summary>
     public static class SpamKorumasi
     {

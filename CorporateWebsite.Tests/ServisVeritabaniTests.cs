@@ -232,5 +232,56 @@ namespace CorporateWebsite.Tests
             Assert.IsFalse(servis.Sil(admin.AdminId, editor.AdminId).Basarili, "Son Admin silinemez");
             Assert.IsTrue(servis.Sil(editor.AdminId, admin.AdminId).Basarili);
         }
+
+        [TestMethod]
+        public void Giris_bes_hatali_denemede_hesap_kilitlenir_ve_kilit_veritabaninda_tutulur()
+        {
+            var eposta = Benzersiz("k").Replace(" ", "") + "@test.local";
+            const string sifre = "Dogru-Sifre-123";
+            db.Admin.Add(new Admin { Eposta = eposta, Sifre = SifreHelper.Hashle(sifre), Yetki = Yetkiler.Editor });
+            db.SaveChanges();
+            Admin a;
+
+            // Her deneme farklı IP'den: yalnızca hesap (veritabanı) kilidi devreye girsin.
+            for (int i = 1; i <= YoneticiServisi.MaksimumHataliGiris; i++)
+            {
+                Assert.AreEqual(GirisDurumu.HataliBilgi, new YoneticiServisi(db).GirisYap(eposta, "yanlis", "10.1.0." + i, out a));
+            }
+
+            // Yeni bağlam = yeniden başlamış uygulama / başka sunucu: kilit yine geçerli, doğru şifre de reddedilir.
+            using (var taze = VeritabaniTestOrtami.YeniBaglam())
+            {
+                Assert.AreEqual(GirisDurumu.GeciciOlarakEngellendi, new YoneticiServisi(taze).GirisYap(eposta, sifre, "10.1.1.1", out a));
+                Assert.IsNull(a);
+
+                // Kilit süresi dolunca doğru şifreyle girilir ve sayaç sıfırlanır.
+                var kayit = taze.Admin.Single(x => x.Eposta == eposta);
+                kayit.KilitBitis = DateTime.UtcNow.AddSeconds(-1);
+                taze.SaveChanges();
+                Assert.AreEqual(GirisDurumu.Basarili, new YoneticiServisi(taze).GirisYap(eposta, sifre, "10.1.1.2", out a));
+                Assert.IsNull(kayit.KilitBitis);
+                Assert.AreEqual(0, kayit.HataliGirisSayisi);
+            }
+        }
+
+        [TestMethod]
+        public void Giris_basarili_olunca_hatali_deneme_sayaci_sifirlanir()
+        {
+            var eposta = Benzersiz("s").Replace(" ", "") + "@test.local";
+            const string sifre = "Dogru-Sifre-123";
+            db.Admin.Add(new Admin { Eposta = eposta, Sifre = SifreHelper.Hashle(sifre), Yetki = Yetkiler.Editor });
+            db.SaveChanges();
+            Admin a;
+            var servis = new YoneticiServisi(db);
+
+            for (int i = 1; i < YoneticiServisi.MaksimumHataliGiris; i++)
+            {
+                servis.GirisYap(eposta, "yanlis", "10.2.0." + i, out a);
+            }
+            Assert.AreEqual(GirisDurumu.Basarili, servis.GirisYap(eposta, sifre, "10.2.1.1", out a));
+            // Sayaç sıfırlandığı için tek bir hatalı deneme daha kilitlememeli.
+            Assert.AreEqual(GirisDurumu.HataliBilgi, servis.GirisYap(eposta, "yanlis", "10.2.1.2", out a));
+            Assert.AreEqual(GirisDurumu.Basarili, servis.GirisYap(eposta, sifre, "10.2.1.3", out a));
+        }
     }
 }
