@@ -1,16 +1,14 @@
 ﻿using CorporateWebsite.Models.DataContext;
+using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Configuration;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
-using System.Data.SqlClient;
 using System.IO;
 
 namespace CorporateWebsite.Tests
 {
     /// <summary>
-    /// Veritabanı testleri için geçici LocalDB veritabanı (App.config: KurumsalBirimTest).
+    /// Veritabanı testleri için geçici LocalDB veritabanı (KurumsalBirimTest).
     /// İlk kullanımda %TEMP%\KurumsalBirimTest altında sıfırdan oluşturulur ve TÜM migration'lar uygulanır;
     /// test çalıştırması bitince silinir. Geliştiricinin KurumsalDB veritabanına dokunulmaz.
     /// </summary>
@@ -21,9 +19,19 @@ namespace CorporateWebsite.Tests
         private static readonly object kilit = new object();
         private static bool hazir;
 
+        private static string Klasor
+        {
+            get { return Path.Combine(Path.GetTempPath(), VeritabaniAdi); }
+        }
+
         public static string BaglantiMetni
         {
-            get { return ConfigurationManager.ConnectionStrings["KurumsalDB"].ConnectionString; }
+            get
+            {
+                return "Server=(localdb)\\MSSQLLocalDB;Database=" + VeritabaniAdi
+                       + ";AttachDbFilename=" + Path.Combine(Klasor, VeritabaniAdi + ".mdf")
+                       + ";Integrated Security=True;Connect Timeout=60;TrustServerCertificate=True";
+            }
         }
 
         public static void Hazirla()
@@ -35,15 +43,12 @@ namespace CorporateWebsite.Tests
                     return;
                 }
 
-                var klasor = Path.Combine(Path.GetTempPath(), VeritabaniAdi);
-                Directory.CreateDirectory(klasor);
-                AppDomain.CurrentDomain.SetData("DataDirectory", klasor);
-
-                Sil(klasor);
+                Directory.CreateDirectory(Klasor);
+                Sil();
+                KurumsalDBContext.BaglantiMetni = BaglantiMetni;
 
                 // Boş veritabanına bütün migration'lar uygulanır (Baslangic dahil).
-                var migrator = new DbMigrator(new Migrations.Configuration());
-                migrator.Update();
+                new DbMigrator(new Migrations.Configuration()).Update();
 
                 // Testlerde EF yeniden başlatıcı çalıştırmasın; şema migration'larla hazır.
                 Database.SetInitializer<KurumsalDBContext>(null);
@@ -65,10 +70,10 @@ namespace CorporateWebsite.Tests
                 return;
             }
             SqlConnection.ClearAllPools();
-            Sil(Path.Combine(Path.GetTempPath(), VeritabaniAdi));
+            Sil();
         }
 
-        private static void Sil(string klasor)
+        private static void Sil()
         {
             var master = new SqlConnectionStringBuilder(BaglantiMetni) { InitialCatalog = "master", AttachDBFilename = "" };
             using (var b = new SqlConnection(master.ConnectionString))
@@ -83,9 +88,12 @@ namespace CorporateWebsite.Tests
                     k.ExecuteNonQuery();
                 }
             }
-            foreach (var dosya in Directory.GetFiles(klasor, VeritabaniAdi + "*"))
+            if (Directory.Exists(Klasor))
             {
-                File.Delete(dosya);
+                foreach (var dosya in Directory.GetFiles(Klasor, VeritabaniAdi + "*"))
+                {
+                    File.Delete(dosya);
+                }
             }
         }
     }

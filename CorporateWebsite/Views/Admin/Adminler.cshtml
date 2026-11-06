@@ -42,7 +42,7 @@
                         <a class="kp-row-action" href="/Admin/Edit/@item.AdminId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
                         @if (item.AdminId != aktifId)
                         {
-                            using (Html.BeginForm("Delete", "Admin", new { id = item.AdminId }, FormMethod.Post, new { @class = "kp-inline", data_onay = item.Eposta + " yöneticisi silinsin mi?" }))
+                            using (Html.BeginForm("Delete", "Admin", new { id = item.AdminId }, FormMethod.Post, null, new { @class = "kp-inline", data_onay = item.Eposta + " yöneticisi silinsin mi?" }))
                             {
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="kp-row-action kp-row-action-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</button>

@@ -1,8 +1,8 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -15,7 +15,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private AyarServisi Servis
         {
-            get { return servis ?? (servis = new AyarServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new AyarServisi(db)); }
         }
 
         // "/Hakkimizda" sitenin ziyaretçi sayfasıdır (HomeController); panel listesi bu yüzden açık adla yönlendirilir.
@@ -28,20 +28,19 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int? id)
         {
             var h = id.HasValue ? Servis.HakkimizdaBul(id.Value) : null;
-            return h == null ? (ActionResult)HttpNotFound() : View(h);
+            return h == null ? (ActionResult)NotFound() : View(h);
         }
 
         /// <summary>Zengin metin (HTML) gönderilir; sunucuda HtmlTemizleyici'den geçirilerek kaydedilir.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ValidateInput(false)]
-        public ActionResult Edit(int id, [Bind(Include = "Aciklama")] Hakkimizda hakkimizda)
+        public ActionResult Edit(int id, [Bind("Aciklama")] Hakkimizda hakkimizda)
         {
             if (ModelState.IsValid)
             {
                 if (!Servis.HakkimizdaGuncelle(id, hakkimizda.Aciklama))
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 return RedirectToAction("Index");
             }

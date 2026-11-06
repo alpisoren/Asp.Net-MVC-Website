@@ -37,7 +37,7 @@ else
                         <td><span class="kp-clamp">@MetinHelper.Ozet(item.Aciklama, 160)</span></td>
                         <td>
                             <a class="kp-row-action" href="/Hizmet/Edit/@item.HizmetId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>
-                            @using (Html.BeginForm("Delete", "Hizmet", new { id = item.HizmetId }, FormMethod.Post, new { @class = "kp-inline", data_onay = "\"" + item.Baslik + "\" hizmeti silinsin mi? Bu işlem geri alınamaz." }))
+                            @using (Html.BeginForm("Delete", "Hizmet", new { id = item.HizmetId }, FormMethod.Post, null, new { @class = "kp-inline", data_onay = "\"" + item.Baslik + "\" hizmeti silinsin mi? Bu işlem geri alınamaz." }))
                             {
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="kp-row-action kp-row-action-danger"><i class="fa fa-trash-o" aria-hidden="true"></i> Sil</button>

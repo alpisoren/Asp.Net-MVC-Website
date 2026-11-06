@@ -1,9 +1,9 @@
 ﻿﻿using CorporateWebsite.Filters;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -16,7 +16,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private SliderServisi Servis
         {
-            get { return servis ?? (servis = new SliderServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new SliderServisi(db)); }
         }
 
         public ActionResult Index()
@@ -27,7 +27,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Details(int? id)
         {
             var slider = id.HasValue ? Servis.Bul(id.Value) : null;
-            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
+            return slider == null ? (ActionResult)NotFound() : View(slider);
         }
 
         public ActionResult Create()
@@ -37,7 +37,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Baslik,Aciklama")] Slider slider, HttpPostedFileBase ResimURL)
+        public ActionResult Create([Bind("Baslik,Aciklama")] Slider slider, IFormFile ResimURL)
         {
             if (ModelState.IsValid)
             {
@@ -54,19 +54,19 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int? id)
         {
             var slider = id.HasValue ? Servis.Bul(id.Value) : null;
-            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
+            return slider == null ? (ActionResult)NotFound() : View(slider);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind(Include = "Baslik,Aciklama")] Slider slider, HttpPostedFileBase ResimURL)
+        public ActionResult Edit(int id, [Bind("Baslik,Aciklama")] Slider slider, IFormFile ResimURL)
         {
             if (ModelState.IsValid)
             {
                 var sonuc = Servis.Guncelle(id, slider, ResimURL);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {
@@ -83,7 +83,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Delete(int? id)
         {
             var slider = id.HasValue ? Servis.Bul(id.Value) : null;
-            return slider == null ? (ActionResult)HttpNotFound() : View(slider);
+            return slider == null ? (ActionResult)NotFound() : View(slider);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -92,7 +92,7 @@ namespace CorporateWebsite.Controllers
         {
             if (!Servis.Sil(id))
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return RedirectToAction("Index");
         }

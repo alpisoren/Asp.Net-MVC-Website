@@ -162,7 +162,7 @@ else
                 @foreach (var b in yazilar)
                 {
                     <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                        @Html.Partial("_BlogKarti", b)
+                        @await Html.PartialAsync("_BlogKarti", b)
                     </div>
                 }
             </div>

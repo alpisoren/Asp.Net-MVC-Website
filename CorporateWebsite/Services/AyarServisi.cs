@@ -1,9 +1,9 @@
-﻿using CorporateWebsite.Helper;
+﻿using Microsoft.AspNetCore.Http;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace CorporateWebsite.Services
 {
@@ -17,12 +17,10 @@ namespace CorporateWebsite.Services
         public const int LogoBoyutu = 300;
 
         private readonly KurumsalDBContext db;
-        private readonly HttpServerUtilityBase server;
 
-        public AyarServisi(KurumsalDBContext db, HttpServerUtilityBase server)
+        public AyarServisi(KurumsalDBContext db)
         {
             this.db = db;
-            this.server = server;
         }
 
         // ---------------------------------------------------------------- Kimlik
@@ -38,7 +36,7 @@ namespace CorporateWebsite.Services
         }
 
         /// <summary>Kayıt yoksa null döner.</summary>
-        public IslemSonucu KimlikGuncelle(int id, Kimlik model, HttpPostedFileBase logo)
+        public IslemSonucu KimlikGuncelle(int id, Kimlik model, IFormFile logo)
         {
             var k = db.Kimlik.SingleOrDefault(x => x.KimlikId == id);
             if (k == null)
@@ -54,7 +52,7 @@ namespace CorporateWebsite.Services
                 {
                     return IslemSonucu.Hata("", hata);
                 }
-                ResimHelper.Sil(server, k.LogoUrl);
+                ResimHelper.Sil(k.LogoUrl);
                 k.LogoUrl = url;
             }
 

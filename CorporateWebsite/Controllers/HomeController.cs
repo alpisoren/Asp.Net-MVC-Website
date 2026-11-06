@@ -1,16 +1,17 @@
-﻿using CorporateWebsite.Helper;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Services;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Text;
 using System.Xml.Linq;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Web.Mvc;
-using PagedList;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OutputCaching;
+using X.PagedList.Extensions;
 
 namespace CorporateWebsite.Controllers
 {
@@ -22,15 +23,20 @@ namespace CorporateWebsite.Controllers
         private const int RssYaziSayisi = 20;
 
         private KurumsalDBContext db = new KurumsalDBContext();
-        private BlogServisi blogServisi;
+        private BlogServisi blogServisiAlani;
 
-        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        private BlogServisi blogServisi
         {
-            base.Initialize(requestContext);
-            blogServisi = new BlogServisi(db, Server);
+            get { return blogServisiAlani ?? (blogServisiAlani = new BlogServisi(db)); }
         }
 
-        [Route()]
+        /// <summary>Ziyaretçi IP'si (ters vekil arkasında X-Forwarded-For'dan, bkz. Program.cs).</summary>
+        private string ZiyaretciIp
+        {
+            get { return HttpContext.Connection.RemoteIpAddress?.ToString(); }
+        }
+
+        [Route("")]
         [Route("Anasayfa")]
         public ActionResult Index()
         {
@@ -58,8 +64,7 @@ namespace CorporateWebsite.Controllers
         {
             FooterLoader();
             SeoAyarla(null, null).Robots = "noindex, follow";
-            Response.StatusCode = 404;
-            Response.TrySkipIisCustomErrors = true;
+            Response.StatusCode = StatusCodes.Status404NotFound;
             return View("~/Views/Hata/Bulunamadi.cshtml");
         }
 
@@ -141,7 +146,7 @@ namespace CorporateWebsite.Controllers
             var basarili = IletisimMesajiGonder(name, email, subject, message, website, out mesaj);
 
             // iletisim.js formu AJAX ile gönderir; JavaScript kapalıysa sayfa normal şekilde yeniden çizilir.
-            if (Request.IsAjaxRequest())
+            if (string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal))
             {
                 return Json(new { basarili, mesaj });
             }
@@ -171,13 +176,13 @@ namespace CorporateWebsite.Controllers
                 return false;
             }
 
-            if (!SpamKorumasi.IzinVer("iletisim", Request.UserHostAddress, 3, TimeSpan.FromMinutes(10)))
+            if (!SpamKorumasi.IzinVer("iletisim", ZiyaretciIp, 3, TimeSpan.FromMinutes(10)))
             {
                 mesaj = "Kısa sürede çok fazla mesaj gönderdiniz. Lütfen biraz sonra tekrar deneyin.";
                 return false;
             }
 
-            var alici = ConfigurationManager.AppSettings["IletisimAliciMail"];
+            var alici = Ayarlar.Site.IletisimAliciMail;
             // Kullanıcıdan gelen veriler düz metin olarak gönderilir (HTML/script çalıştırılmaz).
             var govde = "Gönderen: " + name + Environment.NewLine + "E-posta: " + email + Environment.NewLine + Environment.NewLine + message;
 
@@ -198,7 +203,6 @@ namespace CorporateWebsite.Controllers
         /// <summary>Blog listesi; "q" verilirse başlık, içerik ve etiketlerde arar.</summary>
         /// <remarks>Arama metni her yerde kodlanarak basılır; "&lt;" içeren aramalar istek doğrulamasına takılmasın.</remarks>
         [Route("BlogPost")]
-        [ValidateInput(false)]
         public ActionResult Blog(int Page = 1, string q = null)
         {
             FooterLoader();
@@ -244,7 +248,7 @@ namespace CorporateWebsite.Controllers
 
         /// <summary>Son 20 yazının RSS 2.0 akışı.</summary>
         [Route("rss.xml")]
-        [OutputCache(Duration = 900, VaryByParam = "none")]
+        [OutputCache(Duration = 900)]
         public ActionResult Rss()
         {
             var kimlik = db.Kimlik.AsNoTracking().FirstOrDefault();
@@ -295,21 +299,7 @@ namespace CorporateWebsite.Controllers
                 + " " + (ofset < TimeSpan.Zero ? "-" : "+") + ofset.ToString("hhmm");
         }
 
-        [ChildActionOnly]
-        public ActionResult BlogKategoriPartial()
-        {
-            return PartialView(db.Kategori.AsNoTracking().Include(x => x.Blogs)
-                .OrderByDescending(x => x.KategoriId)
-                .ToList());
-        }
 
-        [ChildActionOnly]
-        public ActionResult BlogSonKayitPartial()
-        {
-            return PartialView(blogServisi.Yayindakiler()
-                .Take(SonYaziSayisi)
-                .ToList());
-        }
 
         [Route("BlogPost/{kategoriad}/{id:int}")]
         public ActionResult KategoriBlog(string kategoriad, int id, int Page = 1)
@@ -375,7 +365,7 @@ namespace CorporateWebsite.Controllers
         }
 
         [Route("sitemap.xml")]
-        [OutputCache(Duration = 3600, VaryByParam = "none")]
+        [OutputCache(Duration = 3600)]
         public ActionResult Sitemap()
         {
             XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
@@ -451,7 +441,7 @@ namespace CorporateWebsite.Controllers
                 return Json(true);
             }
 
-            if (!SpamKorumasi.IzinVer("yorum", Request.UserHostAddress, 5, TimeSpan.FromMinutes(10)))
+            if (!SpamKorumasi.IzinVer("yorum", ZiyaretciIp, 5, TimeSpan.FromMinutes(10)))
             {
                 return Json(true);
             }

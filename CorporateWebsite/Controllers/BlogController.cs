@@ -1,9 +1,10 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.ViewModel;
 using CorporateWebsite.Services;
-using System.Web;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -16,7 +17,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private BlogServisi Servis
         {
-            get { return servis ?? (servis = new BlogServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new BlogServisi(db)); }
         }
 
         public ActionResult Index()
@@ -32,7 +33,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(BlogFormModeli model, HttpPostedFileBase ResimURL)
+        public ActionResult Create(BlogFormModeli model, IFormFile ResimURL)
         {
             if (ModelState.IsValid)
             {
@@ -53,7 +54,7 @@ namespace CorporateWebsite.Controllers
             var model = id.HasValue ? Servis.FormModeliGetir(id.Value) : null;
             if (model == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             KategorileriYukle(model.KategoriId);
             return View(model);
@@ -61,14 +62,14 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, BlogFormModeli model, HttpPostedFileBase ResimURL)
+        public ActionResult Edit(int id, BlogFormModeli model, IFormFile ResimURL)
         {
             if (ModelState.IsValid)
             {
                 var sonuc = Servis.Guncelle(id, model, ResimURL);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {
@@ -81,7 +82,7 @@ namespace CorporateWebsite.Controllers
             var mevcut = Servis.FormModeliGetir(id);
             if (mevcut == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             model.BlogId = id;
             model.ResimURL = mevcut.ResimURL;
@@ -94,7 +95,7 @@ namespace CorporateWebsite.Controllers
             var b = Servis.Bul(id);
             if (b == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return View(b);
         }
@@ -105,7 +106,7 @@ namespace CorporateWebsite.Controllers
         {
             if (!Servis.Sil(id))
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return RedirectToAction("Index");
         }

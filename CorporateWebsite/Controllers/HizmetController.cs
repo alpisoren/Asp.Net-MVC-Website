@@ -1,9 +1,9 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.ViewModel;
 using CorporateWebsite.Services;
-using System.Web;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -16,7 +16,7 @@ namespace CorporateWebsite.Controllers
         /// <summary>İlk kullanımda oluşturulur (Server bu noktada hazırdır; testlerde de çalışır).</summary>
         private HizmetServisi Servis
         {
-            get { return servis ?? (servis = new HizmetServisi(db, HttpContext != null ? HttpContext.Server : null)); }
+            get { return servis ?? (servis = new HizmetServisi(db)); }
         }
 
         public ActionResult Index()
@@ -31,7 +31,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(HizmetFormModeli model, HttpPostedFileBase ResimUrl)
+        public ActionResult Create(HizmetFormModeli model, IFormFile ResimUrl)
         {
             if (ModelState.IsValid)
             {
@@ -50,21 +50,21 @@ namespace CorporateWebsite.Controllers
             var model = id.HasValue ? Servis.FormModeliGetir(id.Value) : null;
             if (model == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, HizmetFormModeli model, HttpPostedFileBase ResimUrl)
+        public ActionResult Edit(int id, HizmetFormModeli model, IFormFile ResimUrl)
         {
             if (ModelState.IsValid)
             {
                 var sonuc = Servis.Guncelle(id, model, ResimUrl);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {
@@ -76,7 +76,7 @@ namespace CorporateWebsite.Controllers
             var mevcut = Servis.FormModeliGetir(id);
             if (mevcut == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             model.HizmetId = id;
             model.ResimUrl = mevcut.ResimUrl;
@@ -89,7 +89,7 @@ namespace CorporateWebsite.Controllers
         {
             if (!Servis.Sil(id))
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return RedirectToAction("Index");
         }

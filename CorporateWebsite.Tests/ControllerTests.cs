@@ -3,8 +3,11 @@ using CorporateWebsite.Models.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
-using System.Web.Mvc;
-using System.Web.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 
 namespace CorporateWebsite.Tests
 {
@@ -21,10 +24,11 @@ namespace CorporateWebsite.Tests
 
         private static T Hazirla<T>(T controller) where T : Controller
         {
-            var ctx = new SahteHttpContext(new SahteSession());
-            var istek = new RequestContext(ctx, new RouteData());
-            controller.ControllerContext = new ControllerContext(istek, controller);
-            controller.Url = new UrlHelper(istek, new RouteCollection());
+            var ctx = Sahte.HttpBaglami();
+            var eylem = new ActionContext(ctx, new RouteData(), new Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor());
+            controller.ControllerContext = new ControllerContext(eylem);
+            controller.Url = new UrlHelper(eylem);
+            controller.TempData = new TempDataDictionary(ctx, new BellekTempDataSaglayici());
             return controller;
         }
 
@@ -47,18 +51,18 @@ namespace CorporateWebsite.Tests
         {
             using (var c = Hazirla(new KategoriController()))
             {
-                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(HttpNotFoundResult));
-                Assert.IsInstanceOfType(c.Edit((int?)null), typeof(HttpNotFoundResult));
-                Assert.IsInstanceOfType(c.Edit(int.MaxValue), typeof(HttpNotFoundResult));
+                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(NotFoundResult));
+                Assert.IsInstanceOfType(c.Edit((int?)null), typeof(NotFoundResult));
+                Assert.IsInstanceOfType(c.Edit(int.MaxValue), typeof(NotFoundResult));
             }
             using (var c = Hazirla(new YorumController()))
             {
-                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(HttpNotFoundResult));
-                Assert.IsInstanceOfType(c.OnayDegistir(int.MaxValue), typeof(HttpNotFoundResult));
+                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(NotFoundResult));
+                Assert.IsInstanceOfType(c.OnayDegistir(int.MaxValue), typeof(NotFoundResult));
             }
             using (var c = Hazirla(new IletisimController()))
             {
-                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(HttpNotFoundResult));
+                Assert.IsInstanceOfType(c.DeleteConfirmed(int.MaxValue), typeof(NotFoundResult));
             }
         }
 
@@ -73,11 +77,11 @@ namespace CorporateWebsite.Tests
                 Assert.AreEqual("/yonetimpaneli", yerel.Url);
 
                 var dis = c.OnayDegistir(id, "https://kotu-site.example/");
-                Assert.IsInstanceOfType(dis, typeof(RedirectToRouteResult), "Dış adrese yönlendirme yapılmamalı");
-                Assert.AreEqual("Index", ((RedirectToRouteResult)dis).RouteValues["action"]);
+                Assert.IsInstanceOfType(dis, typeof(RedirectToActionResult), "Dış adrese yönlendirme yapılmamalı");
+                Assert.AreEqual("Index", ((RedirectToActionResult)dis).ActionName);
 
                 var protokolsuz = c.OnayDegistir(id, "//kotu-site.example/");
-                Assert.IsInstanceOfType(protokolsuz, typeof(RedirectToRouteResult));
+                Assert.IsInstanceOfType(protokolsuz, typeof(RedirectToActionResult));
             }
         }
 

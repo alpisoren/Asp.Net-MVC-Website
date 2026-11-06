@@ -6,11 +6,11 @@
     string siteAdi = kimlik?.Title ?? kimlik?.Unvan ?? "Kurumsal";
     string tamBaslik = ViewBag.TamBaslik as string ?? siteAdi;
     string aciklama = seo.Aciklama ?? kimlik?.Description;
-    string canonical = SeoAdres.Mutlak(Request, seo.Canonical);
-    string sayfaAdresi = canonical ?? SeoAdres.Mutlak(Request, Request.RawUrl);
+    string canonical = SeoAdres.Mutlak(Context.Request, seo.Canonical);
+    string sayfaAdresi = canonical ?? SeoAdres.Mutlak(Context.Request, (Context.Request.Path + Context.Request.QueryString));
 
     // Paylaşım görseli: sayfanın kendi görseli, yoksa 1200×630 varsayılan görsel (büyük kart).
-    string resim = SeoAdres.Mutlak(Request, seo.Resim ?? "/Content/SiteLayout/assets/img/paylasim-varsayilan.jpg");
+    string resim = SeoAdres.Mutlak(Context.Request, seo.Resim ?? "/Content/SiteLayout/assets/img/paylasim-varsayilan.jpg");
 
     // Konum (breadcrumb) yapılandırılmış verisi: layout'taki görünür konum çubuğuyla aynı bilgi
     string sayfaBasligi = ViewBag.SayfaBasligi as string;
@@ -72,7 +72,7 @@
 <meta name="twitter:image" content="@resim">
 @if (kirinti.Count > 1 && seo.Robots == null)
 {
-    <script type="application/ld+json">@JsonLd.Yaz(Sema.Kirinti(Request, kirinti, canonical ?? sayfaAdresi))</script>
+    <script type="application/ld+json">@JsonLd.Yaz(Sema.Kirinti(Context.Request, kirinti, canonical ?? sayfaAdresi))</script>
 }
 @foreach (var veri in seo.YapisalVeri)
 {

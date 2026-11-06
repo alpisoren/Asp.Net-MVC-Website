@@ -35,7 +35,7 @@
         </div>
     </div>
 
-    @Html.Partial("_BlogEkAlanlar", Model)
+    @await Html.PartialAsync("_BlogEkAlanlar", Model)
 
     <div class="form-group">
         @Html.LabelFor(model => model.Icerik, htmlAttributes: new { @class = "control-label col-md-2" })

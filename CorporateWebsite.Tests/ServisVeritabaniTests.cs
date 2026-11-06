@@ -86,7 +86,7 @@ namespace CorporateWebsite.Tests
         {
             var eski = YaziEkle(Benzersiz("Yayında"), DateTime.Now.AddMinutes(-5));
             var planli = YaziEkle(Benzersiz("Planlı"), DateTime.Now.AddDays(3));
-            var servis = new BlogServisi(db, null);
+            var servis = new BlogServisi(db);
 
             var idler = servis.Yayindakiler().Select(x => x.BlogId).ToList();
             CollectionAssert.Contains(idler, eski.BlogId);
@@ -103,7 +103,7 @@ namespace CorporateWebsite.Tests
             var son = YaziEkle(Benzersiz("Son"), DateTime.Now.AddMinutes(-1), "web, " + etiket);
             var benzer = YaziEkle(Benzersiz("Benzer"), DateTime.Now.AddMinutes(-1), etiket + " araçları");
 
-            var idler = new BlogServisi(db, null).EtiketliYazilar(etiket.ToUpperInvariant()).Select(x => x.BlogId).ToList();
+            var idler = new BlogServisi(db).EtiketliYazilar(etiket.ToUpperInvariant()).Select(x => x.BlogId).ToList();
             CollectionAssert.AreEquivalent(new[] { tek.BlogId, bas.BlogId, orta.BlogId, son.BlogId }, idler);
             CollectionAssert.DoesNotContain(idler, benzer.BlogId);
         }
@@ -116,7 +116,7 @@ namespace CorporateWebsite.Tests
             var etikette = YaziEkle(Benzersiz("Etikette"), DateTime.Now.AddMinutes(-1), "web, " + kelime);
             var planli = YaziEkle("Planlı " + kelime, DateTime.Now.AddDays(1));
 
-            var idler = new BlogServisi(db, null).Ara(kelime).Select(x => x.BlogId).ToList();
+            var idler = new BlogServisi(db).Ara(kelime).Select(x => x.BlogId).ToList();
             CollectionAssert.AreEquivalent(new[] { baslikta.BlogId, etikette.BlogId }, idler, "Planlı yazı aramada da çıkmamalı");
         }
 
@@ -124,7 +124,7 @@ namespace CorporateWebsite.Tests
         public void Blog_olusturulurken_etiketler_sadelesir_ve_tarih_atanir()
         {
             var baslik = Benzersiz("Yeni yazı");
-            var sonuc = new BlogServisi(db, null).Olustur(new BlogFormModeli
+            var sonuc = new BlogServisi(db).Olustur(new BlogFormModeli
             {
                 Baslik = baslik,
                 Icerik = "<p>x</p><script>alert(1)</script>",
@@ -146,7 +146,7 @@ namespace CorporateWebsite.Tests
         {
             var ilk = new DateTime(2025, 3, 10, 14, 25, 0);
             var b = YaziEkle(Benzersiz("Saatli"), ilk);
-            var servis = new BlogServisi(db, null);
+            var servis = new BlogServisi(db);
             var model = servis.FormModeliGetir(b.BlogId);
             model.Baslik += " (düzenlendi)";
 
@@ -187,19 +187,19 @@ namespace CorporateWebsite.Tests
             db.Hakkimizda.Add(h);
             db.SaveChanges();
 
-            Assert.IsTrue(new AyarServisi(db, null).HakkimizdaGuncelle(h.HakkimizdaId, "<p onclick=\"x()\">yeni</p><script>alert(1)</script>"));
+            Assert.IsTrue(new AyarServisi(db).HakkimizdaGuncelle(h.HakkimizdaId, "<p onclick=\"x()\">yeni</p><script>alert(1)</script>"));
             using (var taze = VeritabaniTestOrtami.YeniBaglam())
             {
                 var kayit = taze.Hakkimizda.Single(x => x.HakkimizdaId == h.HakkimizdaId).Aciklama;
                 Assert.AreEqual("<p>yeni</p>", kayit);
             }
-            Assert.IsFalse(new AyarServisi(db, null).HakkimizdaGuncelle(int.MaxValue, "x"));
+            Assert.IsFalse(new AyarServisi(db).HakkimizdaGuncelle(int.MaxValue, "x"));
         }
 
         [TestMethod]
         public void Iletisim_bos_alanlar_null_dolu_alanlar_kirpilmis_kaydedilir()
         {
-            var servis = new AyarServisi(db, null);
+            var servis = new AyarServisi(db);
             var i = new Iletisim { Adres = "eski" };
             db.Iletisim.Add(i);
             db.SaveChanges();

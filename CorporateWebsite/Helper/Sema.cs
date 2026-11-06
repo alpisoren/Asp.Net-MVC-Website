@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using Microsoft.AspNetCore.Http;
 
 namespace CorporateWebsite.Helper
 {
@@ -32,7 +32,7 @@ namespace CorporateWebsite.Helper
                 + (fark < TimeSpan.Zero ? "-" : "+") + fark.ToString("hh\\:mm");
         }
 
-        public static Dictionary<string, object> Kurum(HttpRequestBase istek, Kimlik kimlik, Iletisim iletisim)
+        public static Dictionary<string, object> Kurum(HttpRequest istek, Kimlik kimlik, Iletisim iletisim)
         {
             var d = Yeni("Organization");
             d["@id"] = SeoAdres.Kok(istek) + "/#kurum";
@@ -67,7 +67,7 @@ namespace CorporateWebsite.Helper
         }
 
         /// <summary>Site ve site içi arama kutusu (Google "sitelinks searchbox").</summary>
-        public static Dictionary<string, object> WebSitesi(HttpRequestBase istek, string ad)
+        public static Dictionary<string, object> WebSitesi(HttpRequest istek, string ad)
         {
             var kok = SeoAdres.Kok(istek);
             var d = Yeni("WebSite");
@@ -85,7 +85,7 @@ namespace CorporateWebsite.Helper
             return d;
         }
 
-        public static Dictionary<string, object> BlogYazisi(HttpRequestBase istek, Blog blog, string canonical, string aciklama, Kimlik kimlik)
+        public static Dictionary<string, object> BlogYazisi(HttpRequest istek, Blog blog, string canonical, string aciklama, Kimlik kimlik)
         {
             var kok = SeoAdres.Kok(istek);
             var d = Yeni("BlogPosting");
@@ -122,7 +122,7 @@ namespace CorporateWebsite.Helper
         }
 
         /// <summary>Konum (breadcrumb) listesi: (ad, site içi yol) çiftleri; son öğenin yolu boş olabilir.</summary>
-        public static Dictionary<string, object> Kirinti(HttpRequestBase istek, IEnumerable<Tuple<string, string>> ogeler, string sonAdres)
+        public static Dictionary<string, object> Kirinti(HttpRequest istek, IEnumerable<Tuple<string, string>> ogeler, string sonAdres)
         {
             var d = Yeni("BreadcrumbList");
             var liste = ogeler.ToList();

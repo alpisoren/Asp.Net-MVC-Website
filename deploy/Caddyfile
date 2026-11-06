@@ -1,0 +1,11 @@
+# Caddy: Let's Encrypt sertifikasını kendisi alır ve yeniler.
+# ALAN_ADI ve ALAN_ADI_CIPLAK .env'den gelir. ALAN_ADI, Site:SiteAdresi ile aynı olmalı (tek kalıcı adres, SEO için).
+
+{$ALAN_ADI} {$ALAN_ADI_CIPLAK} {
+	# Ana adres dışındaki her istek (ör. çıplak alan adı) kalıcı olarak ana adrese yönlenir.
+	@baska not host {$ALAN_ADI}
+	redir @baska https://{$ALAN_ADI}{uri} permanent
+
+	encode zstd gzip
+	reverse_proxy web:8080
+}

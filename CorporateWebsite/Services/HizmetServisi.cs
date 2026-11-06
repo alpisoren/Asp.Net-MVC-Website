@@ -1,10 +1,10 @@
+﻿using Microsoft.AspNetCore.Http;
 using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Models.ViewModel;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 namespace CorporateWebsite.Services
 {
@@ -15,12 +15,10 @@ namespace CorporateWebsite.Services
         private const int ResimBoyutu = 500;
 
         private readonly KurumsalDBContext db;
-        private readonly HttpServerUtilityBase server;
 
-        public HizmetServisi(KurumsalDBContext db, HttpServerUtilityBase server)
+        public HizmetServisi(KurumsalDBContext db)
         {
             this.db = db;
-            this.server = server;
         }
 
         public List<Hizmet> Listele()
@@ -38,7 +36,7 @@ namespace CorporateWebsite.Services
             return new HizmetFormModeli { HizmetId = h.HizmetId, Baslik = h.Baslik, Aciklama = h.Aciklama, ResimUrl = h.ResimUrl };
         }
 
-        public IslemSonucu Olustur(HizmetFormModeli model, HttpPostedFileBase resim)
+        public IslemSonucu Olustur(HizmetFormModeli model, IFormFile resim)
         {
             string url = null;
             if (resim != null)
@@ -62,7 +60,7 @@ namespace CorporateWebsite.Services
         }
 
         /// <summary>Kayıt yoksa null döner.</summary>
-        public IslemSonucu Guncelle(int id, HizmetFormModeli model, HttpPostedFileBase resim)
+        public IslemSonucu Guncelle(int id, HizmetFormModeli model, IFormFile resim)
         {
             var h = db.Hizmet.SingleOrDefault(x => x.HizmetId == id);
             if (h == null)
@@ -78,7 +76,7 @@ namespace CorporateWebsite.Services
                 {
                     return IslemSonucu.Hata("", hata);
                 }
-                ResimHelper.Sil(server, h.ResimUrl);
+                ResimHelper.Sil(h.ResimUrl);
                 h.ResimUrl = url;
             }
 
@@ -95,7 +93,7 @@ namespace CorporateWebsite.Services
             {
                 return false;
             }
-            ResimHelper.Sil(server, h.ResimUrl);
+            ResimHelper.Sil(h.ResimUrl);
             db.Hizmet.Remove(h);
             db.SaveChanges();
             return true;

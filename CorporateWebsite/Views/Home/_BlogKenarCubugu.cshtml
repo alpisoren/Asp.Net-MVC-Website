@@ -8,7 +8,7 @@
             <button class="kw-btn kw-btn-primary" type="submit" aria-label="Ara"><i class="bi bi-search" aria-hidden="true"></i></button>
         </form>
     </section>
-    @{ Html.RenderAction("BlogKategoriPartial", "Home"); }
-    @{ Html.RenderAction("BlogSonKayitPartial", "Home"); }
+    @await Component.InvokeAsync("BlogKategorileri")
+    @await Component.InvokeAsync("BlogSonYazilar")
     <a class="kw-rss-link" href="/rss.xml"><i class="bi bi-rss" aria-hidden="true"></i> RSS ile takip edin</a>
 </aside>

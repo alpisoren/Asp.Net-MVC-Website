@@ -1,8 +1,8 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -25,7 +25,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Details(int? id)
         {
             var kategori = id.HasValue ? servis.Bul(id.Value) : null;
-            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
+            return kategori == null ? (ActionResult)NotFound() : View(kategori);
         }
 
         public ActionResult Create()
@@ -35,7 +35,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "KategoriAd,Aciklama")] Kategori kategori)
+        public ActionResult Create([Bind("KategoriAd,Aciklama")] Kategori kategori)
         {
             if (ModelState.IsValid)
             {
@@ -52,19 +52,19 @@ namespace CorporateWebsite.Controllers
         public ActionResult Edit(int? id)
         {
             var kategori = id.HasValue ? servis.Bul(id.Value) : null;
-            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
+            return kategori == null ? (ActionResult)NotFound() : View(kategori);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, [Bind(Include = "KategoriAd,Aciklama")] Kategori kategori)
+        public ActionResult Edit(int id, [Bind("KategoriAd,Aciklama")] Kategori kategori)
         {
             if (ModelState.IsValid)
             {
                 var sonuc = servis.Guncelle(id, kategori);
                 if (sonuc == null)
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 if (sonuc.Basarili)
                 {
@@ -79,7 +79,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Delete(int? id)
         {
             var kategori = id.HasValue ? servis.Bul(id.Value) : null;
-            return kategori == null ? (ActionResult)HttpNotFound() : View(kategori);
+            return kategori == null ? (ActionResult)NotFound() : View(kategori);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -89,7 +89,7 @@ namespace CorporateWebsite.Controllers
             var ad = servis.Sil(id);
             if (ad == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             TempData["Basari"] = "\"" + ad + "\" kategorisi silindi.";
             return RedirectToAction("Index");

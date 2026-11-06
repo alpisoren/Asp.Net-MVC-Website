@@ -1,8 +1,8 @@
-﻿using CorporateWebsite.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using CorporateWebsite.Filters;
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Services;
-using System.Web.Mvc;
 
 namespace CorporateWebsite.Controllers
 {
@@ -33,7 +33,7 @@ namespace CorporateWebsite.Controllers
             var onayli = servis.OnayDegistir(id);
             if (onayli == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             TempData["Basari"] = onayli.Value ? "Yorum onaylandı ve sitede yayında." : "Yorumun onayı kaldırıldı.";
 
@@ -47,7 +47,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Details(int? id)
         {
             var yorum = id.HasValue ? servis.Bul(id.Value) : null;
-            return yorum == null ? (ActionResult)HttpNotFound() : View(yorum);
+            return yorum == null ? (ActionResult)NotFound() : View(yorum);
         }
 
         public ActionResult Create()
@@ -58,8 +58,7 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ValidateInput(false)] // Yorum metni her yerde kodlanarak (encode) basılır; "<" içeren yorumlar düzenlenebilsin
-        public ActionResult Create([Bind(Include = Alanlar)] Yorum yorum)
+        public ActionResult Create([Bind(Alanlar)] Yorum yorum)
         {
             if (ModelState.IsValid)
             {
@@ -75,7 +74,7 @@ namespace CorporateWebsite.Controllers
             var yorum = id.HasValue ? servis.Bul(id.Value) : null;
             if (yorum == null)
             {
-                return HttpNotFound();
+                return NotFound();
             }
             ViewBag.BlogId = servis.BlogSecimListesi(yorum.BlogId);
             return View(yorum);
@@ -83,14 +82,13 @@ namespace CorporateWebsite.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [ValidateInput(false)] // Yorum metni her yerde kodlanarak (encode) basılır; "<" içeren yorumlar düzenlenebilsin
-        public ActionResult Edit(int id, [Bind(Include = Alanlar)] Yorum yorum)
+        public ActionResult Edit(int id, [Bind(Alanlar)] Yorum yorum)
         {
             if (ModelState.IsValid)
             {
                 if (!servis.Guncelle(id, yorum))
                 {
-                    return HttpNotFound();
+                    return NotFound();
                 }
                 return RedirectToAction("Index");
             }
@@ -102,7 +100,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Delete(int? id)
         {
             var yorum = id.HasValue ? servis.Bul(id.Value) : null;
-            return yorum == null ? (ActionResult)HttpNotFound() : View(yorum);
+            return yorum == null ? (ActionResult)NotFound() : View(yorum);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -111,7 +109,7 @@ namespace CorporateWebsite.Controllers
         {
             if (!servis.Sil(id))
             {
-                return HttpNotFound();
+                return NotFound();
             }
             return RedirectToAction("Index");
         }
