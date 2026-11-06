@@ -4,12 +4,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS derleme
 WORKDIR /kaynak
 
+# Yalnızca linux-x64 için yayınlanır: diğer platformların yerel kütüphaneleri (SkiaSharp vb.) imaja girmez.
+# ARM sunucu (ör. Ampere) için: docker build --build-arg RID=linux-arm64 .
+ARG RID=linux-x64
+
 # Önce yalnızca proje dosyası: paket geri yükleme katmanı kod değişmedikçe önbellekten gelir.
 COPY CorporateWebsite/CorporateWebsite.csproj CorporateWebsite/
-RUN dotnet restore CorporateWebsite/CorporateWebsite.csproj
+RUN dotnet restore CorporateWebsite/CorporateWebsite.csproj -r $RID
 
 COPY CorporateWebsite/ CorporateWebsite/
-RUN dotnet publish CorporateWebsite/CorporateWebsite.csproj -c Release -o /yayin --no-restore /p:UseAppHost=false
+RUN dotnet publish CorporateWebsite/CorporateWebsite.csproj -c Release -o /yayin --no-restore \
+    -r $RID --self-contained false /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS calisma
 WORKDIR /uygulama
