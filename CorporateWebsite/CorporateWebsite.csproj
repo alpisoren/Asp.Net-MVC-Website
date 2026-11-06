@@ -130,6 +130,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Views\Home\Etiket.cshtml" />
+    <Content Include="Views\Blog\_BlogEkAlanlar.cshtml" />
     <Content Include="Content\AdminLayout\css\font-awesome.min.css" />
     <Content Include="Content\AdminLayout\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\SiteLayout\assets\css\style.css" />
@@ -185,11 +187,20 @@
     <Content Include="Views\Shared\Error.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202611052248321_BlogAlanlari.resx">
+      <DependentUpon>202611052248321_BlogAlanlari.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202611052225471_Baslangic.resx">
       <DependentUpon>202611052225471_Baslangic.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Migrations\202611052248321_BlogAlanlari.Designer.cs">
+      <DependentUpon>202611052248321_BlogAlanlari.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202611052248321_BlogAlanlari.cs" />
+    <Compile Include="Helper\TarihHelper.cs" />
+    <Compile Include="Helper\EtiketHelper.cs" />
     <Compile Include="Controllers\MedyaController.cs" />
     <Compile Include="Services\AyarServisi.cs" />
     <Compile Include="Services\YorumServisi.cs" />

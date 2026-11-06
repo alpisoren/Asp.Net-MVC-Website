@@ -2,6 +2,7 @@
 using CorporateWebsite.Models.DataContext;
 using CorporateWebsite.Models.Model;
 using CorporateWebsite.Models.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -27,7 +28,57 @@ namespace CorporateWebsite.Services
 
         public List<Blog> Listele()
         {
-            return db.Blog.AsNoTracking().Include(x => x.Kategori).OrderByDescending(x => x.BlogId).ToList();
+            return db.Blog.AsNoTracking().Include(x => x.Kategori)
+                .OrderByDescending(x => x.YayinTarihi).ThenByDescending(x => x.BlogId).ToList();
+        }
+
+        // ---------------------------------------------------------------- site tarafı sorguları
+
+        /// <summary>Sitede görünen yazılar: yayın tarihi gelmiş olanlar, en yeni önce.</summary>
+        public IQueryable<Blog> Yayindakiler()
+        {
+            var simdi = DateTime.Now;
+            return db.Blog.AsNoTracking().Include(x => x.Kategori)
+                .Where(x => x.YayinTarihi <= simdi)
+                .OrderByDescending(x => x.YayinTarihi).ThenByDescending(x => x.BlogId);
+        }
+
+        /// <summary>Başlık, içerik ve etiketlerde arar (büyük/küçük harf duyarsız; SQL Server harmanlamasına göre).</summary>
+        public IQueryable<Blog> Ara(string sorgu)
+        {
+            sorgu = (sorgu ?? "").Trim();
+            if (sorgu.Length == 0)
+            {
+                return Yayindakiler();
+            }
+            return Yayindakiler().Where(x => x.Baslik.Contains(sorgu) || x.Icerik.Contains(sorgu) || x.Etiketler.Contains(sorgu));
+        }
+
+        /// <summary>Etiketi tam olarak taşıyan yazılar ("seo", "seo araçları"nı eşlemez).</summary>
+        public IQueryable<Blog> EtiketliYazilar(string etiket)
+        {
+            var e = (EtiketHelper.Duzenle(etiket) ?? "").Split(',')[0].Trim();
+            var bas = e + ", ";
+            var son = ", " + e;
+            var orta = ", " + e + ",";
+            return Yayindakiler().Where(x => x.Etiketler == e || x.Etiketler.StartsWith(bas)
+                || x.Etiketler.EndsWith(son) || x.Etiketler.Contains(orta));
+        }
+
+        /// <summary>Formdaki tarih yalnızca gün içerir; bugünse ve yeni kayıtsa şu anki saat kullanılır.</summary>
+        private static DateTime YayinZamani(DateTime? formTarihi, DateTime? mevcut)
+        {
+            var simdi = DateTime.Now;
+            if (!formTarihi.HasValue)
+            {
+                return mevcut ?? simdi;
+            }
+            var gun = formTarihi.Value.Date;
+            if (mevcut.HasValue && mevcut.Value.Date == gun)
+            {
+                return mevcut.Value; // gün değişmediyse saat korunur
+            }
+            return gun == simdi.Date ? simdi : gun;
         }
 
         public Blog Bul(int id)
@@ -48,7 +99,10 @@ namespace CorporateWebsite.Services
                 Baslik = b.Baslik,
                 Icerik = b.Icerik,
                 KategoriId = b.KategoriId,
-                ResimURL = b.ResimURL
+                ResimURL = b.ResimURL,
+                YayinTarihi = b.YayinTarihi,
+                Yazar = b.Yazar,
+                Etiketler = b.Etiketler
             };
         }
 
@@ -76,7 +130,10 @@ namespace CorporateWebsite.Services
                 Baslik = model.Baslik.Trim(),
                 Icerik = HtmlTemizleyici.Temizle(model.Icerik),
                 KategoriId = model.KategoriId,
-                ResimURL = url
+                ResimURL = url,
+                YayinTarihi = YayinZamani(model.YayinTarihi, null),
+                Yazar = MetinHelper.Kirp(model.Yazar),
+                Etiketler = EtiketHelper.Duzenle(model.Etiketler)
             });
             db.SaveChanges();
             return sonuc;
@@ -112,6 +169,10 @@ namespace CorporateWebsite.Services
             b.Baslik = model.Baslik.Trim();
             b.Icerik = HtmlTemizleyici.Temizle(model.Icerik);
             b.KategoriId = model.KategoriId;
+            b.YayinTarihi = YayinZamani(model.YayinTarihi, b.YayinTarihi);
+            b.Yazar = MetinHelper.Kirp(model.Yazar);
+            b.Etiketler = EtiketHelper.Duzenle(model.Etiketler);
+            b.GuncellemeTarihi = DateTime.Now;
             db.SaveChanges();
             return sonuc;
         }

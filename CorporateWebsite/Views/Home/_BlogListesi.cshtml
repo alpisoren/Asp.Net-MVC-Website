@@ -20,11 +20,15 @@
     <div class="container">
         <div class="row g-4 g-lg-5">
             <div class="col-lg-8">
+                @if (ViewBag.ListeNotu != null)
+                {
+                    <p class="kw-liste-notu" role="status">@ViewBag.ListeNotu</p>
+                }
                 @if (Model.Count == 0)
                 {
                     <div class="kw-empty">
                         <i class="bi bi-journal-text" aria-hidden="true"></i>
-                        Bu bölümde henüz yazı yok.
+                        @(ViewBag.Arama != null ? "Aramanızla eşleşen yazı yok." : "Bu bölümde henüz yazı yok.")
                     </div>
                 }
                 else

@@ -20,6 +20,7 @@ else
                     <th scope="col">Resim</th>
                     <th scope="col">Başlık</th>
                     <th scope="col">Kategori</th>
+                    <th scope="col">Yayın</th>
                     <th scope="col"><span class="sr-only">İşlemler</span></th>
                 </tr>
             </thead>
@@ -35,6 +36,11 @@ else
                         </td>
                         <td><strong>@item.Baslik</strong></td>
                         <td>@(item.Kategori?.KategoriAd ?? "—")</td>
+                        <td data-order="@item.YayinTarihi.ToString("yyyyMMddHHmm")">
+                            @item.YayinTarihi.ToString("d MMM yyyy", TarihHelper.Tr)
+                            @if (item.YayinTarihi > DateTime.Now)
+                            {<br /><span class="kp-status kp-status-wait">Planlandı</span>}
+                        </td>
                         <td>
                             <a class="kp-row-action" href="@SeoHelper.BlogUrl(item.Baslik, item.BlogId)" target="_blank" rel="noopener" title="Sitede görüntüle"><i class="fa fa-external-link" aria-hidden="true"></i><span class="sr-only">Sitede görüntüle: @item.Baslik</span></a>
                             <a class="kp-row-action" href="/Blog/Edit/@item.BlogId"><i class="fa fa-pencil" aria-hidden="true"></i> Düzenle</a>

@@ -8,6 +8,7 @@
     ViewBag.UstSayfaAd = "Blog";
     ViewBag.UstSayfaUrl = "/BlogPost";
     var yorumlar = Model.Yorumlar.Where(y => y.Onayli).OrderByDescending(x => x.YorumId).ToList();
+    var etiketler = EtiketHelper.Ayir(Model.Etiketler);
 }
 
 <section class="kw-section">
@@ -15,12 +16,24 @@
         <div class="row g-4 g-lg-5">
             <div class="col-lg-8">
                 <article>
-                    @if (Model.Kategori != null)
-                    {
-                        <div class="kw-article-meta">
+                    <div class="kw-article-meta">
+                        @if (Model.YayinTarihi > DateTime.Now)
+                        {
+                            <span class="kw-badge kw-badge-uyari"><i class="bi bi-clock" aria-hidden="true"></i> Planlı: yalnızca yöneticiler görüyor</span>
+                        }
+                        <span class="kw-meta mb-0">
+                            <i class="bi bi-calendar3" aria-hidden="true"></i>
+                            <time datetime="@Model.YayinTarihi.ToString("yyyy-MM-dd")">@Model.YayinTarihi.ToString("d MMMM yyyy", TarihHelper.Tr)</time>
+                        </span>
+                        @if (!string.IsNullOrEmpty(Model.Yazar))
+                        {
+                            <span class="kw-meta mb-0"><i class="bi bi-person" aria-hidden="true"></i> @Model.Yazar</span>
+                        }
+                        @if (Model.Kategori != null)
+                        {
                             <a class="kw-badge" href="@SeoHelper.KategoriUrl(Model.Kategori.KategoriAd, Model.Kategori.KategoriId)"><i class="bi bi-folder2" aria-hidden="true"></i> @Model.Kategori.KategoriAd</a>
-                        </div>
-                    }
+                        }
+                    </div>
 
                     @if (!string.IsNullOrEmpty(Model.ResimURL))
                     {
@@ -32,6 +45,16 @@
                     <div class="kw-prose">
                         @Html.Raw(HtmlTemizleyici.Temizle(Model.Icerik))
                     </div>
+
+                    @if (etiketler.Count > 0)
+                    {
+                        <ul class="kw-tags" aria-label="Etiketler">
+                            @foreach (var e in etiketler)
+                            {
+                                <li><a href="@EtiketHelper.Url(e)">#@e</a></li>
+                            }
+                        </ul>
+                    }
                 </article>
 
                 <section class="kw-comments" aria-labelledby="yorumlar-baslik">

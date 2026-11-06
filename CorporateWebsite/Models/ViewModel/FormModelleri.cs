@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
@@ -76,6 +77,19 @@ namespace CorporateWebsite.Models.ViewModel
         /// <summary>Mevcut resmin adresi (sadece gösterim için; formdan bağlanmaz).</summary>
         [DisplayName("Resim")]
         public string ResimURL { get; set; }
+
+        [DisplayName("Yayın Tarihi")]
+        [Required(ErrorMessage = "Yayın tarihi zorunludur")]
+        [DataType(DataType.Date)]
+        public DateTime? YayinTarihi { get; set; }
+
+        [DisplayName("Yazar")]
+        [StringLength(100, ErrorMessage = "Yazar en fazla 100 karakter olabilir")]
+        public string Yazar { get; set; }
+
+        [DisplayName("Etiketler")]
+        [StringLength(250, ErrorMessage = "Etiketler toplamda en fazla 250 karakter olabilir")]
+        public string Etiketler { get; set; }
     }
 
     [Bind(Exclude = "ResimUrl")]

@@ -19,6 +19,13 @@
         {
             <div class="mb-2"><span class="kw-badge"><i class="bi bi-folder2" aria-hidden="true"></i> @Model.Kategori.KategoriAd</span></div>
         }
+        <p class="kw-meta">
+            <time datetime="@Model.YayinTarihi.ToString("yyyy-MM-dd")">@Model.YayinTarihi.ToString("d MMMM yyyy", TarihHelper.Tr)</time>
+            @if (!string.IsNullOrEmpty(Model.Yazar))
+            {
+                <span>· @Model.Yazar</span>
+            }
+        </p>
         <h3><a href="@url">@Model.Baslik</a></h3>
         <p class="kw-card-text">@MetinHelper.Ozet(Model.Icerik, 140)</p>
         <div class="kw-card-footer">

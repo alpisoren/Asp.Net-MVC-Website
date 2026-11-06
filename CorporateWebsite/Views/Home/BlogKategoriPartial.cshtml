@@ -11,7 +11,7 @@
         <ul class="kw-sidebar-list">
             @foreach (var item in Model)
             {
-                var adet = item.Blogs == null ? 0 : item.Blogs.Count;
+                var adet = item.Blogs == null ? 0 : item.Blogs.Count(b => b.YayinTarihi <= DateTime.Now);
                 <li>
                     <a href="@SeoHelper.KategoriUrl(item.KategoriAd, item.KategoriId)">
                         <span>@item.KategoriAd</span>

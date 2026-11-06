@@ -1,5 +1,14 @@
-﻿@* Blog sayfalarının ortak kenar çubuğu: kategoriler ve son gönderiler *@
+﻿@* Blog sayfalarının ortak kenar çubuğu: arama, kategoriler, son gönderiler, RSS *@
 <aside class="kw-sidebar" aria-label="Blog kenar çubuğu">
+    <section class="kw-sidebar-box" aria-labelledby="blog-ara-baslik">
+        <h2 id="blog-ara-baslik">Blogda ara</h2>
+        <form class="kw-search" method="get" action="/BlogPost" role="search">
+            <label class="visually-hidden" for="blog-ara">Aranacak kelime</label>
+            <input class="form-control" type="search" id="blog-ara" name="q" maxlength="100" value="@ViewBag.Arama" placeholder="Başlık, içerik ya da etiket">
+            <button class="kw-btn kw-btn-primary" type="submit" aria-label="Ara"><i class="bi bi-search" aria-hidden="true"></i></button>
+        </form>
+    </section>
     @{ Html.RenderAction("BlogKategoriPartial", "Home"); }
     @{ Html.RenderAction("BlogSonKayitPartial", "Home"); }
+    <a class="kw-rss-link" href="/rss.xml"><i class="bi bi-rss" aria-hidden="true"></i> RSS ile takip edin</a>
 </aside>

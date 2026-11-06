@@ -27,7 +27,7 @@ namespace CorporateWebsite.Controllers
         public ActionResult Create()
         {
             KategorileriYukle(null);
-            return View(new BlogFormModeli());
+            return View(new BlogFormModeli { YayinTarihi = System.DateTime.Today });
         }
 
         [HttpPost]

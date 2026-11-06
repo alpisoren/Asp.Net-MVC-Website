@@ -1,0 +1,30 @@
+﻿@model CorporateWebsite.Models.ViewModel.BlogFormModeli
+@* Yeni ve Düzenle formlarının ortak alanları: yayın tarihi, yazar, etiketler *@
+<div class="form-group">
+    <label for="YayinTarihi" class="control-label col-md-2">Yayın Tarihi <span class="required">*</span></label>
+    <div class="col-md-10">
+        <input type="date" class="form-control kp-input-kisa" id="YayinTarihi" name="YayinTarihi" required
+               value="@(Model.YayinTarihi.HasValue ? Model.YayinTarihi.Value.ToString("yyyy-MM-dd") : "")" aria-describedby="YayinTarihiYardim" />
+        <p class="help-block" id="YayinTarihiYardim">İleri bir tarih seçerseniz yazı o gün sitede yayına girer.</p>
+        @Html.ValidationMessageFor(model => model.YayinTarihi, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="Yazar" class="control-label col-md-2">Yazar</label>
+    <div class="col-md-10">
+        <input type="text" class="form-control" id="Yazar" name="Yazar" maxlength="100" value="@Model.Yazar" aria-describedby="YazarYardim" />
+        <p class="help-block" id="YazarYardim">Boş bırakılırsa yazar adı gösterilmez.</p>
+        @Html.ValidationMessageFor(model => model.Yazar, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="Etiketler" class="control-label col-md-2">Etiketler</label>
+    <div class="col-md-10">
+        <input type="text" class="form-control" id="Etiketler" name="Etiketler" maxlength="250" value="@Model.Etiketler"
+               placeholder="ör. web tasarım, seo, e-ticaret" aria-describedby="EtiketlerYardim" />
+        <p class="help-block" id="EtiketlerYardim">Virgülle ayırın. En fazla 10 etiket; küçük harfe çevrilir.</p>
+        @Html.ValidationMessageFor(model => model.Etiketler, "", new { @class = "text-danger" })
+    </div>
+</div>

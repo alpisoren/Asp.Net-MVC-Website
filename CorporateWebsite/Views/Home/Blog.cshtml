@@ -2,8 +2,25 @@
 @model IPagedList<CorporateWebsite.Models.Model.Blog>
 @{
     Layout = "~/Views/Shared/_SiteLayout.cshtml";
-    ViewBag.Title = Model.PageNumber > 1 ? "Blog - Sayfa " + Model.PageNumber : "Blog";
-    ViewBag.SayfaBasligi = "Blog";
-    ViewData["SayfaUrl"] = (Func<int, string>)(p => p > 1 ? "/BlogPost?Page=" + p : "/BlogPost");
+    string arama = ViewBag.Arama;
+    string q = string.IsNullOrEmpty(arama) ? "" : "q=" + Url.Encode(arama);
+    if (string.IsNullOrEmpty(arama))
+    {
+        ViewBag.Title = Model.PageNumber > 1 ? "Blog - Sayfa " + Model.PageNumber : "Blog";
+        ViewBag.SayfaBasligi = "Blog";
+    }
+    else
+    {
+        ViewBag.Title = "“" + arama + "” araması";
+        ViewBag.SayfaBasligi = "Arama: " + arama;
+        ViewBag.UstSayfaAd = "Blog";
+        ViewBag.UstSayfaUrl = "/BlogPost";
+        ViewBag.KonumAd = "Arama";
+        ViewBag.ListeNotu = Model.TotalItemCount == 0
+            ? "“" + arama + "” için sonuç bulunamadı. Farklı bir kelime deneyin."
+            : "“" + arama + "” için " + Model.TotalItemCount + " yazı bulundu.";
+    }
+    ViewData["SayfaUrl"] = (Func<int, string>)(p =>
+        "/BlogPost" + (p > 1 ? "?Page=" + p + (q.Length > 0 ? "&" + q : "") : (q.Length > 0 ? "?" + q : "")));
 }
 @Html.Partial("_BlogListesi", Model)

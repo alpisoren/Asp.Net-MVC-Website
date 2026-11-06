@@ -1,5 +1,6 @@
 ﻿using CorporateWebsite.Helper;
 using CorporateWebsite.Models.DataContext;
+using CorporateWebsite.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -18,7 +19,16 @@ namespace CorporateWebsite.Controllers
         private const int SayfaBoyutu = 5;
         private const int SonYaziSayisi = 5;
 
+        private const int RssYaziSayisi = 20;
+
         private KurumsalDBContext db = new KurumsalDBContext();
+        private BlogServisi blogServisi;
+
+        protected override void Initialize(System.Web.Routing.RequestContext requestContext)
+        {
+            base.Initialize(requestContext);
+            blogServisi = new BlogServisi(db, Server);
+        }
 
         [Route()]
         [Route("Anasayfa")]
@@ -35,8 +45,7 @@ namespace CorporateWebsite.Controllers
         {
             ViewBag.Kimlik = db.Kimlik.AsNoTracking().FirstOrDefault();
             ViewBag.Iletisim = db.Iletisim.AsNoTracking().FirstOrDefault();
-            ViewBag.Blog = db.Blog.AsNoTracking()
-                .OrderByDescending(x => x.BlogId)
+            ViewBag.Blog = blogServisi.Yayindakiler()
                 .Take(SonYaziSayisi)
                 .ToList();
         }
@@ -123,13 +132,92 @@ namespace CorporateWebsite.Controllers
             }
         }
 
+        /// <summary>Blog listesi; "q" verilirse başlık, içerik ve etiketlerde arar.</summary>
+        /// <remarks>Arama metni her yerde kodlanarak basılır; "&lt;" içeren aramalar istek doğrulamasına takılmasın.</remarks>
         [Route("BlogPost")]
-        public ActionResult Blog(int Page = 1)
+        [ValidateInput(false)]
+        public ActionResult Blog(int Page = 1, string q = null)
         {
             FooterLoader();
-            return View(db.Blog.AsNoTracking().Include(x => x.Kategori)
-                .OrderByDescending(x => x.BlogId)
-                .ToPagedList(Math.Max(Page, 1), SayfaBoyutu));
+            q = MetinHelper.Kirp(q);
+            if (q != null && q.Length > 100)
+            {
+                q = q.Substring(0, 100);
+            }
+            ViewBag.Arama = q;
+            return View(blogServisi.Ara(q).ToPagedList(Math.Max(Page, 1), SayfaBoyutu));
+        }
+
+        [Route("BlogPost/etiket/{etiket}")]
+        public ActionResult Etiket(string etiket, int Page = 1)
+        {
+            etiket = (EtiketHelper.Duzenle(etiket) ?? "").Split(',')[0].Trim();
+            if (etiket.Length == 0)
+            {
+                return HttpNotFound();
+            }
+            var yazilar = blogServisi.EtiketliYazilar(etiket).ToPagedList(Math.Max(Page, 1), SayfaBoyutu);
+            if (yazilar.TotalItemCount == 0)
+            {
+                return HttpNotFound();
+            }
+            FooterLoader();
+            ViewBag.Etiket = etiket;
+            ViewBag.Canonical = MutlakUrl(EtiketHelper.Url(etiket));
+            return View(yazilar);
+        }
+
+        /// <summary>Son 20 yazının RSS 2.0 akışı.</summary>
+        [Route("rss.xml")]
+        [OutputCache(Duration = 900, VaryByParam = "none")]
+        public ActionResult Rss()
+        {
+            var kimlik = db.Kimlik.AsNoTracking().FirstOrDefault();
+            var siteAdi = kimlik?.Title ?? kimlik?.Unvan ?? "Blog";
+            var yazilar = blogServisi.Yayindakiler().Take(RssYaziSayisi).ToList();
+            XNamespace atom = "http://www.w3.org/2005/Atom";
+
+            var kanal = new XElement("channel",
+                new XElement("title", siteAdi),
+                new XElement("link", MutlakUrl("/BlogPost")),
+                new XElement("description", kimlik?.Description ?? siteAdi),
+                new XElement("language", "tr-TR"),
+                new XElement(atom + "link", new XAttribute("href", MutlakUrl("/rss.xml")), new XAttribute("rel", "self"), new XAttribute("type", "application/rss+xml")));
+            if (yazilar.Count > 0)
+            {
+                kanal.Add(new XElement("lastBuildDate", RssTarih(yazilar.Max(x => x.GuncellemeTarihi ?? x.YayinTarihi))));
+            }
+            foreach (var y in yazilar)
+            {
+                var link = MutlakUrl(SeoHelper.BlogUrl(y.Baslik, y.BlogId));
+                var oge = new XElement("item",
+                    new XElement("title", y.Baslik),
+                    new XElement("link", link),
+                    new XElement("guid", new XAttribute("isPermaLink", "true"), link),
+                    new XElement("pubDate", RssTarih(y.YayinTarihi)),
+                    new XElement("description", MetinHelper.Ozet(y.Icerik, 300)));
+                if (y.Kategori != null)
+                {
+                    oge.Add(new XElement("category", y.Kategori.KategoriAd));
+                }
+                foreach (var e in EtiketHelper.Ayir(y.Etiketler))
+                {
+                    oge.Add(new XElement("category", e));
+                }
+                kanal.Add(oge);
+            }
+
+            var xml = new XDocument(new XDeclaration("1.0", "utf-8", null),
+                new XElement("rss", new XAttribute("version", "2.0"), new XAttribute(XNamespace.Xmlns + "atom", atom), kanal));
+            return Content(xml.Declaration + Environment.NewLine + xml.Root, "application/rss+xml", Encoding.UTF8);
+        }
+
+        /// <summary>RFC 822 biçimi (RSS'in istediği): sunucu saatini yerel saat dilimi farkıyla yazar.</summary>
+        private static string RssTarih(DateTime t)
+        {
+            var ofset = TimeZoneInfo.Local.GetUtcOffset(t);
+            return t.ToString("ddd, dd MMM yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)
+                + " " + (ofset < TimeSpan.Zero ? "-" : "+") + ofset.ToString("hhmm");
         }
 
         [ChildActionOnly]
@@ -143,8 +231,7 @@ namespace CorporateWebsite.Controllers
         [ChildActionOnly]
         public ActionResult BlogSonKayitPartial()
         {
-            return PartialView(db.Blog.AsNoTracking()
-                .OrderByDescending(x => x.BlogId)
+            return PartialView(blogServisi.Yayindakiler()
                 .Take(SonYaziSayisi)
                 .ToList());
         }
@@ -168,9 +255,8 @@ namespace CorporateWebsite.Controllers
             FooterLoader();
             ViewBag.Canonical = MutlakUrl(dogruUrl);
             ViewBag.KategoriAd = kategori.KategoriAd;
-            var b = db.Blog.AsNoTracking().Include(x => x.Kategori)
+            var b = blogServisi.Yayindakiler()
                 .Where(x => x.KategoriId == id)
-                .OrderByDescending(x => x.BlogId)
                 .ToPagedList(Math.Max(Page, 1), SayfaBoyutu);
             return View(b);
         }
@@ -180,7 +266,8 @@ namespace CorporateWebsite.Controllers
         {
             var blog = db.Blog.AsNoTracking().Include(x => x.Kategori).Include(x => x.Yorumlar)
                 .FirstOrDefault(x => x.BlogId == id);
-            if (blog == null)
+            // Planlı (yayın tarihi gelmemiş) yazıyı yalnızca oturum açmış yönetici önizleyebilir.
+            if (blog == null || (blog.YayinTarihi > DateTime.Now && !YoneticiOturumAcik()))
             {
                 return HttpNotFound();
             }
@@ -208,13 +295,16 @@ namespace CorporateWebsite.Controllers
             adresler.AddRange(db.Kategori.AsNoTracking()
                 .Select(x => new { x.KategoriId, x.KategoriAd }).ToList()
                 .Select(x => SeoHelper.KategoriUrl(x.KategoriAd, x.KategoriId)));
-            adresler.AddRange(db.Blog.AsNoTracking()
-                .OrderByDescending(x => x.BlogId)
-                .Select(x => new { x.BlogId, x.Baslik }).ToList()
-                .Select(x => SeoHelper.BlogUrl(x.Baslik, x.BlogId)));
+
+            var ogeler = adresler.Select(a => new XElement(ns + "url", new XElement(ns + "loc", MutlakUrl(a)))).ToList();
+            ogeler.AddRange(blogServisi.Yayindakiler()
+                .Select(x => new { x.BlogId, x.Baslik, x.YayinTarihi, x.GuncellemeTarihi }).ToList()
+                .Select(x => new XElement(ns + "url",
+                    new XElement(ns + "loc", MutlakUrl(SeoHelper.BlogUrl(x.Baslik, x.BlogId))),
+                    new XElement(ns + "lastmod", (x.GuncellemeTarihi ?? x.YayinTarihi).ToString("yyyy-MM-dd")))));
 
             var xml = new XDocument(new XDeclaration("1.0", "utf-8", null),
-                new XElement(ns + "urlset", adresler.Select(a => new XElement(ns + "url", new XElement(ns + "loc", MutlakUrl(a))))));
+                new XElement(ns + "urlset", ogeler));
 
             return Content(xml.Declaration + Environment.NewLine + xml.Root, "application/xml", Encoding.UTF8);
         }
@@ -227,6 +317,13 @@ namespace CorporateWebsite.Controllers
                         + "Disallow: /Admin/\n"
                         + "Sitemap: " + MutlakUrl("/sitemap.xml") + "\n";
             return Content(metin, "text/plain", Encoding.UTF8);
+        }
+
+        /// <summary>Panel dışındaki sayfalarda yetki filtresi çalışmaz; çerezdeki kimlik veritabanında hâlâ var mı diye bakılır.</summary>
+        private bool YoneticiOturumAcik()
+        {
+            var id = YoneticiOturumu.KimlikId(User);
+            return id.HasValue && db.Admin.Any(x => x.AdminId == id.Value);
         }
 
         private string MutlakUrl(string yol)

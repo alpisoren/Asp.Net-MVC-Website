@@ -34,6 +34,22 @@ namespace CorporateWebsite.Models.Model
         public int? KategoriId { get; set; }
         public Kategori Kategori { get; set; }
 
+        /// <summary>Sitede gösterilen tarih. İleri bir tarih verilirse yazı o ana kadar sitede görünmez (planlı yayın).</summary>
+        [DisplayName("Yayın Tarihi")]
+        public DateTime YayinTarihi { get; set; }
+
+        [DisplayName("Son Güncelleme")]
+        public DateTime? GuncellemeTarihi { get; set; }
+
+        [DisplayName("Yazar")]
+        [StringLength(100)]
+        public string Yazar { get; set; }
+
+        /// <summary>Virgülle ayrılmış etiketler ("seo, web tasarım"). Bkz. EtiketHelper.</summary>
+        [DisplayName("Etiketler")]
+        [StringLength(250)]
+        public string Etiketler { get; set; }
+
         public ICollection<Yorum> Yorumlar { get; set; }
 
     }

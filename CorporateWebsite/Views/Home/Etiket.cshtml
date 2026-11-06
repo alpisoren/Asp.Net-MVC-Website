@@ -1,0 +1,15 @@
+﻿@using PagedList;
+@using CorporateWebsite.Helper;
+@model IPagedList<CorporateWebsite.Models.Model.Blog>
+@{
+    Layout = "~/Views/Shared/_SiteLayout.cshtml";
+    string etiket = ViewBag.Etiket;
+    string etiketUrl = EtiketHelper.Url(etiket);
+    ViewBag.Title = "#" + etiket + " etiketli yazılar";
+    ViewBag.SayfaBasligi = "#" + etiket;
+    ViewBag.UstSayfaAd = "Blog";
+    ViewBag.UstSayfaUrl = "/BlogPost";
+    ViewBag.KonumAd = "Etiket";
+    ViewData["SayfaUrl"] = (Func<int, string>)(p => p > 1 ? etiketUrl + "?Page=" + p : etiketUrl);
+}
+@Html.Partial("_BlogListesi", Model)

@@ -1,4 +1,4 @@
-/* =====================================================================
+﻿/* =====================================================================
    Kurumsal Web — ziyaretçi sitesi teması ("Soft UI", açık + koyu mod)
    Kaynak: design-system/kurumsal-web/MASTER.md
    Moderna şablonunun (assets/css/style.css) ÜZERİNE yüklenir.
@@ -28,6 +28,7 @@
 
     --danger: #B91C1C;
     --success-bg: #E7F7EE; --success-text: #14532D; --success-border: #A7E3C0;
+    --warning-soft: #FEF5E1; --warning-text: #8A3B0B;
     --error-bg: #FDECEC;   --error-text: #7F1D1D;   --error-border: #F5B5B5;
 
     --hero-from: #EAF3FC;
@@ -60,6 +61,7 @@
 
     --danger: #F87171;
     --success-bg: rgba(34, 197, 94, .12); --success-text: #86EFAC; --success-border: rgba(34, 197, 94, .35);
+    --warning-soft: rgba(251, 191, 36, .12); --warning-text: #FCD34D;
     --error-bg: rgba(248, 113, 113, .12); --error-text: #FCA5A5; --error-border: rgba(248, 113, 113, .35);
 
     --hero-from: #0F1B2E;
@@ -351,7 +353,30 @@ a.kw-card, .kw-card-link { color: inherit; text-decoration: none; }
 /* ---------------------------------------------------------------- Blog */
 .kw-article-cover { border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-xl); aspect-ratio: 16 / 9; background: var(--bg-soft); }
 .kw-article-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.kw-article-meta { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.kw-article-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); margin-bottom: var(--space-lg); }
+.kw-meta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: .875rem; margin: 0 0 var(--space-xs); }
+.kw-badge-uyari { background: var(--warning-soft); color: var(--warning-text); }
+
+.kw-tags { display: flex; flex-wrap: wrap; gap: var(--space-sm); list-style: none; padding: 0; margin: var(--space-xl) 0 0; }
+.kw-tags a {
+    display: inline-flex; align-items: center; min-height: 36px; padding: 4px 14px;
+    border: 1px solid var(--border); border-radius: var(--radius-pill);
+    background: var(--surface); color: var(--text); font-size: .875rem;
+}
+.kw-tags a:hover { border-color: var(--accent); color: var(--accent); }
+
+.kw-search { display: flex; gap: var(--space-sm); }
+.kw-search .form-control {
+    flex: 1; min-width: 0; min-height: 44px; padding: 9px 14px;
+    color: var(--text); background-color: var(--surface-2);
+    border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+}
+.kw-search .form-control:focus { background-color: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); color: var(--text); }
+.kw-search .form-control::placeholder { color: var(--muted); opacity: 1; }
+.kw-search .kw-btn { min-width: 44px; min-height: 44px; padding: 0 14px; }
+.kw-rss-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: var(--muted); font-size: .9375rem; }
+.kw-rss-link:hover { color: var(--accent); }
+.kw-liste-notu { color: var(--muted); margin-bottom: var(--space-lg); }
 
 .kw-sidebar { display: flex; flex-direction: column; gap: var(--space-lg); }
 .kw-sidebar-box {
