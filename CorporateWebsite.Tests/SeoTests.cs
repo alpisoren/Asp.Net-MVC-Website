@@ -68,6 +68,20 @@ namespace CorporateWebsite.Tests
         }
 
         [TestMethod]
+        public void CSP_localhost_baglantisi_yalnizca_gelistirmede_eklenir()
+        {
+            var canli = new[] { GuvenlikBasliklariAttribute.SitePolitikasi(false), GuvenlikBasliklariAttribute.SitePolitikasi(true), GuvenlikBasliklariAttribute.PanelPolitikasi };
+            foreach (var p in canli)
+            {
+                Assert.IsFalse(p.Contains("localhost"), "Canlı politika localhost içermemeli: " + p);
+
+                var gelistirme = GuvenlikBasliklariAttribute.GelistirmeyeUyarla(p);
+                StringAssert.Contains(gelistirme, "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*");
+                StringAssert.Contains(gelistirme, "script-src 'self'", "Betik politikası gevşetilmemeli");
+            }
+        }
+
+        [TestMethod]
         public void Mutlak_adres_SiteAdresi_ayarini_kullanir()
         {
             var ctx = Sahte.HttpBaglami(yol: "/BlogPost");

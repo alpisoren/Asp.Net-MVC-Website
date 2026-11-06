@@ -1,6 +1,9 @@
 ﻿using CorporateWebsite.Controllers;
 using CorporateWebsite.Helper;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CorporateWebsite.Filters
 {
@@ -51,11 +54,29 @@ namespace CorporateWebsite.Filters
             return System.Text.RegularExpressions.Regex.IsMatch(id, "^G-[A-Z0-9]{4,20}$") ? id : null;
         }
 
+        /// <summary>
+        /// Yalnızca geliştirmede: Visual Studio'nun Browser Link ve Hot Reload betikleri localhost'taki başka bir porta
+        /// HTTP ve WebSocket ile bağlanır. Canlıda bu betikler eklenmez, politika değişmez.
+        /// </summary>
+        public const string GelistirmeBaglantilari = " http://localhost:* https://localhost:* ws://localhost:* wss://localhost:*";
+
+        public static string GelistirmeyeUyarla(string politika)
+        {
+            return politika.Replace("connect-src 'self'", "connect-src 'self'" + GelistirmeBaglantilari);
+        }
+
         public override void OnResultExecuting(ResultExecutingContext filterContext)
         {
             var siteMi = filterContext.Controller is HomeController || filterContext.Controller is HataController;
-            filterContext.HttpContext.Response.Headers["Content-Security-Policy"] =
-                siteMi ? SitePolitikasi(AnalitikKimligi != null) : PanelPolitikasi;
+            var politika = siteMi ? SitePolitikasi(AnalitikKimligi != null) : PanelPolitikasi;
+
+            var ortam = filterContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>();
+            if (ortam != null && ortam.IsDevelopment())
+            {
+                politika = GelistirmeyeUyarla(politika);
+            }
+
+            filterContext.HttpContext.Response.Headers["Content-Security-Policy"] = politika;
         }
     }
 }
