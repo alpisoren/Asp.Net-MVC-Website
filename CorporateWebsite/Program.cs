@@ -5,6 +5,7 @@ using CorporateWebsite.Models.DataContext;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.WebEncoders;
@@ -22,6 +23,9 @@ using System.Text.Unicode;
 
 var builder = WebApplication.CreateBuilder(args);
 var ortam = builder.Environment;
+
+// "Server: Kestrel" yanıt başlığı gönderilmez (sunucu yazılımı dışarıya söylenmez).
+builder.WebHost.ConfigureKestrel(o => o.AddServerHeader = false);
 
 // ---------------------------------------------------------------- Ayarlar
 Ayarlar.Site = builder.Configuration.GetSection("Site").Get<SiteAyarlari>() ?? new SiteAyarlari();
